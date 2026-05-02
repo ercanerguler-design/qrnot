@@ -29,11 +29,16 @@ function ManagePage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   const playUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/q/${slug}`
       : `/q/${slug}`
+  const ownerUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/manage/${slug}?token=${token}`
+      : `/manage/${slug}?token=${token}`
 
   const fetchNote = useCallback(async () => {
     setLoading(true)
@@ -44,7 +49,7 @@ function ManagePage() {
       return
     }
     const data = await res.json()
-    // Token doğrulaması: DB'deki admin_token ile karşılaştıramayız (güvenlik),
+    // Token doğrulaması sunucuda yapılıyor; burada token yoksa ekranı açmayız.
     // ama token yoksa erişimi reddet
     if (!token) {
       setAuthError(true)
@@ -92,6 +97,17 @@ function ManagePage() {
     setSaving(false)
   }
 
+  const handleCopyOwnerLink = async () => {
+    await navigator.clipboard.writeText(ownerUrl)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
+
+  const handleWhatsAppShare = () => {
+    const text = encodeURIComponent(`QRNote sahip linkim: ${ownerUrl}`)
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -124,8 +140,15 @@ function ManagePage() {
           <div className="text-5xl mb-4">🔒</div>
           <h1 className="text-xl font-bold text-white mb-2">Erişim Reddedildi</h1>
           <p className="text-neutral-500 text-sm mb-6">
-            Geçersiz veya eksik yönetim tokeni.
+            Geçersiz veya eksik sahiplik linki.
           </p>
+          <Link
+            href={`/recover/${slug}`}
+            className="inline-block mb-4 text-violet-400 hover:text-violet-300 text-sm transition-colors"
+          >
+            Kurtarma kodu ile geri al →
+          </Link>
+          <br />
           <Link
             href="/"
             className="text-violet-400 hover:text-violet-300 text-sm transition-colors"
@@ -147,7 +170,7 @@ function ManagePage() {
           >
             ← Ana Sayfa
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-3">Notunu Yönet</h1>
+          <h1 className="text-2xl font-bold text-white mt-3">Sesini Güncelle</h1>
           <p className="text-neutral-500 text-sm mt-1">
             {note.play_count} kez dinlendi ·{' '}
             {new Date(note.created_at).toLocaleDateString('tr-TR')}
@@ -165,6 +188,26 @@ function ManagePage() {
           >
             {playUrl}
           </a>
+          <div className="grid grid-cols-2 gap-3 w-full">
+            <button
+              onClick={handleCopyOwnerLink}
+              className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white text-sm font-medium py-3 rounded-xl transition-all"
+            >
+              {linkCopied ? 'Kopyalandı' : 'Sahip Linkini Kopyala'}
+            </button>
+            <button
+              onClick={handleWhatsAppShare}
+              className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-3 rounded-xl transition-all"
+            >
+              WhatsApp ile Paylaş
+            </button>
+          </div>
+          <Link
+            href={`/recover/${slug}`}
+            className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors"
+          >
+            Link kaybolursa kurtarma kodu ile geri al
+          </Link>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-5">

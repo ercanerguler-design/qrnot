@@ -20,6 +20,8 @@ function ClaimView({ qr }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   const [manageUrl, setManageUrl] = useState('')
+  const [recoveryCode, setRecoveryCode] = useState('')
+  const [copied, setCopied] = useState<'owner' | 'recovery' | null>(null)
 
   const handleClaim = async () => {
     if (!audio) return
@@ -35,16 +37,28 @@ function ClaimView({ qr }: Props) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Kayıt başarısız')
 
-      // manageUrl'i localStorage'a kaydet
+      // QR sahibinin güncelleme yetkisini localStorage'da tut
       const key = `qrnote_token_${qr.slug}`
-      localStorage.setItem(key, data.adminToken)
+      localStorage.setItem(key, data.ownerToken)
       setManageUrl(data.manageUrl)
+      setRecoveryCode(data.recoveryCode)
       setDone(true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCopy = async (value: string, target: 'owner' | 'recovery') => {
+    await navigator.clipboard.writeText(value)
+    setCopied(target)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  const handleWhatsAppShare = () => {
+    const text = encodeURIComponent(`QRNote sahip linkim: ${manageUrl}`)
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
   }
 
   if (done) {
@@ -56,17 +70,46 @@ function ClaimView({ qr }: Props) {
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">QR Kodun Hazır!</h1>
           <p className="text-neutral-400 text-sm mb-8 leading-relaxed">
-            Artık bu QR kodu tarayan herkes sesini duyacak. Yönetim linkini kaybet, başkası güncelleyemez.
+            Artık bu QR kodu tarayan herkes sesini duyacak. Aşağıdaki sahip linkini sakla; sadece bu link ile sesini değiştirebilirsin.
           </p>
           <div className="bg-amber-950/40 border border-amber-800 rounded-2xl p-4 mb-6 text-left">
-            <p className="text-amber-400 text-xs font-semibold mb-2">⚠️ Yönetim Linkin — Kaydet!</p>
+            <p className="text-amber-400 text-xs font-semibold mb-2">⚠️ Sahip Linkin — Kaydet!</p>
             <p className="text-amber-300/70 text-xs break-all">{manageUrl}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <button
+              onClick={() => handleCopy(manageUrl, 'owner')}
+              className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-white text-sm font-medium py-3 rounded-xl transition-all"
+            >
+              {copied === 'owner' ? 'Kopyalandı' : 'Sahip Linkini Kopyala'}
+            </button>
+            <button
+              onClick={handleWhatsAppShare}
+              className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-3 rounded-xl transition-all"
+            >
+              WhatsApp ile Paylaş
+            </button>
+          </div>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 mb-6 text-left">
+            <p className="text-white text-xs font-semibold mb-2">Kurtarma Kodun</p>
+            <p className="text-neutral-300 text-lg tracking-[0.25em] font-semibold mb-3">{recoveryCode}</p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleCopy(recoveryCode, 'recovery')}
+                className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white text-xs font-medium px-3 py-2 rounded-lg transition-all"
+              >
+                {copied === 'recovery' ? 'Kopyalandı' : 'Kurtarma Kodunu Kopyala'}
+              </button>
+              <Link href={`/recover/${qr.slug}`} className="text-violet-400 hover:text-violet-300 text-xs transition-colors">
+                Link kaybolursa buradan geri al
+              </Link>
+            </div>
           </div>
           <a
             href={manageUrl}
             className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-xl transition-all active:scale-95 text-sm"
           >
-            Yönetim Paneline Git →
+            Sesini Sonradan Güncelle →
           </a>
         </div>
       </div>
@@ -179,12 +222,20 @@ function PlayView({ qr }: Props) {
 
         {/* Yönet butonu — sadece sahibiyse göster */}
         {manageUrl && (
-          <a
-            href={manageUrl}
-            className="block w-full text-center bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 text-sm font-medium py-3 rounded-xl transition-all"
-          >
-            Notunu Güncelle →
-          </a>
+          <div className="space-y-3">
+            <a
+              href={manageUrl}
+              className="block w-full text-center bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 text-sm font-medium py-3 rounded-xl transition-all"
+            >
+              Sesini Güncelle →
+            </a>
+            <Link
+              href={`/recover/${qr.slug}`}
+              className="block w-full text-center text-neutral-500 hover:text-neutral-300 text-xs transition-colors"
+            >
+              Sahip linkini mi kaybettin?
+            </Link>
+          </div>
         )}
 
         <p className="text-center text-neutral-800 text-xs mt-8">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { sql } from '@/lib/db'
 import { randomBytes } from 'crypto'
+import { createHash } from 'crypto'
 
 export async function POST(
   req: NextRequest,
@@ -37,15 +38,18 @@ export async function POST(
       addRandomSuffix: false,
     })
 
-    // Admin token oluştur
-    const adminToken = randomBytes(32).toString('hex')
+    // QR sahibinin sonraki güncellemelerde kullanacağı özel token
+    const ownerToken = randomBytes(32).toString('hex')
+    const recoveryCode = randomBytes(4).toString('hex').toUpperCase()
+    const recoveryCodeHash = createHash('sha256').update(recoveryCode).digest('hex')
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
     await sql`
       UPDATE qr_codes
       SET is_claimed = TRUE,
-          admin_token = ${adminToken},
+          admin_token = ${ownerToken},
+          recovery_code_hash = ${recoveryCodeHash},
           audio_url = ${blob.url},
           title = ${title},
           updated_at = NOW()
@@ -54,9 +58,10 @@ export async function POST(
 
     return NextResponse.json({
       slug,
-      adminToken,
+      ownerToken,
+      recoveryCode,
       playUrl: `${baseUrl}/q/${slug}`,
-      manageUrl: `${baseUrl}/manage/${slug}?token=${adminToken}`,
+      manageUrl: `${baseUrl}/manage/${slug}?token=${ownerToken}`,
     })
   } catch (err) {
     console.error('[claim]', err)

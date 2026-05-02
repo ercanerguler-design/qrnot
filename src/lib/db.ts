@@ -24,6 +24,7 @@ export interface QRCode {
   slug: string
   is_claimed: boolean
   admin_token: string | null
+  recovery_code_hash?: string | null
   audio_url: string | null
   title: string
   play_count: number

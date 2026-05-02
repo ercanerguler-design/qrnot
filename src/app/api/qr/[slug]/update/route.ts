@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put, del } from '@vercel/blob'
 import { validateAudioFile } from '@/lib/audio'
+import { deleteBlob, putBlob } from '@/lib/blob'
 import { ensureQrSchema, sql, QRCode } from '@/lib/db'
 
 export async function PUT(
@@ -44,7 +44,7 @@ export async function PUT(
       // Eski blob'u sil
       if (qr.audio_url) {
         try {
-          await del(qr.audio_url)
+          await deleteBlob(qr.audio_url)
         } catch {
           // Eski blob silinmezse devam et
         }
@@ -52,10 +52,7 @@ export async function PUT(
 
       // Yeni blob yükle
       const ext = audioFile.name.split('.').pop() || 'webm'
-      const blob = await put(`qr/${slug}.${ext}`, audioFile, {
-        access: 'public',
-        addRandomSuffix: false,
-      })
+      const blob = await putBlob(`qr/${slug}.${ext}`, audioFile)
       newAudioUrl = blob.url
     }
 
@@ -70,6 +67,11 @@ export async function PUT(
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[update]', err)
+
+    if (err instanceof Error && err.message.includes('BLOB_READ_WRITE_TOKEN')) {
+      return NextResponse.json({ error: 'Ses yükleme servisi hazır değil' }, { status: 500 })
+    }
+
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
   }
 }

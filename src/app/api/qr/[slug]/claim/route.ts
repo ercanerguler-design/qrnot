@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
 import { validateAudioFile } from '@/lib/audio'
+import { putBlob } from '@/lib/blob'
 import { ensureQrSchema, sql } from '@/lib/db'
 import { randomBytes } from 'crypto'
 import { createHash } from 'crypto'
@@ -38,17 +38,14 @@ export async function POST(
 
     // Vercel Blob'a yükle
     const ext = audioFile.name.split('.').pop() || 'webm'
-    const blob = await put(`qr/${slug}.${ext}`, audioFile, {
-      access: 'public',
-      addRandomSuffix: false,
-    })
+    const blob = await putBlob(`qr/${slug}.${ext}`, audioFile)
 
     // QR sahibinin sonraki güncellemelerde kullanacağı özel token
     const ownerToken = randomBytes(32).toString('hex')
     const recoveryCode = randomBytes(4).toString('hex').toUpperCase()
     const recoveryCodeHash = createHash('sha256').update(recoveryCode).digest('hex')
 
-    const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
+    const baseUrl = req.nextUrl.origin || String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
 
     await sql`
       UPDATE qr_codes
@@ -70,6 +67,11 @@ export async function POST(
     })
   } catch (err) {
     console.error('[claim]', err)
+
+    if (err instanceof Error && err.message.includes('BLOB_READ_WRITE_TOKEN')) {
+      return NextResponse.json({ error: 'Ses yükleme servisi hazır değil' }, { status: 500 })
+    }
+
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
   }
 }

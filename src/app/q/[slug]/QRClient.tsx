@@ -185,6 +185,7 @@ function ClaimView({ qr }: Props) {
 ────────────────────────────────────────────── */
 function PlayView({ qr }: Props) {
   const [manageUrl, setManageUrl] = useState<string | null>(null)
+  const audioUrl = `/api/qr/${qr.slug}/audio`
 
   useEffect(() => {
     const token = localStorage.getItem(`qrnote_token_${qr.slug}`)
@@ -214,7 +215,7 @@ function PlayView({ qr }: Props) {
         {/* Player */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 mb-5">
           {qr.audio_url ? (
-            <AudioPlayer audioUrl={qr.audio_url} />
+            <AudioPlayer audioUrl={audioUrl} />
           ) : (
             <p className="text-neutral-600 text-sm text-center py-4">Ses dosyası bulunamadı.</p>
           )}

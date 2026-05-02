@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-const whatsappHref = 'https://wa.me/905433929230?text=Merhaba%20QRNote%2C%20500%20adet%20ve%20%C3%BCzeri%20kurumsal%20QR%20paketi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.'
+const whatsappOrderHref = 'https://wa.me/905433929230?text=Merhaba%20QRNote%2C%20bireysel%20QR%20sipari%C5%9Fi%20ve%20fiyat%20bilgisi%20almak%20istiyorum.'
+const whatsappCorporateHref = 'https://wa.me/905433929230?text=Merhaba%20QRNote%2C%20500%20adet%20ve%20%C3%BCzeri%20kurumsal%20QR%20paketi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.'
 
 export default function Home() {
   return (
@@ -26,12 +27,14 @@ export default function Home() {
           <a href="#kurumsal-cozumler" className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors hidden sm:block">
             Kurumsal Çözümler
           </a>
-          <Link
-            href="/admin"
+          <a
+            href={whatsappOrderHref}
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-neutral-800 hover:bg-neutral-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all border border-neutral-700"
           >
-            İş Ortağı →
-          </Link>
+            Fiyat Al
+          </a>
         </div>
       </nav>
 
@@ -65,19 +68,13 @@ export default function Home() {
           >
             Nasıl çalışır? →
           </a>
-          <Link
-            href="/admin"
-            className="text-neutral-400 hover:text-white px-6 py-4 text-base transition-colors"
-          >
-            İş Ortağı Ol
-          </Link>
           <a
-            href={whatsappHref}
+            href={whatsappOrderHref}
             target="_blank"
             rel="noopener noreferrer"
             className="text-green-400 hover:text-green-300 px-6 py-4 text-base transition-colors"
           >
-            WhatsApp ile Yaz
+            Sipariş Ver
           </a>
         </div>
 
@@ -165,6 +162,47 @@ export default function Home() {
             <p className="text-neutral-600 text-xs">Her zaman güncel</p>
           </div>
 
+        </div>
+      </section>
+
+      <section className="relative z-10 px-4 py-10 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-neutral-900/70 border border-neutral-800 rounded-3xl p-6">
+            <p className="text-violet-400 text-xs font-semibold tracking-[0.2em] uppercase mb-3">Bireysel Kullanıcı</p>
+            <h2 className="text-white text-2xl font-black mb-3">Fiyat Al / Satın Al</h2>
+            <p className="text-neutral-400 text-sm leading-relaxed mb-5">
+              Bireysel kullanıcı QRNote paneline girip boş QR oluşturmaz. Önce ürünü veya slotu satın alır, ardından kendisine atanan QR kodu ilk taramada sahiplenip sesini yükler.
+            </p>
+            <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 mb-5">
+              <p className="text-white font-semibold mb-1">Bireysel Paket</p>
+              <p className="text-neutral-500 text-sm mb-3">Anahtarlık, sticker veya özel QR slotu için fiyat bilgisi WhatsApp üzerinden paylaşılır.</p>
+              <p className="text-violet-400 text-sm font-medium">Kendi QR'ını üretmezsin, sana hazır QR atanır.</p>
+            </div>
+            <a
+              href={whatsappOrderHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-2xl transition-all active:scale-95"
+            >
+              Fiyat Al / Satın Al
+            </a>
+          </div>
+
+          <div className="bg-neutral-900/70 border border-neutral-800 rounded-3xl p-6">
+            <p className="text-green-400 text-xs font-semibold tracking-[0.2em] uppercase mb-3">Kurumsal Üretim</p>
+            <h2 className="text-white text-2xl font-black mb-3">Toplu QR üretimi sadece iş ortakları için</h2>
+            <p className="text-neutral-400 text-sm leading-relaxed mb-5">
+              Çoklu QR üretimi admin panelinden yönetilir. 500 adet ve üzeri kurumsal üretim, etiketleme ve teslim akışı için doğrudan bizimle iletişime geçilir.
+            </p>
+            <a
+              href={whatsappCorporateHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-2xl transition-all active:scale-95"
+            >
+              Kurumsal Teklif Al
+            </a>
+          </div>
         </div>
       </section>
 
@@ -320,14 +358,8 @@ export default function Home() {
               ))}
             </ul>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-violet-900/40"
-              >
-                Panelden QR Oluştur →
-              </Link>
               <a
-                href={whatsappHref}
+                href={whatsappCorporateHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-green-950/40"
@@ -340,19 +372,20 @@ export default function Home() {
             <p className="text-violet-400 text-xs font-semibold tracking-[0.2em] uppercase mb-3">Kurumsal Paket</p>
             <h3 className="text-white text-3xl font-black mb-2">500 QR</h3>
             <p className="text-5xl font-black text-white mb-2">2.599 TL</p>
-            <p className="text-neutral-500 text-sm mb-6">Üreticiler, kutu içi kullanım kılavuzları ve sesli ürün anlatımı için başlangıç paketi.</p>
+            <p className="text-neutral-500 text-sm mb-4">Üreticiler, kutu içi kullanım kılavuzları ve sesli ürün anlatımı için başlangıç paketi.</p>
+            <p className="text-amber-300/90 text-sm mb-6">500 adet ve üzeri kurumsal üretim için lütfen iletişime geçiniz.</p>
             <div className="space-y-3 mb-6 text-sm text-neutral-300">
               <p>Min. sipariş: 500 adet</p>
               <p>QR üretim ve teslim akışı</p>
               <p>Ürün başına sabit sesli anlatım altyapısı</p>
             </div>
             <a
-              href={whatsappHref}
+              href={whatsappCorporateHref}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-all active:scale-95"
             >
-              +90 543 392 92 30
+              WhatsApp ile İletişime Geç
             </a>
           </div>
         </div>
@@ -369,17 +402,17 @@ export default function Home() {
           <div className="grid lg:grid-cols-3 gap-5">
             <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-6">
               <div className="text-3xl mb-4">💬</div>
-              <h3 className="text-white font-bold text-lg mb-2">WhatsApp Destek</h3>
+              <h3 className="text-white font-bold text-lg mb-2">Sipariş & Destek</h3>
               <p className="text-neutral-500 text-sm leading-relaxed mb-5">
-                Sorularınız için 7/24 WhatsApp üzerinden ulaşabilirsiniz.
+                Bireysel sipariş, fiyat bilgisi ve destek talepleri için WhatsApp üzerinden ulaşabilirsiniz.
               </p>
               <a
-                href={whatsappHref}
+                href={whatsappOrderHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-all active:scale-95"
               >
-                WhatsApp'tan Yaz
+                Sipariş İçin Yaz
               </a>
             </div>
 
@@ -414,7 +447,7 @@ export default function Home() {
               </div>
               <div className="mt-5 bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
                 <p className="text-neutral-400 text-sm">
-                  Açıklama kısmına slot numaranızı ve adınızı yazmanızı rica ederiz.
+                  Ödeme sonrası dekontunuzu ve sipariş detayınızı WhatsApp üzerinden paylaşabilirsiniz. Tüm tahsilatlar SCE Innovation Ltd.Şti adına alınır.
                 </p>
               </div>
             </div>
@@ -434,12 +467,14 @@ export default function Home() {
         <p className="text-neutral-500 text-lg mb-10">
           Fiziksel ürünler artık dijital sesler taşıyabilir.
         </p>
-        <Link
-          href="/admin"
+        <a
+          href={whatsappOrderHref}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold px-10 py-5 rounded-2xl transition-all active:scale-95 text-lg shadow-2xl shadow-violet-900/50"
         >
-          Hemen Başla →
-        </Link>
+          Fiyat Al / Satın Al
+        </a>
       </section>
 
       {/* FOOTER */}
@@ -450,9 +485,9 @@ export default function Home() {
             <span className="font-semibold text-neutral-600">QRNote</span>
           </div>
           <p>Sesli anılar, kalıcı QR kodlar</p>
-          <Link href="/admin" className="hover:text-neutral-500 transition-colors">
-            İş Ortağı Girişi
-          </Link>
+          <a href={whatsappOrderHref} target="_blank" rel="noopener noreferrer" className="hover:text-neutral-500 transition-colors">
+            WhatsApp Destek
+          </a>
         </div>
       </footer>
 

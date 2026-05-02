@@ -1,65 +1,355 @@
-import Image from "next/image";
+import Link from 'next/link'
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-neutral-950 overflow-x-hidden">
+
+      {/* Background glow orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-violet-700/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-violet-900/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 -left-40 w-[400px] h-[400px] bg-purple-900/10 rounded-full blur-3xl" />
+      </div>
+
+      {/* NAV */}
+      <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl">🎙️</span>
+          <span className="text-white font-bold text-xl tracking-tight">QRNote</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+        <div className="flex items-center gap-6">
+          <a href="#nasil-calisir" className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors hidden sm:block">
+            Nasıl çalışır?
           </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/admin"
+            className="bg-neutral-800 hover:bg-neutral-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all border border-neutral-700"
           >
-            Documentation
-          </a>
+            İş Ortağı →
+          </Link>
         </div>
-      </main>
+      </nav>
+
+      {/* HERO */}
+      <section className="relative z-10 text-center px-4 pt-16 pb-24 max-w-5xl mx-auto">
+
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/25 rounded-full px-4 py-1.5 text-violet-400 text-sm font-medium mb-10">
+          <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse inline-block" />
+          Anahtarlıklar artık konuşuyor
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white mb-6 leading-[0.95] tracking-tight">
+          Hediyene<br />
+          <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+            bir ses ver
+          </span>
+        </h1>
+
+        <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          QR kodlu anahtarlık, bileklik veya sticker.{' '}
+          <span className="text-neutral-300">Tarayanlar anında sesini duyar.</span>{' '}
+          Uygulama indirmeleri gerekmez. İstediğin zaman güncelle.
+        </p>
+
+        <div className="flex items-center justify-center gap-4 flex-wrap mb-20">
+          <a
+            href="#nasil-calisir"
+            className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-4 rounded-2xl transition-all active:scale-95 text-base shadow-2xl shadow-violet-900/50"
+          >
+            Nasıl çalışır? →
+          </a>
+          <Link
+            href="/admin"
+            className="text-neutral-400 hover:text-white px-6 py-4 text-base transition-colors"
+          >
+            İş Ortağı Ol
+          </Link>
+        </div>
+
+        {/* Visual — phone mockup */}
+        <div className="flex justify-center items-end gap-6 sm:gap-10">
+
+          {/* Left card — keychain */}
+          <div className="hidden sm:flex flex-col items-center gap-3 opacity-60 mb-4">
+            <div className="w-16 h-28 bg-neutral-800 rounded-2xl border border-neutral-700 flex items-center justify-center">
+              <span className="text-3xl">🔑</span>
+            </div>
+            <div className="bg-white rounded-lg p-1.5 shadow-xl">
+              <div className="w-10 h-10 grid grid-cols-5 gap-px">
+                {[1,1,1,1,1, 1,0,0,0,1, 1,0,1,0,1, 1,0,0,0,1, 1,1,1,1,1].map((v,i) => (
+                  <div key={i} className={`rounded-sm ${v ? 'bg-neutral-900' : 'bg-white'}`} />
+                ))}
+              </div>
+            </div>
+            <p className="text-neutral-600 text-xs">Scan &amp; play</p>
+          </div>
+
+          {/* Center — phone */}
+          <div className="relative">
+            <div className="w-60 sm:w-72 bg-neutral-900 rounded-[2.5rem] border border-neutral-700/60 p-3 shadow-2xl shadow-black/60">
+              {/* Phone notch */}
+              <div className="flex justify-center mb-2">
+                <div className="w-20 h-1.5 bg-neutral-700 rounded-full" />
+              </div>
+              {/* App screen */}
+              <div className="bg-neutral-950 rounded-[2rem] px-5 py-8 text-center">
+                <div className="w-14 h-14 bg-violet-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-violet-500/20">
+                  <span className="text-2xl">🎙️</span>
+                </div>
+                <p className="text-white font-semibold text-sm mb-1">Annemin Sesi ❤️</p>
+                <p className="text-neutral-600 text-xs mb-5">2 saat önce · 47 dinleme</p>
+
+                {/* Custom audio player */}
+                <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <button className="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-900/50">
+                      <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </button>
+                    <div className="flex-1">
+                      <div className="bg-neutral-700 rounded-full h-1.5 w-full">
+                        <div className="bg-violet-500 h-1.5 rounded-full w-2/5" />
+                      </div>
+                    </div>
+                    <span className="text-neutral-500 text-xs">1:23</span>
+                  </div>
+                </div>
+
+                <p className="text-neutral-700 text-xs mt-4">qrnote.app/q/xK9mP2</p>
+              </div>
+            </div>
+
+            {/* QR badge floating */}
+            <div className="absolute -top-3 -right-3 bg-white rounded-xl p-2 shadow-2xl shadow-black/50">
+              <div className="w-12 h-12 grid grid-cols-5 gap-px">
+                {[1,1,1,1,1, 1,0,0,0,1, 1,0,1,0,1, 1,0,0,0,1, 1,1,1,1,1].map((v,i) => (
+                  <div key={i} className={`rounded-sm ${v ? 'bg-neutral-900' : 'bg-white'}`} />
+                ))}
+              </div>
+            </div>
+
+            {/* Floating badges */}
+            <div className="absolute -bottom-2 -left-10 bg-green-950 border border-green-800 rounded-xl px-3 py-1.5 text-green-400 text-xs font-medium whitespace-nowrap">
+              ✓ Uygulama gerekmez
+            </div>
+          </div>
+
+          {/* Right card — sticker */}
+          <div className="hidden sm:flex flex-col items-center gap-3 opacity-60 mb-4">
+            <div className="w-16 h-28 bg-neutral-800 rounded-2xl border border-neutral-700 flex items-center justify-center">
+              <span className="text-3xl">🎁</span>
+            </div>
+            <div className="bg-white rounded-lg p-1.5 shadow-xl">
+              <div className="w-10 h-10 grid grid-cols-5 gap-px">
+                {[1,1,1,1,1, 1,0,1,0,1, 1,1,0,1,1, 1,0,1,0,1, 1,1,1,1,1].map((v,i) => (
+                  <div key={i} className={`rounded-sm ${v ? 'bg-neutral-900' : 'bg-white'}`} />
+                ))}
+              </div>
+            </div>
+            <p className="text-neutral-600 text-xs">Her zaman güncel</p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* STATS BAR */}
+      <div className="relative z-10 border-y border-neutral-800/60 bg-neutral-900/30 py-6">
+        <div className="max-w-4xl mx-auto px-4 grid grid-cols-3 gap-4 text-center">
+          {[
+            { n: '∞', label: 'Güncellenebilir' },
+            { n: '0', label: 'Uygulama gerekli' },
+            { n: '< 3sn', label: 'Yükleme süresi' },
+          ].map(s => (
+            <div key={s.label}>
+              <p className="text-2xl sm:text-3xl font-black text-violet-400">{s.n}</p>
+              <p className="text-neutral-600 text-xs sm:text-sm mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* HOW IT WORKS */}
+      <section id="nasil-calisir" className="relative z-10 px-4 py-24 max-w-5xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-5xl font-black text-white mb-4">3 adımda hazır</h2>
+          <p className="text-neutral-500 text-lg">Teknik bilgi gerekmez. Ciddi hiçbir şey gerekmez.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-5">
+          {[
+            {
+              n: '01',
+              icon: '📦',
+              title: 'QR Ürünü Al',
+              desc: 'Anahtarlık, bileklik, sticker veya herhangi bir fiziksel ürün. Üzerinde senin için oluşturulmuş benzersiz bir QR kodu var.',
+              color: 'from-violet-600/20 to-transparent',
+            },
+            {
+              n: '02',
+              icon: '🎙️',
+              title: 'İlk Taramada Sahiplen',
+              desc: 'QR kodu ilk tarayan kişi sesini kaydeder. 10 saniye bile yeterli. Yönetim linki otomatik oluşur, kaybetme.',
+              color: 'from-purple-600/20 to-transparent',
+            },
+            {
+              n: '03',
+              icon: '🔊',
+              title: 'Herkes Duyar',
+              desc: 'Artık bu QR\'ı tarayan herkes sesini duyar. Notu güncellersen eski ses silinir, yenisi yerine geçer. QR kodu hiç değişmez.',
+              color: 'from-fuchsia-600/20 to-transparent',
+            },
+          ].map(step => (
+            <div key={step.n} className={`bg-gradient-to-b ${step.color} bg-neutral-900 border border-neutral-800 rounded-3xl p-7 relative overflow-hidden`}>
+              <span className="absolute top-5 right-5 text-neutral-800/80 text-5xl font-black select-none">{step.n}</span>
+              <div className="text-4xl mb-5">{step.icon}</div>
+              <h3 className="text-white font-bold text-lg mb-3">{step.title}</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* USE CASES */}
+      <section className="relative z-10 px-4 py-16 max-w-5xl mx-auto">
+        <h2 className="text-center text-3xl sm:text-4xl font-black text-white mb-4">Kim için?</h2>
+        <p className="text-center text-neutral-500 mb-12">Fiziksel bir ürün + ses = sihir.</p>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { emoji: '🔑', title: 'Anahtarlık', desc: 'Sevdiğine kişisel sesli mesaj.' },
+            { emoji: '🎁', title: 'Hediye', desc: 'Sürpriz sesi olan hediye.' },
+            { emoji: '👶', title: 'Bebek Anısı', desc: 'İlk kelimeler, ilk gülüşler.' },
+            { emoji: '💍', title: 'Özel Anlar', desc: 'Söz, nişan, yıldönümü.' },
+          ].map(uc => (
+            <div
+              key={uc.title}
+              className="group bg-neutral-900/60 border border-neutral-800 hover:border-violet-700/50 rounded-2xl p-5 text-center transition-all hover:bg-neutral-900"
+            >
+              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform inline-block">{uc.emoji}</div>
+              <h3 className="text-white font-semibold mb-1">{uc.title}</h3>
+              <p className="text-neutral-600 text-sm">{uc.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="relative z-10 px-4 py-16 max-w-5xl mx-auto">
+        <div className="bg-gradient-to-b from-neutral-900 to-neutral-900/50 border border-neutral-800 rounded-3xl p-8 sm:p-12">
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-10 text-center">
+            Neden QRNote?
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              {
+                icon: '📱',
+                title: 'Sıfır sürtüşme',
+                desc: 'Tarayan kişi direkt sesi duyar. Uygulama yok, hesap yok, kayıt yok.',
+              },
+              {
+                icon: '♻️',
+                title: 'Sonsuz güncellenebilir',
+                desc: 'Yeni ses kaydedince eski silinir. QR kodu hep güncel, depolama sorunu yok.',
+              },
+              {
+                icon: '🔗',
+                title: 'Kalıcı bağlantı',
+                desc: 'QR kodu ömür boyu aynı URL\'e bağlı. Fiziksel ürün değişmez, dijital içerik güncellenir.',
+              },
+              {
+                icon: '🎁',
+                title: 'Hediyeye hazır',
+                desc: 'QR kodu hediye edebilirsin. Yeni sahip ses kaydı bırakır, sen de dilediğin zaman güncellersin.',
+              },
+            ].map(f => (
+              <div key={f.title} className="flex items-start gap-4 p-5 rounded-2xl hover:bg-neutral-800/40 transition-colors">
+                <span className="text-2xl flex-shrink-0 mt-0.5">{f.icon}</span>
+                <div>
+                  <h3 className="text-white font-semibold mb-1">{f.title}</h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* B2B SECTION */}
+      <section className="relative z-10 px-4 py-16 max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-violet-950/50 via-neutral-900 to-purple-950/50 border border-violet-800/30 rounded-3xl p-8 sm:p-12">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 bg-violet-600/15 border border-violet-500/20 rounded-full px-3 py-1 text-violet-400 text-xs font-medium mb-6">
+              İş Ortakları İçin
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-white mb-4 leading-tight">
+              Ürünlerinize<br />ses katın
+            </h2>
+            <p className="text-neutral-400 mb-6 leading-relaxed">
+              Anahtarlık, bileklik, sticker, kartpostal… Ürünlerinize yapıştırın. 
+              Müşteriniz QR'ı tarar, ilk sesi kaydeder, yönetim linkini alır. 
+              Toplu QR kodu oluşturun, yazdırın, işiniz bitti.
+            </p>
+            <ul className="space-y-2 mb-8">
+              {[
+                'Toplu QR kodu oluşturma (tek seferde 100 adet)',
+                'Her QR benzersiz ve kalıcı URL',
+                'Müşteri destek gerektirmiyor — tam otonom',
+                'Türkçe arayüz, Türk sunucu seçeneği',
+              ].map(item => (
+                <li key={item} className="flex items-center gap-2 text-neutral-400 text-sm">
+                  <span className="text-violet-500 flex-shrink-0">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-violet-900/40"
+            >
+              Toplu QR Oluştur →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="relative z-10 px-4 py-24 text-center max-w-3xl mx-auto">
+        <div className="text-6xl mb-6">🎙️</div>
+        <h2 className="text-4xl sm:text-6xl font-black text-white mb-6 leading-tight">
+          Anahtarlığın<br />
+          <span className="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
+            konuşma vakti
+          </span>
+        </h2>
+        <p className="text-neutral-500 text-lg mb-10">
+          Fiziksel ürünler artık dijital sesler taşıyabilir.
+        </p>
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold px-10 py-5 rounded-2xl transition-all active:scale-95 text-lg shadow-2xl shadow-violet-900/50"
+        >
+          Hemen Başla →
+        </Link>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="relative z-10 border-t border-neutral-900 px-6 py-8">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-neutral-700 text-sm">
+          <div className="flex items-center gap-2">
+            <span>🎙️</span>
+            <span className="font-semibold text-neutral-600">QRNote</span>
+          </div>
+          <p>Sesli anılar, kalıcı QR kodlar</p>
+          <Link href="/admin" className="hover:text-neutral-500 transition-colors">
+            İş Ortağı Girişi
+          </Link>
+        </div>
+      </footer>
+
     </div>
-  );
+  )
 }
+

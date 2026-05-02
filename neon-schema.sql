@@ -14,10 +14,19 @@ CREATE TABLE IF NOT EXISTS qr_codes (
   updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS demo_quotas (
+  session_id VARCHAR(64) PRIMARY KEY,
+  ip_address VARCHAR(64) NOT NULL,
+  qr_created_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
 ALTER TABLE qr_codes
 ADD COLUMN IF NOT EXISTS recovery_code_hash VARCHAR(64);
 
 CREATE INDEX IF NOT EXISTS idx_qr_codes_slug ON qr_codes(slug);
+CREATE INDEX IF NOT EXISTS idx_demo_quotas_ip_address ON demo_quotas(ip_address);
 
 -- Test verisi (isteğe bağlı, sonra silebilirsin)
 -- INSERT INTO qr_codes (slug) VALUES ('test1234');

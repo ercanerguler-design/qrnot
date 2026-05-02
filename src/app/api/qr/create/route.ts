@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ensureQrSchema, sql } from '@/lib/db'
-
-function generateSlug(length = 8): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
+import { createBlankQRCodes } from '@/lib/qr'
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,18 +17,7 @@ export async function POST(req: NextRequest) {
 
     const n = Math.min(Math.max(1, Number(count) || 1), 500)
     const baseUrl = req.nextUrl.origin || String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
-    const created: { slug: string; qrUrl: string }[] = []
-
-    for (let i = 0; i < n; i++) {
-      let slug = generateSlug(8)
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const existing = await sql`SELECT id FROM qr_codes WHERE slug = ${slug}`
-        if (existing.length === 0) break
-        slug = generateSlug(8)
-      }
-      await sql`INSERT INTO qr_codes (slug) VALUES (${slug})`
-      created.push({ slug, qrUrl: `${baseUrl}/q/${slug}` })
-    }
+    const created = await createBlankQRCodes(n, baseUrl)
 
     return NextResponse.json({ created })
   } catch (err) {

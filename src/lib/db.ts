@@ -40,8 +40,18 @@ export function ensureQrSchema() {
           updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
       `
+      await client`
+        CREATE TABLE IF NOT EXISTS demo_quotas (
+          session_id VARCHAR(64) PRIMARY KEY,
+          ip_address VARCHAR(64) NOT NULL,
+          qr_created_count INTEGER NOT NULL DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
       await client`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS recovery_code_hash VARCHAR(64)`
       await client`CREATE INDEX IF NOT EXISTS idx_qr_codes_slug ON qr_codes(slug)`
+      await client`CREATE INDEX IF NOT EXISTS idx_demo_quotas_ip_address ON demo_quotas(ip_address)`
     })().catch((error) => {
       qrSchemaPromise = null
       throw error

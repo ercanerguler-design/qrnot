@@ -62,6 +62,12 @@ export default function Home() {
         </p>
 
         <div className="flex items-center justify-center gap-4 flex-wrap mb-20">
+          <Link
+            href="/demo"
+            className="bg-white hover:bg-neutral-100 text-neutral-950 font-semibold px-8 py-4 rounded-2xl transition-all active:scale-95 text-base shadow-2xl"
+          >
+            3 Ücretsiz Demo QR Dene
+          </Link>
           <a
             href="#nasil-calisir"
             className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-4 rounded-2xl transition-all active:scale-95 text-base shadow-2xl shadow-violet-900/50"
@@ -169,23 +175,31 @@ export default function Home() {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-neutral-900/70 border border-neutral-800 rounded-3xl p-6">
             <p className="text-violet-400 text-xs font-semibold tracking-[0.2em] uppercase mb-3">Bireysel Kullanıcı</p>
-            <h2 className="text-white text-2xl font-black mb-3">Fiyat Al / Satın Al</h2>
+            <h2 className="text-white text-2xl font-black mb-3">Önce Demo, Sonra Satın Al</h2>
             <p className="text-neutral-400 text-sm leading-relaxed mb-5">
-              Bireysel kullanıcı QRNote paneline girip boş QR oluşturmaz. Önce ürünü veya slotu satın alır, ardından kendisine atanan QR kodu ilk taramada sahiplenip sesini yükler.
+              Bireysel kullanıcı önce 3 ücretsiz demo QR ile sistemi test edebilir. Kalıcı kullanım için ürünü veya slotu satın alır; ardından kendisine atanan QR kodu ilk taramada sahiplenip sesini yükler.
             </p>
             <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 mb-5">
               <p className="text-white font-semibold mb-1">Bireysel Paket</p>
-              <p className="text-neutral-500 text-sm mb-3">Anahtarlık, sticker veya özel QR slotu için fiyat bilgisi WhatsApp üzerinden paylaşılır.</p>
-              <p className="text-violet-400 text-sm font-medium">Kendi QR'ını üretmezsin, sana hazır QR atanır.</p>
+              <p className="text-neutral-500 text-sm mb-3">Önce 3 demo QR oluştur, okut, sahiplen ve sesini dene. Sonra kalıcı paket veya fiziksel ürün siparişine geç.</p>
+              <p className="text-violet-400 text-sm font-medium">Demo public, kalıcı üretim ise satın alma ile açılır.</p>
             </div>
-            <a
-              href={whatsappOrderHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-2xl transition-all active:scale-95"
-            >
-              Fiyat Al / Satın Al
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/demo"
+                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-neutral-100 text-neutral-950 font-semibold px-6 py-3 rounded-2xl transition-all active:scale-95"
+              >
+                3 Demo QR Oluştur
+              </Link>
+              <a
+                href={whatsappOrderHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-2xl transition-all active:scale-95"
+              >
+                Fiyat Al / Satın Al
+              </a>
+            </div>
           </div>
 
           <div className="bg-neutral-900/70 border border-neutral-800 rounded-3xl p-6">
@@ -202,6 +216,45 @@ export default function Home() {
             >
               Kurumsal Teklif Al
             </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 px-4 py-8 max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-emerald-950/60 via-neutral-900 to-violet-950/60 border border-emerald-800/30 rounded-3xl p-8 sm:p-10">
+          <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center">
+            <div>
+              <p className="text-emerald-400 text-xs font-semibold tracking-[0.2em] uppercase mb-3">Public Demo</p>
+              <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">3 ücretsiz demo QR ile sistemi şimdi test et</h2>
+              <p className="text-neutral-400 leading-relaxed mb-6">
+                QR oluştur, okut, ilk ses kaydını bırak ve sahip linkini gör. Demo bittiğinde aynı akışın kalıcı sürümü için satın alma veya WhatsApp üzerinden devam edebilirsin.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-neutral-100 text-neutral-950 font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95"
+                >
+                  Demo Akışını Aç
+                </Link>
+                <a
+                  href={whatsappOrderHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95"
+                >
+                  Satın Alma İçin Yaz
+                </a>
+              </div>
+            </div>
+            <div className="bg-black/20 border border-white/10 rounded-3xl p-6">
+              <p className="text-white font-semibold mb-3">Demo Kuralları</p>
+              <div className="space-y-3 text-sm text-neutral-300">
+                <p>En fazla 3 ücretsiz QR</p>
+                <p>Session + IP bazlı limit</p>
+                <p>Gerçek claim ve yönetim akışı açık</p>
+                <p>Kalıcı paket için satın alma yönlendirmesi var</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

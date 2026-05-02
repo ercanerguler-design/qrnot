@@ -10,7 +10,7 @@ export async function GET(
 
     const { slug } = await params
     const rows = (await sql`
-      SELECT id, slug, is_claimed, audio_url, title, play_count, created_at, updated_at
+      SELECT id, slug, is_demo, is_claimed, audio_url, title, play_count, created_at, updated_at
       FROM qr_codes WHERE slug = ${slug}
     `) as QRCode[]
     if (rows.length === 0) {

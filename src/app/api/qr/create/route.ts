@@ -10,8 +10,10 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { password, count = 1 } = body
+    const providedPassword = String(password || '').trim()
+    const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
 
-    if (!password || password !== process.env.ADMIN_PASSWORD) {
+    if (!providedPassword || providedPassword !== configuredPassword) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     }
 

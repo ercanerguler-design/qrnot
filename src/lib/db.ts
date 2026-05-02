@@ -1,6 +1,23 @@
 import { neon } from '@neondatabase/serverless'
 
-export const sql = neon(process.env.DATABASE_URL!)
+let sqlClient: ReturnType<typeof neon> | null = null
+
+function getSqlClient() {
+  const databaseUrl = process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is not configured.')
+  }
+
+  if (!sqlClient) {
+    sqlClient = neon(databaseUrl)
+  }
+
+  return sqlClient
+}
+
+export const sql = (strings: TemplateStringsArray, ...params: unknown[]) =>
+  getSqlClient()(strings, ...params) as Promise<Record<string, any>[]>
 
 export interface QRCode {
   id: string

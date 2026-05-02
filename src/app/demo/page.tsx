@@ -11,8 +11,10 @@ interface DemoQr {
 
 interface DemoQuota {
   maxQr: number
+  maxQrPerIp: number
   sessionUsed: number
   ipUsed: number
+  networkRemaining: number
   remaining: number
 }
 
@@ -63,7 +65,9 @@ export default function DemoPage() {
         current
           ? {
               ...current,
+              ipUsed: data.ipUsed,
               sessionUsed: data.used,
+              networkRemaining: data.networkRemaining,
               remaining: data.remaining,
             }
           : current
@@ -100,7 +104,7 @@ export default function DemoPage() {
               <p className="text-neutral-500 text-sm">Kontrol ediliyor...</p>
             ) : quota ? (
               <>
-                <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                   <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 text-center">
                     <p className="text-violet-400 text-2xl font-black">{quota.maxQr}</p>
                     <p className="text-neutral-600 text-xs mt-1">Toplam demo</p>
@@ -113,7 +117,17 @@ export default function DemoPage() {
                     <p className="text-green-400 text-2xl font-black">{quota.remaining}</p>
                     <p className="text-neutral-600 text-xs mt-1">Kalan</p>
                   </div>
+                  <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 text-center">
+                    <p className="text-amber-300 text-2xl font-black">{quota.networkRemaining}</p>
+                    <p className="text-neutral-600 text-xs mt-1">Ağ kotası</p>
+                  </div>
                 </div>
+
+                {quota.remaining === 0 && quota.sessionUsed === 0 && quota.networkRemaining === 0 && (
+                  <div className="mb-4 bg-amber-950/40 border border-amber-800 text-amber-300 text-sm px-4 py-3 rounded-2xl">
+                    Bu ağdaki demo kotası dolmuş. Başka bir bağlantı ile deneyebilir veya WhatsApp üzerinden demo linki isteyebilirsin.
+                  </div>
+                )}
 
                 <button
                   onClick={handleCreate}

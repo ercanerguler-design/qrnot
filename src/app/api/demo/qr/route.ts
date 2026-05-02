@@ -5,6 +5,7 @@ import { createBlankQRCodes } from '@/lib/qr'
 
 const DEMO_COOKIE_NAME = 'qrnote_demo_session'
 const DEMO_MAX_QR = 3
+const DEMO_MAX_QR_PER_IP = 9
 
 function getClientIp(req: NextRequest) {
   const forwardedFor = req.headers.get('x-forwarded-for')
@@ -36,9 +37,11 @@ async function getQuotaState(sessionId: string, ipAddress: string) {
 
   const sessionUsed = Number(sessionRows[0]?.qr_created_count || 0)
   const ipUsed = Number(ipRows[0]?.total || 0)
-  const remaining = Math.max(0, Math.min(DEMO_MAX_QR - sessionUsed, DEMO_MAX_QR - ipUsed))
+  const sessionRemaining = Math.max(0, DEMO_MAX_QR - sessionUsed)
+  const networkRemaining = Math.max(0, DEMO_MAX_QR_PER_IP - ipUsed)
+  const remaining = Math.max(0, Math.min(sessionRemaining, networkRemaining))
 
-  return { sessionUsed, ipUsed, remaining }
+  return { sessionUsed, ipUsed, sessionRemaining, networkRemaining, remaining }
 }
 
 function withDemoCookie(res: NextResponse, sessionId: string) {
@@ -64,8 +67,10 @@ export async function GET(req: NextRequest) {
     return withDemoCookie(
       NextResponse.json({
         maxQr: DEMO_MAX_QR,
+        maxQrPerIp: DEMO_MAX_QR_PER_IP,
         sessionUsed: quota.sessionUsed,
         ipUsed: quota.ipUsed,
+        networkRemaining: quota.networkRemaining,
         remaining: quota.remaining,
       }),
       sessionId
@@ -86,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     if (quota.remaining <= 0) {
       return withDemoCookie(
-        NextResponse.json({ error: '3 ücretsiz demo QR hakkını kullandın', remaining: 0 }, { status: 429 }),
+        NextResponse.json({ error: 'Demo hakkın bu cihaz veya ağ için doldu', remaining: 0, ipUsed: quota.ipUsed }, { status: 429 }),
         sessionId
       )
     }
@@ -112,8 +117,10 @@ export async function POST(req: NextRequest) {
     return withDemoCookie(
       NextResponse.json({
         created,
+        ipUsed: nextQuota.ipUsed,
         remaining: nextQuota.remaining,
         used: nextQuota.sessionUsed,
+        networkRemaining: nextQuota.networkRemaining,
       }),
       sessionId
     )

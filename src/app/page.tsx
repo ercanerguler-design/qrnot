@@ -359,6 +359,69 @@ export default function Home() {
       </div>
       </section>
 
+      <section className="relative z-10 px-4 py-16 max-w-5xl mx-auto">
+        <div className="bg-neutral-900/80 border border-neutral-800 rounded-3xl p-8 sm:p-12">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">İletişim &amp; Ödeme Bilgileri</h2>
+            <p className="text-neutral-500">Slot satın almak veya destek almak için aşağıdaki kanallardan ulaşın.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-5">
+            <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-6">
+              <div className="text-3xl mb-4">💬</div>
+              <h3 className="text-white font-bold text-lg mb-2">WhatsApp Destek</h3>
+              <p className="text-neutral-500 text-sm leading-relaxed mb-5">
+                Sorularınız için 7/24 WhatsApp üzerinden ulaşabilirsiniz.
+              </p>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-all active:scale-95"
+              >
+                WhatsApp'tan Yaz
+              </a>
+            </div>
+
+            <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-6 lg:col-span-2">
+              <div className="text-3xl mb-4">🏦</div>
+              <h3 className="text-white font-bold text-lg mb-2">Banka / Havale Bilgileri</h3>
+              <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-neutral-600 mb-1">Şirket Adı</p>
+                  <p className="text-white font-medium">SCE Innovation Ltd.Şti</p>
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-1">Banka</p>
+                  <p className="text-white font-medium">Türkiye Garanti Bankası</p>
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-1">IBAN</p>
+                  <p className="text-white font-medium break-all">TR48 0006 2000 7740 0006 2930 33</p>
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-1">Hesap No</p>
+                  <p className="text-white font-medium">774-6293033</p>
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-1">Şube</p>
+                  <p className="text-white font-medium">Etlik Şubesi</p>
+                </div>
+                <div>
+                  <p className="text-neutral-600 mb-1">Kart Ödeme</p>
+                  <p className="text-white font-medium">VISA</p>
+                </div>
+              </div>
+              <div className="mt-5 bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
+                <p className="text-neutral-400 text-sm">
+                  Açıklama kısmına slot numaranızı ve adınızı yazmanızı rica ederiz.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FINAL CTA */}
       <section className="relative z-10 px-4 py-24 text-center max-w-3xl mx-auto">
         <div className="text-6xl mb-6">🎙️</div>

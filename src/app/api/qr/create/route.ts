@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sql } from '@/lib/db'
+import { ensureQrSchema, sql } from '@/lib/db'
 
 function generateSlug(length = 8): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
@@ -8,6 +8,8 @@ function generateSlug(length = 8): string {
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureQrSchema()
+
     const body = await req.json()
     const { password, count = 1 } = body
     const providedPassword = String(password || '').trim()

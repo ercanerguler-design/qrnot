@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash, randomBytes } from 'crypto'
-import { sql } from '@/lib/db'
+import { ensureQrSchema, sql } from '@/lib/db'
 
 type RecoverRow = {
   id: string
@@ -14,6 +14,8 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await ensureQrSchema()
+
     const { slug } = await params
     const body = await req.json()
     const recoveryCode = String(body.recoveryCode || '').trim().toUpperCase()

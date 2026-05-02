@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { validateAudioFile } from '@/lib/audio'
-import { sql } from '@/lib/db'
+import { ensureQrSchema, sql } from '@/lib/db'
 import { randomBytes } from 'crypto'
 import { createHash } from 'crypto'
 
@@ -10,6 +10,8 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await ensureQrSchema()
+
     const { slug } = await params
 
     // QR var mı ve sahipsiz mi?

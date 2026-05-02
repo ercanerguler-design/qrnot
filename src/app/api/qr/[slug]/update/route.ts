@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put, del } from '@vercel/blob'
 import { validateAudioFile } from '@/lib/audio'
-import { sql, QRCode } from '@/lib/db'
+import { ensureQrSchema, sql, QRCode } from '@/lib/db'
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await ensureQrSchema()
+
     const { slug } = await params
     const formData = await req.formData()
     const token = (formData.get('token') as string | null) || ''

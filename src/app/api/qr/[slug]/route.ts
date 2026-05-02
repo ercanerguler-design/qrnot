@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sql, QRCode } from '@/lib/db'
+import { ensureQrSchema, sql, QRCode } from '@/lib/db'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    await ensureQrSchema()
+
     const { slug } = await params
     const rows = (await sql`
       SELECT id, slug, is_claimed, audio_url, title, play_count, created_at, updated_at

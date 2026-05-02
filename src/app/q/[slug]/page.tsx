@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { sql } from '@/lib/db'
+import { ensureQrSchema, sql } from '@/lib/db'
 import type { QRCode } from '@/lib/db'
 import QRClient from './QRClient'
 
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureQrSchema()
   const { slug } = await params
   const rows = (await sql`
     SELECT title, is_claimed FROM qr_codes WHERE slug = ${slug}
@@ -28,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function QRPage({ params }: Props) {
+  await ensureQrSchema()
   const { slug } = await params
 
   const rows = (await sql`

@@ -191,7 +191,7 @@ export default function Home() {
               n: '02',
               icon: '🎙️',
               title: 'İlk Taramada Sahiplen',
-              desc: 'QR kodu ilk tarayan kişi sesini kaydeder. 10 saniye bile yeterli. Yönetim linki otomatik oluşur, kaybetme.',
+              desc: 'QR kodu ilk tarayan kişi sesini kaydeder. 10 saniye bile yeterli. Sahip linki otomatik oluşur, kaybetme.',
               color: 'from-purple-600/20 to-transparent',
             },
             {
@@ -289,7 +289,7 @@ export default function Home() {
             </h2>
             <p className="text-neutral-400 mb-6 leading-relaxed">
               Anahtarlık, bileklik, sticker, kartpostal… Ürünlerinize yapıştırın. 
-              Müşteriniz QR'ı tarar, ilk sesi kaydeder, yönetim linkini alır. 
+              Müşteriniz QR'ı tarar, ilk sesi kaydeder, sahip linkini alır. 
               Toplu QR kodu oluşturun, yazdırın, işiniz bitti.
             </p>
             <ul className="space-y-2 mb-8">

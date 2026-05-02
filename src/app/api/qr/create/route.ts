@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const n = Math.min(Math.max(1, Number(count) || 1), 500)
-    const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
+    const baseUrl = req.nextUrl.origin || String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
     const created: { slug: string; qrUrl: string }[] = []
 
     for (let i = 0; i < n; i++) {

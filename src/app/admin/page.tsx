@@ -84,7 +84,7 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-neutral-800/70 border border-neutral-700 rounded-xl px-4 py-3 text-neutral-400 text-sm">
-              500 adet ve üzeri kurumsal üretim için landing page üzerindeki WhatsApp butonunu kullan.
+              500 adet ve üzeri kurumsal üretim için lütfen iletişime geçiniz. WhatsApp butonu ana sayfada yer alır.
             </div>
 
             {error && (

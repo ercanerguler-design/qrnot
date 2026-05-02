@@ -71,16 +71,20 @@ export default function AdminPage() {
 
             <div>
               <label className="block text-neutral-400 text-sm mb-2">
-                Kaç adet? <span className="text-neutral-700">(maks. 100)</span>
+                Kaç adet? <span className="text-neutral-700">(maks. 500)</span>
               </label>
               <input
                 type="number"
                 value={count}
-                onChange={(e) => setCount(Math.min(100, Math.max(1, Number(e.target.value))))}
+                onChange={(e) => setCount(Math.min(500, Math.max(1, Number(e.target.value))))}
                 min={1}
-                max={100}
+                max={500}
                 className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-600 text-white rounded-xl px-4 py-3 outline-none transition-colors text-sm"
               />
+            </div>
+
+            <div className="bg-neutral-800/70 border border-neutral-700 rounded-xl px-4 py-3 text-neutral-400 text-sm">
+              500 adet ve üzeri kurumsal üretim için landing page üzerindeki WhatsApp butonunu kullan.
             </div>
 
             {error && (

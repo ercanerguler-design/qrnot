@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     }
 
-    const n = Math.min(Math.max(1, Number(count) || 1), 100)
+    const n = Math.min(Math.max(1, Number(count) || 1), 500)
     const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
     const created: { slug: string; qrUrl: string }[] = []
 

@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+const whatsappHref = 'https://wa.me/905433929230?text=Merhaba%20QRNote%2C%20500%20adet%20ve%20%C3%BCzeri%20kurumsal%20QR%20paketi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.'
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-neutral-950 overflow-x-hidden">
@@ -20,6 +22,9 @@ export default function Home() {
         <div className="flex items-center gap-6">
           <a href="#nasil-calisir" className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors hidden sm:block">
             Nasıl çalışır?
+          </a>
+          <a href="#kurumsal-cozumler" className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors hidden sm:block">
+            Kurumsal Çözümler
           </a>
           <Link
             href="/admin"
@@ -66,6 +71,14 @@ export default function Home() {
           >
             İş Ortağı Ol
           </Link>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-400 hover:text-green-300 px-6 py-4 text-base transition-colors"
+          >
+            WhatsApp ile Yaz
+          </a>
         </div>
 
         {/* Visual — phone mockup */}
@@ -278,8 +291,9 @@ export default function Home() {
       </section>
 
       {/* B2B SECTION */}
-      <section className="relative z-10 px-4 py-16 max-w-5xl mx-auto">
+      <section id="kurumsal-cozumler" className="relative z-10 px-4 py-16 max-w-5xl mx-auto">
         <div className="bg-gradient-to-r from-violet-950/50 via-neutral-900 to-purple-950/50 border border-violet-800/30 rounded-3xl p-8 sm:p-12">
+          <div className="grid lg:grid-cols-[1.4fr_0.9fr] gap-8 items-start">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-violet-600/15 border border-violet-500/20 rounded-full px-3 py-1 text-violet-400 text-xs font-medium mb-6">
               İş Ortakları İçin
@@ -288,16 +302,16 @@ export default function Home() {
               Ürünlerinize<br />ses katın
             </h2>
             <p className="text-neutral-400 mb-6 leading-relaxed">
-              Anahtarlık, bileklik, sticker, kartpostal… Ürünlerinize yapıştırın. 
-              Müşteriniz QR'ı tarar, ilk sesi kaydeder, sahip linkini alır. 
-              Toplu QR kodu oluşturun, yazdırın, işiniz bitti.
+              Anahtarlık, bileklik, sticker, kartpostal ya da kullanım kılavuzu yerine ürün üstünde konuşan QR kodlar.
+              Müşteriniz QR'ı tarar ve ürünün sesli anlatımını anında dinler. Kurumsal paketlerde 500 adet ve üzeri üretim planı açıyoruz.
             </p>
             <ul className="space-y-2 mb-8">
               {[
-                'Toplu QR kodu oluşturma (tek seferde 100 adet)',
+                'Kurumsal planda tek pakette 500 QR kod',
+                'Ürün anlatımı, kurulum talimatı ve sesli kullanım kılavuzu',
                 'Her QR benzersiz ve kalıcı URL',
                 'Müşteri destek gerektirmiyor — tam otonom',
-                'Türkçe arayüz, Türk sunucu seçeneği',
+                'WhatsApp üzerinden hızlı kurulum ve destek',
               ].map(item => (
                 <li key={item} className="flex items-center gap-2 text-neutral-400 text-sm">
                   <span className="text-violet-500 flex-shrink-0">✓</span>
@@ -305,14 +319,44 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-violet-900/40"
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-violet-900/40"
+              >
+                Panelden QR Oluştur →
+              </Link>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-7 py-3.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-green-950/40"
+              >
+                WhatsApp ile Teklif Al →
+              </a>
+            </div>
+          </div>
+          <div className="bg-black/20 border border-white/10 rounded-3xl p-6 lg:p-7">
+            <p className="text-violet-400 text-xs font-semibold tracking-[0.2em] uppercase mb-3">Kurumsal Paket</p>
+            <h3 className="text-white text-3xl font-black mb-2">500 QR</h3>
+            <p className="text-5xl font-black text-white mb-2">2.599 TL</p>
+            <p className="text-neutral-500 text-sm mb-6">Üreticiler, kutu içi kullanım kılavuzları ve sesli ürün anlatımı için başlangıç paketi.</p>
+            <div className="space-y-3 mb-6 text-sm text-neutral-300">
+              <p>Min. sipariş: 500 adet</p>
+              <p>QR üretim ve teslim akışı</p>
+              <p>Ürün başına sabit sesli anlatım altyapısı</p>
+            </div>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-all active:scale-95"
             >
-              Toplu QR Oluştur →
-            </Link>
+              +90 543 392 92 30
+            </a>
           </div>
         </div>
+      </div>
       </section>
 
       {/* FINAL CTA */}

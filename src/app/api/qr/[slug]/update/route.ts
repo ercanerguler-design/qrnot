@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put, del } from '@vercel/blob'
+import { validateAudioFile } from '@/lib/audio'
 import { sql, QRCode } from '@/lib/db'
 
 export async function PUT(
@@ -33,8 +34,9 @@ export async function PUT(
     const newTitle = titleRaw !== null ? titleRaw.trim().slice(0, 100) : qr.title
 
     if (audioFile && audioFile.size > 0) {
-      if (audioFile.size > 25 * 1024 * 1024) {
-        return NextResponse.json({ error: 'Ses dosyası 25MB\'dan büyük olamaz' }, { status: 400 })
+      const audioValidationError = await validateAudioFile(audioFile)
+      if (audioValidationError) {
+        return NextResponse.json({ error: audioValidationError }, { status: 400 })
       }
 
       // Eski blob'u sil

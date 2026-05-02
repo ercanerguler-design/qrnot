@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import { validateAudioFile } from '@/lib/audio'
 import { sql } from '@/lib/db'
 import { randomBytes } from 'crypto'
 import { createHash } from 'crypto'
@@ -24,11 +25,13 @@ export async function POST(
     const audioFile = formData.get('audio') as File | null
     const title = ((formData.get('title') as string) || '').trim().slice(0, 100) || 'Sesli Not'
 
-    if (!audioFile || audioFile.size === 0) {
-      return NextResponse.json({ error: 'Ses dosyası gerekli' }, { status: 400 })
+    const audioValidationError = await validateAudioFile(audioFile as File)
+    if (audioValidationError) {
+      return NextResponse.json({ error: audioValidationError }, { status: 400 })
     }
-    if (audioFile.size > 25 * 1024 * 1024) {
-      return NextResponse.json({ error: 'Ses dosyası 25MB\'dan büyük olamaz' }, { status: 400 })
+
+    if (!audioFile) {
+      return NextResponse.json({ error: 'Ses dosyası gerekli' }, { status: 400 })
     }
 
     // Vercel Blob'a yükle

@@ -1,16 +1,19 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import { formatAudioDuration, getMaxAudioSeconds } from '@/lib/audio'
 
 interface AudioRecorderProps {
   onAudioReady: (file: File) => void
 }
 
 export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
+  const maxAudioSeconds = getMaxAudioSeconds()
   const [mode, setMode] = useState<'idle' | 'recording' | 'done'>('idle')
   const [seconds, setSeconds] = useState(0)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string>('')
+  const [message, setMessage] = useState<string | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -19,6 +22,7 @@ export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
 
   const startRecording = useCallback(async () => {
     try {
+      setMessage(null)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
       chunksRef.current = []
@@ -42,11 +46,21 @@ export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
       recorder.start()
       setMode('recording')
       setSeconds(0)
-      timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000)
+      timerRef.current = setInterval(() => {
+        setSeconds((currentSeconds) => {
+          const nextSeconds = currentSeconds + 1
+          if (nextSeconds >= maxAudioSeconds) {
+            setMessage(`Maksimum ${formatAudioDuration(maxAudioSeconds)} dolduğu için kayıt durduruldu.`)
+            recorder.stop()
+            if (timerRef.current) clearInterval(timerRef.current)
+          }
+          return Math.min(nextSeconds, maxAudioSeconds)
+        })
+      }, 1000)
     } catch {
       alert('Mikrofon erişimi reddedildi. Lütfen izin ver.')
     }
-  }, [onAudioReady])
+  }, [maxAudioSeconds, onAudioReady])
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop()
@@ -59,15 +73,46 @@ export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
     setFileName('')
     setSeconds(0)
     setMode('idle')
+    setMessage(null)
   }, [previewUrl])
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    setMessage(null)
+
     if (!file.type.startsWith('audio/')) {
-      alert('Lütfen bir ses dosyası seçin.')
+      setMessage('Lütfen bir ses dosyası seçin.')
       return
     }
+
+    try {
+      const duration = await new Promise<number>((resolve, reject) => {
+        const audio = document.createElement('audio')
+        const url = URL.createObjectURL(file)
+
+        audio.preload = 'metadata'
+        audio.onloadedmetadata = () => {
+          URL.revokeObjectURL(url)
+          resolve(audio.duration)
+        }
+        audio.onerror = () => {
+          URL.revokeObjectURL(url)
+          reject(new Error('duration'))
+        }
+        audio.src = url
+      })
+
+      if (Number.isFinite(duration) && duration > maxAudioSeconds + 0.25) {
+        setMessage(`Ses kaydı en fazla ${formatAudioDuration(maxAudioSeconds)} olabilir.`)
+        return
+      }
+    } catch {
+      setMessage('Ses süresi okunamadı. Farklı bir dosya deneyin.')
+      return
+    }
+
     const url = URL.createObjectURL(file)
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl(url)
@@ -80,6 +125,8 @@ export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
 
   return (
     <div className="w-full space-y-4">
+      <p className="text-neutral-500 text-xs">Maksimum kayıt süresi: {formatAudioDuration(maxAudioSeconds)}</p>
+
       {mode === 'idle' && (
         <div className="flex flex-col sm:flex-row gap-3">
           <button
@@ -113,7 +160,7 @@ export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
             <span className="text-red-400 font-mono text-lg">{fmt(seconds)}</span>
-            <span className="text-red-500 text-sm">Kayıt devam ediyor...</span>
+            <span className="text-red-500 text-sm">Kayıt devam ediyor... / {fmt(maxAudioSeconds)}</span>
           </div>
           <button
             onClick={stopRecording}
@@ -139,6 +186,12 @@ export default function AudioRecorder({ onAudioReady }: AudioRecorderProps) {
           >
             Değiştir
           </button>
+        </div>
+      )}
+
+      {message && (
+        <div className="bg-amber-950/40 border border-amber-800 text-amber-400 text-sm px-4 py-3 rounded-xl">
+          {message}
         </div>
       )}
     </div>

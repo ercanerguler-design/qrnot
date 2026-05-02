@@ -43,7 +43,7 @@ export async function POST(
     const recoveryCode = randomBytes(4).toString('hex').toUpperCase()
     const recoveryCodeHash = createHash('sha256').update(recoveryCode).digest('hex')
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
 
     await sql`
       UPDATE qr_codes

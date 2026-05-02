@@ -50,7 +50,7 @@ export async function POST(
       WHERE slug = ${slug}
     `
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
 
     return NextResponse.json({
       ownerToken,

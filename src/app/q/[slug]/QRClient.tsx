@@ -185,7 +185,7 @@ function ClaimView({ qr }: Props) {
 ────────────────────────────────────────────── */
 function PlayView({ qr }: Props) {
   const [manageUrl, setManageUrl] = useState<string | null>(null)
-  const audioUrl = `/api/qr/${qr.slug}/audio`
+  const audioUrl = `/api/qr/${qr.slug}/audio?v=${encodeURIComponent(qr.updated_at)}`
 
   useEffect(() => {
     const token = localStorage.getItem(`qrnote_token_${qr.slug}`)

@@ -14,6 +14,7 @@ export function putBlob(pathname: string, body: Blob | File | Buffer | string) {
   return put(pathname, body, {
     access: 'private',
     addRandomSuffix: false,
+    allowOverwrite: true,
     token: getBlobToken(),
   })
 }
@@ -24,9 +25,10 @@ export function deleteBlob(url: string) {
   })
 }
 
-export function getBlob(urlOrPathname: string) {
+export function getBlob(urlOrPathname: string, useCache = false) {
   return get(urlOrPathname, {
     access: 'private',
+    useCache,
     token: getBlobToken(),
   })
 }

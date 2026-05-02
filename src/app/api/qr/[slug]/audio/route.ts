@@ -24,13 +24,16 @@ export async function GET(
       return NextResponse.json({ error: 'Ses dosyası bulunamadı' }, { status: 404 })
     }
 
-    const blobResult = await getBlob(qr.audio_url)
+    const blobResult = await getBlob(qr.audio_url, false)
     if (!blobResult || !blobResult.stream) {
       return NextResponse.json({ error: 'Ses dosyası bulunamadı' }, { status: 404 })
     }
 
     const headers = new Headers(Array.from(blobResult.headers.entries()))
-    headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    headers.set('Pragma', 'no-cache')
+    headers.set('Expires', '0')
+    headers.set('Surrogate-Control', 'no-store')
 
     return new NextResponse(blobResult.stream as BodyInit, { headers })
   } catch (err) {

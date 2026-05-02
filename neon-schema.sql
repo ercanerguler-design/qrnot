@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS qr_codes (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slug        VARCHAR(12) UNIQUE NOT NULL,
+  is_demo     BOOLEAN NOT NULL DEFAULT FALSE,
   is_claimed  BOOLEAN NOT NULL DEFAULT FALSE,
   admin_token VARCHAR(64),
   recovery_code_hash VARCHAR(64),
@@ -24,6 +25,9 @@ CREATE TABLE IF NOT EXISTS demo_quotas (
 
 ALTER TABLE qr_codes
 ADD COLUMN IF NOT EXISTS recovery_code_hash VARCHAR(64);
+
+ALTER TABLE qr_codes
+ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE INDEX IF NOT EXISTS idx_qr_codes_slug ON qr_codes(slug);
 CREATE INDEX IF NOT EXISTS idx_demo_quotas_ip_address ON demo_quotas(ip_address);

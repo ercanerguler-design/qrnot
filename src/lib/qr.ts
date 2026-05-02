@@ -1,11 +1,19 @@
 import { sql } from '@/lib/db'
 
+interface CreateBlankQRCodesOptions {
+  isDemo?: boolean
+}
+
 function generateSlug(length = 8): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
 
-export async function createBlankQRCodes(count: number, baseUrl: string) {
+export async function createBlankQRCodes(
+  count: number,
+  baseUrl: string,
+  options: CreateBlankQRCodesOptions = {}
+) {
   const created: { slug: string; qrUrl: string }[] = []
 
   for (let index = 0; index < count; index += 1) {
@@ -17,7 +25,7 @@ export async function createBlankQRCodes(count: number, baseUrl: string) {
       slug = generateSlug(8)
     }
 
-    await sql`INSERT INTO qr_codes (slug) VALUES (${slug})`
+    await sql`INSERT INTO qr_codes (slug, is_demo) VALUES (${slug}, ${options.isDemo === true})`
     created.push({ slug, qrUrl: `${baseUrl}/q/${slug}` })
   }
 

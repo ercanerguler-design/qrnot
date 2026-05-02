@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     const requestedCount = Math.min(Math.max(1, Number(body.count) || quota.remaining), DEMO_MAX_QR)
     const createCount = Math.min(requestedCount, quota.remaining)
     const baseUrl = req.nextUrl.origin || String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
-    const created = await createBlankQRCodes(createCount, baseUrl)
+    const created = await createBlankQRCodes(createCount, baseUrl, { isDemo: true })
 
     await sql`
       INSERT INTO demo_quotas (session_id, ip_address, qr_created_count)

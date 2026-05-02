@@ -30,6 +30,7 @@ export function ensureQrSchema() {
         CREATE TABLE IF NOT EXISTS qr_codes (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           slug VARCHAR(12) UNIQUE NOT NULL,
+          is_demo BOOLEAN NOT NULL DEFAULT FALSE,
           is_claimed BOOLEAN NOT NULL DEFAULT FALSE,
           admin_token VARCHAR(64),
           recovery_code_hash VARCHAR(64),
@@ -40,6 +41,7 @@ export function ensureQrSchema() {
           updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
       `
+      await client`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE`
       await client`
         CREATE TABLE IF NOT EXISTS demo_quotas (
           session_id VARCHAR(64) PRIMARY KEY,
@@ -64,6 +66,7 @@ export function ensureQrSchema() {
 export interface QRCode {
   id: string
   slug: string
+  is_demo?: boolean
   is_claimed: boolean
   admin_token: string | null
   recovery_code_hash?: string | null

@@ -79,6 +79,8 @@ export default function DemoPage() {
     }
   }
 
+  const showUpsellCard = Boolean(quota && quota.remaining === 0)
+
   return (
     <div className="min-h-screen bg-neutral-950 px-4 py-12">
       <div className="max-w-5xl mx-auto">
@@ -118,7 +120,15 @@ export default function DemoPage() {
                     <p className="text-neutral-600 text-xs mt-1">Kalan</p>
                   </div>
                   <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 text-center">
-                    <p className="text-amber-300 text-2xl font-black">{quota.networkRemaining}</p>
+                    <div className="flex items-center justify-center gap-1.5">
+                      <p className="text-amber-300 text-2xl font-black">{quota.networkRemaining}</p>
+                      <span
+                        title="Aynı internet bağlantısından toplam kaç demo QR daha açılabileceğini gösterir. Ortak Wi‑Fi veya mobil ağda başka denemeler yapıldıysa bu sayı düşebilir."
+                        className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-400 text-xs cursor-help"
+                      >
+                        ?
+                      </span>
+                    </div>
                     <p className="text-neutral-600 text-xs mt-1">Ağ kotası</p>
                   </div>
                 </div>
@@ -126,6 +136,24 @@ export default function DemoPage() {
                 {quota.remaining === 0 && quota.sessionUsed === 0 && quota.networkRemaining === 0 && (
                   <div className="mb-4 bg-amber-950/40 border border-amber-800 text-amber-300 text-sm px-4 py-3 rounded-2xl">
                     Bu ağdaki demo kotası dolmuş. Başka bir bağlantı ile deneyebilir veya WhatsApp üzerinden demo linki isteyebilirsin.
+                  </div>
+                )}
+
+                {showUpsellCard && (
+                  <div className="mb-4 bg-gradient-to-r from-green-950/60 via-neutral-950 to-violet-950/60 border border-green-800/40 rounded-2xl p-5">
+                    <p className="text-green-400 text-xs font-semibold tracking-[0.18em] uppercase mb-2">Demo Bitti</p>
+                    <h3 className="text-white font-bold text-lg mb-2">Kalıcı QR için tek tuşla devam et</h3>
+                    <p className="text-neutral-400 text-sm leading-relaxed mb-4">
+                      Demo akışını gördün. Şimdi kalıcı QR, fiziksel ürün veya özel paket için doğrudan WhatsApp üzerinden devam edebilirsin.
+                    </p>
+                    <a
+                      href="https://wa.me/905433929230?text=Merhaba%20QRNote%2C%20demo%20hakk%C4%B1m%20bitti.%20Kal%C4%B1c%C4%B1%20QR%20veya%20paket%20sat%C4%B1n%20almak%20istiyorum."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-3.5 rounded-2xl transition-all active:scale-95"
+                    >
+                      WhatsApp ile Satın Almaya Geç
+                    </a>
                   </div>
                 )}
 

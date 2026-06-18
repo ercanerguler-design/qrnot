@@ -1,0 +1,67 @@
+﻿Merhaba, ekteki dosyalar güncel nihai baskı dosyalarıdır.
+Tüm dosyalar baskıya hazırdır; ölçüler sabitlenmiş, içerikler güncellenmiş ve premium stil revize edilmiştir.
+
+Dosya seti (PDF)
+deliverables/print-pack/classic-qr-tag-front-28mm.pdf
+deliverables/print-pack/classic-qr-tag-back-28mm.pdf
+deliverables/print-pack/classic-qr-tag-front-35mm.pdf
+deliverables/print-pack/classic-qr-tag-back-35mm.pdf
+deliverables/print-pack/sticker-round-35mm.pdf
+deliverables/print-pack/sticker-square-35x35mm.pdf
+deliverables/print-pack/sticker-rectangle-45x25mm.pdf
+deliverables/print-pack/tag-luggage-50x30mm.pdf
+deliverables/print-pack/tag-bag-45x25mm.pdf
+deliverables/print-pack/tag-pet-round-32mm.pdf
+
+Kaynak tasarım dosyaları (SVG)
+deliverables/print-pack/classic-qr-tag-front-28mm.svg
+deliverables/print-pack/classic-qr-tag-back-28mm.svg
+deliverables/print-pack/classic-qr-tag-front-35mm.svg
+deliverables/print-pack/classic-qr-tag-back-35mm.svg
+deliverables/print-pack/sticker-round-35mm.svg
+deliverables/print-pack/sticker-square-35x35mm.svg
+deliverables/print-pack/sticker-rectangle-45x25mm.svg
+deliverables/print-pack/tag-luggage-50x30mm.svg
+deliverables/print-pack/tag-bag-45x25mm.svg
+deliverables/print-pack/tag-pet-round-32mm.svg
+
+Ölçüler
+Classic QR tag (ön/arka): 28 x 28 mm
+Classic QR tag (ön/arka): 35 x 35 mm
+Yuvarlak etiket: 35 mm
+Kare etiket: 35 x 35 mm
+Dikdörtgen etiket: 45 x 25 mm
+Bag etiketi: 45 x 25 mm
+Pet round etiketi: 32 mm
+Luggage etiketi: 30 x 50 mm (dikey tasarım; dosya adı 50x30 olarak korunmuştur)
+
+Delik / slot ölçüleri
+Tag-bag (45x25): sol kulp deliği dairesel, çap 2.9 mm (r=1.45 mm), merkez (x=4.7 mm, y=12.5 mm).
+Tag-pet-round (32mm): üst-orta ip deliği dairesel, çap 2.7 mm (r=1.35 mm), merkez (x=16.0 mm, y=3.5 mm).
+Tag-luggage (30x50): üst askı slotu oval/dikdörtgen, 5.4 x 2.0 mm, köşe yarıçapı 1.0 mm, merkez yaklaşık (x=15.0 mm, y=3.5 mm).
+Classic bracelet tag front 28mm: üst slot 8.6 x 1.6 mm, alt slot 8.6 x 1.6 mm.
+
+Yeni tasarım notları
+Bagaj etiketi premium stile çekildi (koyu zemin + neon çift çerçeve + üst askı slotu).
+Çanta etiketi premium stile çekildi ve slogan eklendi.
+Pet round etiket premium stile güncellendi; yazı/simge yerleşimi çakışmayacak şekilde optimize edildi.
+İp takma deliği pet round etikette üst-orta konuma alındı.
+
+Sloganlar
+Bagaj etiketi: Bulduysan okut, sahibine ulaştır.
+Çanta etiketi: Bulduysan okut, sahibine ulaştır.
+Pet round etiketi: Bulduysan okut, sahibine ulaştır.
+
+Baskı ve kesim notu
+Dosyalardaki neon çift çizgiler tasarım öğesidir, kesim işareti değildir.
+Ekstra kesik kılavuz çizgisi kullanılmamıştır.
+Kesim, ilgili ürünün final formuna göre uygulanmalıdır (ölçüler yukarıdadır).
+
+Karakter ve font notu
+PDF üretiminde Türkçe karakterler için gömülü Arial font eşlemesi uygulanmıştır.
+Türkçe karakterlerin baskıda bozulmaması için PDF dosyaları esas alınmalıdır.
+
+İçerik kontrol
+Marka adı: QRNot
+Metin taşması ve ikon çakışmaları yeni revizyonlarda düzeltilmiştir.
+Ön/arka düzenler ve yeni etiket varyantları final baskı setine dahildir.

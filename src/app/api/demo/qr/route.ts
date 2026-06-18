@@ -1,57 +1,18 @@
-import { randomUUID } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/auth'
 import { ensureQrSchema, sql } from '@/lib/db'
 import { createBlankQRCodes } from '@/lib/qr'
 
-const DEMO_COOKIE_NAME = 'qrnote_demo_session'
-const DEMO_MAX_QR = 3
-const DEMO_MAX_QR_PER_IP = 9
+export const dynamic = 'force-dynamic'
 
-function getClientIp(req: NextRequest) {
-  const forwardedFor = req.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
-  }
+const FREE_TRIAL_LIMIT = 1
 
-  const realIp = req.headers.get('x-real-ip')
-  if (realIp) {
-    return realIp.trim()
-  }
-
-  return 'unknown'
-}
-
-function getSessionId(req: NextRequest) {
-  const cookieValue = req.cookies.get(DEMO_COOKIE_NAME)?.value?.trim()
-  return cookieValue || randomUUID()
-}
-
-async function getQuotaState(sessionId: string, ipAddress: string) {
-  const sessionRows = await sql`
-    SELECT qr_created_count FROM demo_quotas WHERE session_id = ${sessionId}
-  `
-  const ipRows = await sql`
-    SELECT COALESCE(SUM(qr_created_count), 0) AS total
-    FROM demo_quotas WHERE ip_address = ${ipAddress}
-  `
-
-  const sessionUsed = Number(sessionRows[0]?.qr_created_count || 0)
-  const ipUsed = Number(ipRows[0]?.total || 0)
-  const sessionRemaining = Math.max(0, DEMO_MAX_QR - sessionUsed)
-  const networkRemaining = Math.max(0, DEMO_MAX_QR_PER_IP - ipUsed)
-  const remaining = Math.max(0, Math.min(sessionRemaining, networkRemaining))
-
-  return { sessionUsed, ipUsed, sessionRemaining, networkRemaining, remaining }
-}
-
-function withDemoCookie(res: NextResponse, sessionId: string) {
-  res.cookies.set(DEMO_COOKIE_NAME, sessionId, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: true,
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30,
-  })
+function withNoStore(res: NextResponse) {
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  res.headers.set('Pragma', 'no-cache')
+  res.headers.set('Expires', '0')
+  res.headers.set('Surrogate-Control', 'no-store')
+  res.headers.set('Vary', 'Cookie')
 
   return res
 }
@@ -60,21 +21,22 @@ export async function GET(req: NextRequest) {
   try {
     await ensureQrSchema()
 
-    const sessionId = getSessionId(req)
-    const ipAddress = getClientIp(req)
-    const quota = await getQuotaState(sessionId, ipAddress)
+    const user = await getAuthenticatedUser(req)
+    if (!user) {
+      return withNoStore(NextResponse.json({ error: 'Devam etmek için hesap oluştur veya giriş yap', authRequired: true }, { status: 401 }))
+    }
 
-    return withDemoCookie(
-      NextResponse.json({
-        maxQr: DEMO_MAX_QR,
-        maxQrPerIp: DEMO_MAX_QR_PER_IP,
-        sessionUsed: quota.sessionUsed,
-        ipUsed: quota.ipUsed,
-        networkRemaining: quota.networkRemaining,
-        remaining: quota.remaining,
-      }),
-      sessionId
-    )
+    const effectiveFreeSlots = Math.min(user.freeSlots, FREE_TRIAL_LIMIT)
+    const freeRemaining = Math.max(0, effectiveFreeSlots - user.usedSlots)
+    const paidRemaining = Math.max(0, user.paidSlots - Math.max(0, user.usedSlots - effectiveFreeSlots))
+
+    return withNoStore(NextResponse.json({
+      user,
+      freeTrialLimit: FREE_TRIAL_LIMIT,
+      freeRemaining,
+      paidRemaining,
+      remaining: freeRemaining + paidRemaining,
+    }))
   } catch (err) {
     console.error('[demo/qr GET]', err)
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
@@ -85,45 +47,54 @@ export async function POST(req: NextRequest) {
   try {
     await ensureQrSchema()
 
-    const sessionId = getSessionId(req)
-    const ipAddress = getClientIp(req)
-    const quota = await getQuotaState(sessionId, ipAddress)
+    const user = await getAuthenticatedUser(req)
+    if (!user) {
+      return withNoStore(NextResponse.json({ error: 'Devam etmek için giriş yap', authRequired: true }, { status: 401 }))
+    }
 
-    if (quota.remaining <= 0) {
-      return withDemoCookie(
-        NextResponse.json({ error: 'Demo hakkın bu cihaz veya ağ için doldu', remaining: 0, ipUsed: quota.ipUsed }, { status: 429 }),
-        sessionId
-      )
+    const effectiveFreeSlots = Math.min(user.freeSlots, FREE_TRIAL_LIMIT)
+    const policyRemaining = Math.max(0, effectiveFreeSlots + user.paidSlots - user.usedSlots)
+
+    if (policyRemaining <= 0) {
+      return withNoStore(NextResponse.json({ error: 'Bu hesap için ücretsiz hak bitti. Satın alma sonrası yeni hak eklenebilir.', remaining: 0 }, { status: 429 }))
     }
 
     const body = await req.json().catch(() => ({}))
-    const requestedCount = Math.min(Math.max(1, Number(body.count) || quota.remaining), DEMO_MAX_QR)
-    const createCount = Math.min(requestedCount, quota.remaining)
+    const requestedCount = Math.max(1, Number(body.count) || 1)
+    const createCount = Math.min(requestedCount, policyRemaining)
     const baseUrl = req.nextUrl.origin || String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
-    const created = await createBlankQRCodes(createCount, baseUrl, { isDemo: true })
+    const created = await createBlankQRCodes(createCount, baseUrl, {
+      isDemo: false,
+      orderType: 'trial',
+      creatorUserId: user.id,
+    })
 
-    await sql`
-      INSERT INTO demo_quotas (session_id, ip_address, qr_created_count)
-      VALUES (${sessionId}, ${ipAddress}, ${createCount})
-      ON CONFLICT (session_id)
-      DO UPDATE SET
-        ip_address = EXCLUDED.ip_address,
-        qr_created_count = demo_quotas.qr_created_count + EXCLUDED.qr_created_count,
+    const userRows = await sql`
+      UPDATE users
+      SET used_slots = used_slots + ${createCount},
         updated_at = NOW()
+      WHERE id = ${user.id}
+      RETURNING free_slots, paid_slots, used_slots
     `
 
-    const nextQuota = await getQuotaState(sessionId, ipAddress)
+    const nextState = userRows[0]
+    const nextEffectiveFreeSlots = Math.min(Number(nextState.free_slots), FREE_TRIAL_LIMIT)
+    const remaining = Math.max(0, nextEffectiveFreeSlots + Number(nextState.paid_slots) - Number(nextState.used_slots))
+    const freeRemaining = Math.max(0, nextEffectiveFreeSlots - Number(nextState.used_slots))
+    const paidRemaining = Math.max(0, Number(nextState.paid_slots) - Math.max(0, Number(nextState.used_slots) - nextEffectiveFreeSlots))
 
-    return withDemoCookie(
-      NextResponse.json({
-        created,
-        ipUsed: nextQuota.ipUsed,
-        remaining: nextQuota.remaining,
-        used: nextQuota.sessionUsed,
-        networkRemaining: nextQuota.networkRemaining,
-      }),
-      sessionId
-    )
+    return withNoStore(NextResponse.json({
+      created,
+      user: {
+        ...user,
+        usedSlots: Number(nextState.used_slots),
+        remainingSlots: remaining,
+      },
+      freeRemaining,
+      paidRemaining,
+      remaining,
+      used: Number(nextState.used_slots),
+    }))
   } catch (err) {
     console.error('[demo/qr POST]', err)
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })

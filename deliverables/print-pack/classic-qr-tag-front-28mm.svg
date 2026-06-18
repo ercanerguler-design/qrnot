@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="28mm" height="28mm" viewBox="0 0 35 35">
+  <title>QRNot Classic Bracelet QR Tag On Yuz - 28mm</title>
+  <desc>On yuz baski sablonu: 28mm final kesim. Klasik renkler korunarak bileklik kulp/strap gecis yuvalari eklendi.</desc>
+
+  <defs>
+    <linearGradient id="neonBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#41D2FF"/>
+      <stop offset="50%" stop-color="#8B5CFF"/>
+      <stop offset="100%" stop-color="#FF4EC8"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="17.5" cy="17.5" r="17.5" fill="#0B1020"/>
+  <circle cx="17.5" cy="17.5" r="16.1" fill="none" stroke="url(#neonBorder)" stroke-width="0.6" opacity="0.95"/>
+  <circle cx="17.5" cy="17.5" r="15.1" fill="none" stroke="#70D7FF" stroke-width="0.35" opacity="0.85"/>
+
+  <!-- Bracelet attachment lugs (same color palette) -->
+  <g>
+    <rect x="12.4" y="2.1" width="10.2" height="3.0" rx="1.4" fill="#0B1020" stroke="#70D7FF" stroke-width="0.28" opacity="0.95"/>
+    <rect x="12.4" y="29.9" width="10.2" height="3.0" rx="1.4" fill="#0B1020" stroke="#70D7FF" stroke-width="0.28" opacity="0.95"/>
+
+    <!-- Strap holes / kulp gecisleri -->
+    <rect x="13.2" y="2.8" width="8.6" height="1.6" rx="0.8" fill="#070B16"/>
+    <rect x="13.2" y="30.6" width="8.6" height="1.6" rx="0.8" fill="#070B16"/>
+  </g>
+
+  <g fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="17.5" y="7.6" font-size="3.2" font-weight="700">QRNot</text>
+
+    <rect x="9.5" y="8.5" width="16" height="16" rx="1.0" ry="1.0" fill="#FFFFFF"/>
+    <rect x="10.2" y="9.2" width="14.6" height="14.6" fill="none" stroke="#D3D3D3" stroke-width="0.2"/>
+    <text x="17.5" y="16.9" font-size="1.5" fill="#2D2D2D">QR KOD</text>
+    <text x="17.5" y="18.8" font-size="1.1" fill="#686868">Baski oncesi degistir</text>
+
+    <text x="17.5" y="27.4" font-size="1.55" font-weight="700">Kalpten Gelen QR</text>
+    <text x="17.5" y="29.6" font-size="2.2">&#10084;</text>
+  </g>
+</svg>

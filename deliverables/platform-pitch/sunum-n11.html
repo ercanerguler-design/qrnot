@@ -1,0 +1,236 @@
+﻿<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QRNote x N11 - 2026 Ortaklık Sunumu</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #111a35;
+      --fg: #eef3ff;
+      --muted: #b7c2e5;
+      --accent: #7d4dff;
+      --secondary: #00c2a8;
+      --card: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'Trebuchet MS', 'Arial', sans-serif;
+      color: var(--fg);
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,0.16), transparent 55%),
+                  radial-gradient(900px 500px at 90% 0%, color-mix(in oklab, var(--accent) 45%, transparent), transparent 60%),
+                  linear-gradient(145deg, var(--bg1), var(--bg2));
+      line-height: 1.45;
+    }
+    .page {
+      width: 1120px;
+      min-height: 1584px;
+      margin: 0 auto;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(18px);
+      opacity: .35;
+      pointer-events: none;
+    }
+    .orb.one { width: 240px; height: 240px; background: var(--accent); right: -60px; top: 80px; }
+    .orb.two { width: 180px; height: 180px; background: var(--secondary); left: -70px; bottom: 220px; }
+
+    .hero {
+      border: 1px solid var(--border);
+      background: linear-gradient(120deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+      border-radius: 28px;
+      padding: 34px;
+      backdrop-filter: blur(6px);
+    }
+    .tag {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      background: color-mix(in oklab, var(--accent) 35%, #111);
+      border: 1px solid color-mix(in oklab, var(--accent) 60%, #fff);
+    }
+    h1 {
+      margin: 16px 0 8px;
+      font-size: 56px;
+      line-height: 1.06;
+      letter-spacing: -0.8px;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 22px;
+      max-width: 860px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 20px;
+      padding: 18px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .kpi {
+      font-size: 34px;
+      font-weight: 800;
+      margin: 6px 0 2px;
+      color: #fff;
+    }
+    .muted { color: var(--muted); }
+    .section {
+      margin-top: 22px;
+      border: 1px solid var(--border);
+      background: rgba(8, 12, 24, 0.42);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .section h2 { margin: 0 0 10px; font-size: 26px; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 7px 0; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      padding: 10px 6px;
+      text-align: left;
+    }
+    th { color: #dbe4ff; }
+
+    .footer {
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #d6def9;
+    }
+
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      .page { width: 210mm; min-height: 297mm; padding: 12mm; }
+      h1 { font-size: 42px; }
+      .subtitle { font-size: 16px; }
+      .kpi { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+
+    <section class="hero">
+      <span class="tag">2026 Stratejik Ortaklık Teklifi</span>
+      <h1>QRNote x N11</h1>
+      <p class="subtitle">Yüksek trafik ve geniş katalog avantajını, deneyim bazlı premiumlaşma ile marj artışına taşıyalım.</p>
+      <p class="subtitle" style="margin-top:8px;">Trendyol</p>
+
+      <div class="grid">
+        <article class="card">
+          <h3>Beklenen Dönüşüm Etkisi</h3>
+          <div class="kpi">+%2.5 - +%5.8</div>
+          <div class="muted">Hediye kategorisi ürün detay + checkout optimizasyonu</div>
+        </article>
+        <article class="card">
+          <h3>Sepet Değeri Etkisi</h3>
+          <div class="kpi">+%6 - +%12</div>
+          <div class="muted">Sesli/video kişiselleştirme add-on ile premiumlaşma</div>
+        </article>
+        <article class="card">
+          <h3>İade Riski Azalışı</h3>
+          <div class="kpi">-%11 - -%24</div>
+          <div class="muted">Kişiye özel ürün deneyimi ile memnuniyet artışı</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Neden Bu Platform İçin Doğru Zaman?</h2>
+      <ul>
+        <li>Türkiye e-ticaretinde 2026 itibarıyla büyüme trendi güçlü, mobil işlem oranı baskın.</li>
+        <li>Hediyelik segmentinde fiyat rekabeti doygun; deneyim bazlı farklılaşma en güçlü kaldıraç.</li>
+        <li>QRNote tek QR ile ses, video, görsel ve bağlantıyı birleştirerek ürünü hikâye ürününe dönüştürür.</li>
+      </ul>
+    </section>
+
+    <section class="split">
+      <article class="section" style="margin-top:0;">
+        <h2>Platforma Özel Ticari Teklif</h2>
+        <p>Hepsiburada hediye vitrini altında “Dijital Mesajlı Hediye” alt etiketi. Satıcı panelinde QRNote aktivasyonu ve haftalık performans raporu.</p>
+        <ul>
+          <li>Model: Checkout Add-on + Seller Tool kombinasyonu</li>
+          <li>Fiyatlama: İşlem başı paylaşım + hacim kademeli lisans</li>
+          <li>Ölçüm: CR, AOV, iade oranı, yorum puanı, 30 günlük tekrar ziyaret</li>
+          <li>Süre: 90 gün kontrollü pilot, 12 ay ölçekleme planı</li>
+        </ul>
+      </article>
+
+      <article class="section" style="margin-top:0;">
+        <h2>90 Günlük Pilot KPI Tablosu</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>KPI</th>
+              <th>Mevcut</th>
+              <th>Hedef</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Add-on görüntüleme</td><td>%100 baz</td><td>%100 baz</td></tr>
+            <tr><td>Add-on satın alma</td><td>%0</td><td>%2.5-%4.5</td></tr>
+            <tr><td>Kategori dönüşümü</td><td>1.00x</td><td>1.02x-1.06x</td></tr>
+            <tr><td>Ortalama sepet tutarı</td><td>1.00x</td><td>1.05x-1.12x</td></tr>
+            <tr><td>İade oranı</td><td>1.00x</td><td>0.75x-0.90x</td></tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>Operasyon ve Entegrasyon Planı</h2>
+      <p><strong>Hafta 1-2:</strong> kategori ve satıcı grubu seçimi, ürün kartı metin/ikon tasarımı, analitik etiketleme.</p>
+      <p><strong>Hafta 3-6:</strong> pilot yayını, A/B test, günlük izleme paneli.</p>
+      <p><strong>Hafta 7-10:</strong> performans optimizasyonu, satıcı eğitimleri, kampanya kreatifleri.</p>
+      <p><strong>Hafta 11-12:</strong> sonuç raporu, ROI sunumu, ticari ölçekleme kararı.</p>
+      <p class="muted" style="margin-top:10px;">Pilot için 200-300 satıcı, 3 ana kategori, minimum 8 hafta veri toplama.</p>
+    </section>
+
+    <section class="section">
+      <h2>Can Alıcı Kapanış</h2>
+      <p>Bugün platformlarda hediyelik ürün satılıyor; yarın ise deneyim satılacak. QRNote bu dönüşümü ölçülebilir KPI’larla hayata geçirir.</p>
+      <p><strong>Ortak hedef:</strong> daha yüksek dönüşüm, daha yüksek sepet, daha düşük iade, daha güçlü müşteri bağlılığı.</p>
+      <p class="muted">Platforma özel güçlü taraf: daha düşük iade ve daha yüksek değerlendirme puanı ile uzun vadeli müşteri sadakati.</p>
+    </section>
+
+    <div class="footer">
+      <span>QRNote Stratejik Sunum • 2026</span>
+      <span>Kaynak sinyalleri: Similarweb, ITA/Trade.gov, ECDB sample datasets</span>
+    </div>
+  </main>
+</body>
+</html>
+

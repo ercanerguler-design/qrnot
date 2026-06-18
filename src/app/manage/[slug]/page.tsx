@@ -1,18 +1,55 @@
-﻿'use client'
+'use client'
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import AudioRecorder from '@/components/AudioRecorder'
+import MediaRecorder from '@/components/MediaRecorder'
 import QRDisplay from '@/components/QRDisplay'
 import Link from 'next/link'
+import type { QRMedia } from '@/lib/db'
+import { getMaxVideoSeconds } from '@/lib/media'
 
 interface NoteInfo {
   slug: string
   title: string
-  audio_url: string | null
   play_count: number
   created_at: string
+  order_type?: 'trial' | 'individual' | 'corporate' | 'demo'
+  media_items?: QRMedia[]
 }
+
+const EMERGENCY_PHONE_MARKER = '[TEL:'
+const LOCATION_MARKER = '[LOC:'
+
+function parseProfileTitle(rawTitle: string) {
+  const source = (rawTitle || '').trim()
+  const telMatch = source.match(/\[TEL:([^\]]+)\]/)
+  const locMatch = source.match(/\[LOC:([^\]]+)\]/)
+  const phone = telMatch?.[1]?.trim() || ''
+  const location = locMatch?.[1]?.trim() || ''
+  const cleanTitle = source
+    .replace(/\[TEL:[^\]]+\]/g, '')
+    .replace(/\[LOC:[^\]]+\]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  return { cleanTitle, phone, location }
+}
+
+function composeProfileTitle(baseTitle: string, emergencyPhone: string, location: string) {
+  const safeBase = (baseTitle || '').trim() || 'Sesli Not'
+  const safePhone = emergencyPhone.trim()
+  const safeLocation = location.trim()
+  const withMeta = `${safeBase}${safePhone ? ` ${EMERGENCY_PHONE_MARKER}${safePhone}]` : ''}${safeLocation ? ` ${LOCATION_MARKER}${safeLocation}]` : ''}`
+  return withMeta.slice(0, 100)
+}
+
+function parseWhatsAppSupport(errorText: string) {
+  const url = errorText.match(/https?:\/\/wa\.me\/\S+/)?.[0] || null
+  const message = url ? errorText.replace(url, '').trim() : errorText
+  return { message, url }
+}
+
+const MAX_REQUEST_FILE_SIZE_BYTES = 4 * 1024 * 1024
 
 function ManagePage() {
   const params = useParams()
@@ -21,80 +58,135 @@ function ManagePage() {
   const token = searchParams.get('token') || ''
 
   const [note, setNote] = useState<NoteInfo | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [authError, setAuthError] = useState(false)
+  const [loading, setLoading] = useState(Boolean(token))
+  const [authError, setAuthError] = useState(!token)
 
-  const [newAudio, setNewAudio] = useState<File | null>(null)
+  const [mediaMode, setMediaMode] = useState<'audio' | 'video' | 'image'>('audio')
+  const [newMedia, setNewMedia] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
+  const [emergencyPhone, setEmergencyPhone] = useState('')
+  const [emergencyLocation, setEmergencyLocation] = useState('')
+  const [youtubeUrl, setYoutubeUrl] = useState('')
+  const [spotifyUrl, setSpotifyUrl] = useState('')
+  const [externalUrl, setExternalUrl] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [origin] = useState(() => (typeof window !== 'undefined' ? window.location.origin : ''))
+  const parsedSaveError = saveError ? parseWhatsAppSupport(saveError) : null
 
-  const playUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/q/${slug}`
-      : `/q/${slug}`
-  const ownerUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/manage/${slug}?token=${token}`
-      : `/manage/${slug}?token=${token}`
+  const playUrl = `${origin}/q/${slug}`
+  const ownerUrl = `${origin}/manage/${slug}?token=${token}`
+  const maxVideoSeconds = getMaxVideoSeconds(note?.order_type)
+
+  const hydrateLinks = useCallback((mediaItems: QRMedia[]) => {
+    const youtube = mediaItems.find((item) => item.media_type === 'youtube')?.external_url || ''
+    const spotify = mediaItems.find((item) => item.media_type === 'spotify')?.external_url || ''
+    const external = mediaItems.find((item) => item.media_type === 'link')?.external_url || ''
+    setYoutubeUrl(youtube)
+    setSpotifyUrl(spotify)
+    setExternalUrl(external)
+  }, [])
 
   const fetchNote = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/qr/${slug}`)
+    const res = await fetch(`/api/qr/${slug}`, { cache: 'no-store' })
     if (!res.ok) {
       setAuthError(true)
       setLoading(false)
       return
     }
+
     const data = await res.json()
-    // Token doğrulaması sunucuda yapılıyor; burada token yoksa ekranı açmayız.
-    // ama token yoksa erişimi reddet
     if (!token) {
       setAuthError(true)
       setLoading(false)
       return
     }
+
+    const profile = parseProfileTitle(data.title || '')
     setNote(data)
-    setNewTitle(data.title)
+    setNewTitle(profile.cleanTitle)
+    setEmergencyPhone(profile.phone)
+    setEmergencyLocation(profile.location)
+    hydrateLinks(Array.isArray(data.media_items) ? data.media_items : [])
     setLoading(false)
-  }, [slug, token])
+  }, [hydrateLinks, slug, token])
 
   useEffect(() => {
-    if (!token) {
-      setAuthError(true)
-      setLoading(false)
-      return
-    }
-    fetchNote()
+    if (!token) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchNote()
   }, [fetchNote, token])
 
   const handleSave = async () => {
-    if (!newAudio && newTitle === note?.title) return
+    if (!note) return
+
+    if (newMedia && newMedia.size > MAX_REQUEST_FILE_SIZE_BYTES) {
+      setSaveError('Dosya cok buyuk. Lutfen 4MB altinda bir dosya sec veya medyayi kisaltip tekrar dene.')
+      return
+    }
+
     setSaving(true)
     setSaveError(null)
 
     const formData = new FormData()
     formData.append('token', token)
-    if (newAudio) formData.append('audio', newAudio)
-    if (newTitle) formData.append('title', newTitle)
+    if (newMedia) formData.append('media', newMedia)
+    formData.append('title', composeProfileTitle(newTitle, emergencyPhone, emergencyLocation))
+    formData.append('youtube_url', youtubeUrl.trim())
+    formData.append('spotify_url', spotifyUrl.trim())
+    formData.append('external_url', externalUrl.trim())
 
-    const res = await fetch(`/api/qr/${slug}/update`, {
-      method: 'PUT',
-      body: formData,
-    })
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000)
 
-    if (!res.ok) {
-      const data = await res.json()
-      setSaveError(data.error || 'Güncelleme başarısız')
-    } else {
+      const res = await fetch(`/api/qr/${slug}/update`, {
+        method: 'PUT',
+        body: formData,
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      const contentType = res.headers.get('content-type') || ''
+      let data: { error?: string } | null = null
+      let rawText = ''
+
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => null)
+      } else {
+        rawText = await res.text().catch(() => '')
+      }
+
+      if (!res.ok) {
+        const fallback = rawText || 'Guncelleme basarisiz'
+        const lower = fallback.toLowerCase()
+        if (res.status === 413 || lower.includes('request entity too large')) {
+          setSaveError('Dosya cok buyuk. Lutfen 4MB altinda bir dosya sec veya medyayi kisaltip tekrar dene.')
+          return
+        }
+
+        setSaveError(data?.error || fallback)
+        return
+      }
+
       setSaved(true)
-      setNewAudio(null)
+      setNewMedia(null)
       await fetchNote()
       setTimeout(() => setSaved(false), 3000)
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setSaveError('Istek zaman asimina ugradi. Lutfen tekrar dene.')
+      } else {
+        setSaveError('Baglanti hatasi. Lutfen tekrar dene.')
+      }
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
   }
 
   const handleCopyOwnerLink = async () => {
@@ -111,24 +203,7 @@ function ManagePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <div className="flex items-center gap-3 text-neutral-500">
-          <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8z"
-            />
-          </svg>
-          Yükleniyor...
-        </div>
+        <div className="flex items-center gap-3 text-neutral-500">Yukleniyor...</div>
       </div>
     )
   }
@@ -138,22 +213,14 @@ function ManagePage() {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-5xl mb-4">🔒</div>
-          <h1 className="text-xl font-bold text-white mb-2">Erişim Reddedildi</h1>
-          <p className="text-neutral-500 text-sm mb-6">
-            Geçersiz veya eksik sahiplik linki.
-          </p>
-          <Link
-            href={`/recover/${slug}`}
-            className="inline-block mb-4 text-violet-400 hover:text-violet-300 text-sm transition-colors"
-          >
-            Kurtarma kodu ile geri al →
+          <h1 className="text-xl font-bold text-white mb-2">Erisim Reddedildi</h1>
+          <p className="text-neutral-500 text-sm mb-6">Gecersiz veya eksik sahiplik linki.</p>
+          <Link href={`/recover/${slug}`} className="inline-block mb-4 text-violet-400 hover:text-violet-300 text-sm transition-colors">
+            Kurtarma kodu ile geri al -&gt;
           </Link>
           <br />
-          <Link
-            href="/"
-            className="text-violet-400 hover:text-violet-300 text-sm transition-colors"
-          >
-            Ana Sayfaya Dön
+          <Link href="/account" className="text-violet-400 hover:text-violet-300 text-sm transition-colors">
+            Hesabıma Dön
           </Link>
         </div>
       </div>
@@ -164,28 +231,19 @@ function ManagePage() {
     <div className="min-h-screen bg-neutral-950 px-4 py-12">
       <div className="max-w-lg mx-auto">
         <div className="mb-8">
-          <Link
-            href="/"
-            className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors"
-          >
-            ← Ana Sayfa
+          <Link href="/account" className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors">
+            &larr; Hesabıma Dön
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-3">Sesini Güncelle</h1>
+          <h1 className="text-2xl font-bold text-white mt-3">QR Icerigini Guncelle</h1>
           <p className="text-neutral-500 text-sm mt-1">
-            {note.play_count} kez dinlendi ·{' '}
-            {new Date(note.created_at).toLocaleDateString('tr-TR')}
+            {note.play_count} kez acildi · {new Date(note.created_at).toLocaleDateString('tr-TR')}
           </p>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-6 flex flex-col items-center gap-4">
           <p className="text-neutral-400 text-sm">QR Kodun</p>
           <QRDisplay url={playUrl} size={180} />
-          <a
-            href={playUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-violet-400 hover:text-violet-300 text-xs transition-colors"
-          >
+          <a href={playUrl} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 text-xs transition-colors">
             {playUrl}
           </a>
           <div className="grid grid-cols-2 gap-3 w-full">
@@ -193,28 +251,25 @@ function ManagePage() {
               onClick={handleCopyOwnerLink}
               className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white text-sm font-medium py-3 rounded-xl transition-all"
             >
-              {linkCopied ? 'Kopyalandı' : 'Sahip Linkini Kopyala'}
+              {linkCopied ? 'Kopyalandi' : 'Sahip Linkini Kopyala'}
             </button>
             <button
               onClick={handleWhatsAppShare}
               className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold py-3 rounded-xl transition-all"
             >
-              WhatsApp ile Paylaş
+              WhatsApp ile Paylas
             </button>
           </div>
-          <Link
-            href={`/recover/${slug}`}
-            className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors"
-          >
+          <Link href={`/recover/${slug}`} className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors">
             Link kaybolursa kurtarma kodu ile geri al
           </Link>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-5">
-          <h2 className="text-white font-semibold">Güncelle</h2>
+          <h2 className="text-white font-semibold">Icerikler</h2>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Başlık</label>
+            <label className="block text-neutral-400 text-sm mb-2">Baslik</label>
             <input
               type="text"
               value={newTitle}
@@ -224,57 +279,125 @@ function ManagePage() {
             />
           </div>
 
-          <div>
-            <label className="block text-neutral-400 text-sm mb-2">
-              Yeni Ses Kaydı{' '}
-              <span className="text-neutral-600">(isteğe bağlı)</span>
-            </label>
-            <AudioRecorder onAudioReady={setNewAudio} />
+          <div className="space-y-3">
+            <input
+              type="tel"
+              value={emergencyPhone}
+              onChange={(e) => setEmergencyPhone(e.target.value)}
+              placeholder="Acil durumda ara: telefon"
+              className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-600 text-white placeholder-neutral-500 rounded-xl px-4 py-3 outline-none text-sm"
+            />
+            <input
+              type="text"
+              value={emergencyLocation}
+              onChange={(e) => setEmergencyLocation(e.target.value)}
+              placeholder="Konum / adres"
+              className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-600 text-white placeholder-neutral-500 rounded-xl px-4 py-3 outline-none text-sm"
+            />
           </div>
 
-          {saveError && (
-            <div className="bg-red-950/40 border border-red-800 text-red-400 text-sm px-4 py-3 rounded-xl">
-              {saveError}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => { setMediaMode('audio'); setNewMedia(null); setImagePreviewUrl(null) }}
+              className={`py-2 rounded-lg text-sm border ${mediaMode === 'audio' ? 'bg-violet-600 border-violet-500 text-white' : 'bg-neutral-800 border-neutral-700 text-neutral-300'}`}
+            >
+              Ses
+            </button>
+            <button
+              onClick={() => { setMediaMode('video'); setNewMedia(null); setImagePreviewUrl(null) }}
+              className={`py-2 rounded-lg text-sm border ${mediaMode === 'video' ? 'bg-violet-600 border-violet-500 text-white' : 'bg-neutral-800 border-neutral-700 text-neutral-300'}`}
+            >
+              Video
+            </button>
+            <button
+              onClick={() => { setMediaMode('image'); setNewMedia(null); setImagePreviewUrl(null) }}
+              className={`py-2 rounded-lg text-sm border ${mediaMode === 'image' ? 'bg-violet-600 border-violet-500 text-white' : 'bg-neutral-800 border-neutral-700 text-neutral-300'}`}
+            >
+              Resim
+            </button>
+          </div>
+
+          <div>
+            <label className="block text-neutral-400 text-sm mb-2">Yeni Medya Kaydi (opsiyonel)</label>
+            {(mediaMode === 'audio' || mediaMode === 'video') && (
+              <MediaRecorder mode={mediaMode} maxVideoSeconds={maxVideoSeconds} onMediaReady={setNewMedia} />
+            )}
+            {mediaMode === 'image' && (
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null
+                    setNewMedia(file)
+                    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl)
+                    if (file) {
+                      setImagePreviewUrl(URL.createObjectURL(file))
+                    } else {
+                      setImagePreviewUrl(null)
+                    }
+                  }}
+                  className="w-full bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-xl px-3 py-2 text-sm"
+                />
+                {imagePreviewUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imagePreviewUrl} alt="Onizleme" className="w-full rounded-xl border border-neutral-700 bg-black object-contain max-h-72" />
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <input
+              type="url"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="YouTube linki"
+              className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-600 text-white placeholder-neutral-500 rounded-xl px-4 py-3 outline-none text-sm"
+            />
+            <input
+              type="url"
+              value={spotifyUrl}
+              onChange={(e) => setSpotifyUrl(e.target.value)}
+              placeholder="Spotify linki"
+              className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-600 text-white placeholder-neutral-500 rounded-xl px-4 py-3 outline-none text-sm"
+            />
+            <input
+              type="url"
+              value={externalUrl}
+              onChange={(e) => setExternalUrl(e.target.value)}
+              placeholder="Diger link"
+              className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-600 text-white placeholder-neutral-500 rounded-xl px-4 py-3 outline-none text-sm"
+            />
+            <p className="text-[11px] text-neutral-500">Bir link alanini bos birakarak kaydedersen ilgili kart silinir.</p>
+          </div>
+
+          {parsedSaveError && (
+            <div className="bg-red-950/40 border border-red-800 text-red-300 text-sm px-4 py-3 rounded-xl">
+              <p>{parsedSaveError.message}</p>
+              {parsedSaveError.url && (
+                <a
+                  href={parsedSaveError.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center justify-center bg-green-600 hover:bg-green-500 text-white font-semibold px-4 py-2 rounded-xl transition-all"
+                >
+                  WhatsApp Destek
+                </a>
+              )}
             </div>
           )}
 
           {saved && (
-            <div className="bg-green-950/40 border border-green-800 text-green-400 text-sm px-4 py-3 rounded-xl">
-              ✓ Güncellendi!
-            </div>
+            <div className="bg-green-950/40 border border-green-800 text-green-400 text-sm px-4 py-3 rounded-xl">✓ Guncellendi!</div>
           )}
 
           <button
             onClick={handleSave}
-            disabled={saving || (!newAudio && newTitle === note.title)}
-            className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
+            disabled={saving}
+            className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all text-sm"
           >
-            {saving ? (
-              <>
-                <svg
-                  className="animate-spin w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8z"
-                  />
-                </svg>
-                Kaydediliyor...
-              </>
-            ) : (
-              'Kaydet'
-            )}
+            {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
         </div>
       </div>
@@ -284,13 +407,7 @@ function ManagePage() {
 
 export default function ManagePageWrapper() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-          <div className="text-neutral-500">Yükleniyor...</div>
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="min-h-screen bg-neutral-950 flex items-center justify-center"><div className="text-neutral-500">Yukleniyor...</div></div>}>
       <ManagePage />
     </Suspense>
   )

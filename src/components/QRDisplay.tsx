@@ -15,29 +15,44 @@ export default function QRDisplay({ url, size = 220 }: QRDisplayProps) {
     const svgEl = containerRef.current?.querySelector('svg')
     if (!svgEl) return
 
+    // Clone and enforce explicit dimensions + namespace so canvas can draw it
+    const cloned = svgEl.cloneNode(true) as SVGElement
+    cloned.setAttribute('width', String(size))
+    cloned.setAttribute('height', String(size))
+    cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+    const svgData = new XMLSerializer().serializeToString(cloned)
+    // Base64 data URI is more reliable than blob URLs across browsers (no CORS tainting)
+    const base64 = btoa(unescape(encodeURIComponent(svgData)))
+    const dataUri = `data:image/svg+xml;base64,${base64}`
+
     const canvas = document.createElement('canvas')
     const padding = 32
     canvas.width = size + padding * 2
     canvas.height = size + padding * 2
 
     const ctx = canvas.getContext('2d')!
-    ctx.fillStyle = '#fff'
+    ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    const svgData = new XMLSerializer().serializeToString(svgEl)
     const img = new Image()
-    const blob = new Blob([svgData], { type: 'image/svg+xml' })
-    const svgUrl = URL.createObjectURL(blob)
-
     img.onload = () => {
       ctx.drawImage(img, padding, padding, size, size)
-      URL.revokeObjectURL(svgUrl)
       const link = document.createElement('a')
       link.download = 'qrnote.png'
       link.href = canvas.toDataURL('image/png')
       link.click()
     }
-    img.src = svgUrl
+    img.onerror = () => {
+      // Fallback: download raw SVG if canvas fails
+      const blob = new Blob([svgData], { type: 'image/svg+xml' })
+      const link = document.createElement('a')
+      link.download = 'qrnote.svg'
+      link.href = URL.createObjectURL(blob)
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000)
+    }
+    img.src = dataUri
   }
 
   return (

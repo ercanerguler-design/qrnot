@@ -1,0 +1,3 @@
+# ÖZET
+
+Buluş, fiziksel eşya üzerine yerleştirilen tekil QR kodu üzerinden çalışan, bulan kişinin sesli/çoklu ortam mesaj bırakmasına imkan tanıyan ve eşya sahibi ile kişisel veriyi ifşa etmeden güvenli iletişim kuran bir sistem ve yönteme ilişkindir. Sistem; mobil istemci, uygulama sunucusu, veri tabanı, medya depolama, bildirim modülü ve sahiplik doğrulama modülü içerir. QR okutma sonrası alınan mesaj kaydedilir, eşya sahibine anonimize bildirim iletilir ve tek kullanımlık/süreli doğrulama akışı ile sahiplik doğrulanır. Böylece kayıp eşyanın geri dönüş oranı artırılırken kişisel veri güvenliği ve süreç izlenebilirliği sağlanır.

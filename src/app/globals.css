@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #04050a;
+  --foreground: #f8fbff;
+  --accent-cyan: #4ffbff;
+  --accent-pink: #ff52b6;
+  --accent-amber: #ffd569;
 }
 
 @theme inline {
@@ -14,13 +17,266 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #04050a;
+    --foreground: #f8fbff;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+}
+
+.app-theme {
+  position: relative;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(79, 251, 255, 0.2), transparent 42%),
+    radial-gradient(circle at 95% 20%, rgba(255, 82, 182, 0.18), transparent 38%),
+    radial-gradient(circle at 50% 110%, rgba(148, 87, 255, 0.18), transparent 44%),
+    linear-gradient(170deg, #04050a 0%, #080d1b 52%, #070a15 100%);
+}
+
+.app-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 251, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 82, 182, 0.03) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(circle at center, black, transparent 85%);
+}
+
+.aurora {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(80px);
+  opacity: 0.6;
+  animation: drift 18s ease-in-out infinite;
+}
+
+.aurora-a {
+  width: 42rem;
+  height: 42rem;
+  left: -10rem;
+  top: -14rem;
+  background: radial-gradient(circle, rgba(0, 220, 255, 0.28), rgba(0, 220, 255, 0));
+}
+
+.aurora-b {
+  width: 34rem;
+  height: 34rem;
+  right: -8rem;
+  top: 5rem;
+  background: radial-gradient(circle, rgba(255, 82, 126, 0.24), rgba(255, 82, 126, 0));
+  animation-delay: -6s;
+}
+
+.aurora-c {
+  width: 38rem;
+  height: 38rem;
+  left: 28%;
+  bottom: -20rem;
+  background: radial-gradient(circle, rgba(121, 110, 255, 0.2), rgba(121, 110, 255, 0));
+  animation-delay: -11s;
+}
+
+.brand-ribbon {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(79, 251, 255, 0.42);
+  background: linear-gradient(125deg, rgba(8, 20, 35, 0.84), rgba(35, 9, 39, 0.82));
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  padding: 0.42rem 0.8rem;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 22px rgba(79, 251, 255, 0.2),
+    inset 0 0 20px rgba(255, 82, 182, 0.08);
+}
+
+.brand-mark {
+  font-size: 1rem;
+  filter: drop-shadow(0 0 8px rgba(79, 251, 255, 0.45));
+}
+
+.brand-text {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  font-size: 0.86rem;
+  background: linear-gradient(90deg, #86feff, #ff93d3, #ffe29c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-dot {
+  color: #61ffe2;
+  font-size: 0.45rem;
+  animation: pulse-dot 2.2s ease-in-out infinite;
+}
+
+.emoji-float {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.24;
+  filter: saturate(1.15);
+  animation: floaty 8s ease-in-out infinite;
+}
+
+.emoji-one {
+  top: 6rem;
+  right: 2rem;
+  font-size: 1.55rem;
+}
+
+.emoji-two {
+  bottom: 4.5rem;
+  left: 2rem;
+  font-size: 1.35rem;
+  animation-delay: -2s;
+}
+
+.emoji-three {
+  top: 42%;
+  right: 1.1rem;
+  font-size: 1.1rem;
+  animation-delay: -4s;
+}
+
+.emoji-four {
+  top: 18%;
+  left: 8%;
+  font-size: 1.15rem;
+  animation-delay: -5.5s;
+}
+
+.emoji-five {
+  bottom: 10%;
+  right: 9%;
+  font-size: 1.2rem;
+  animation-delay: -3.2s;
+}
+
+.app-content {
+  position: relative;
+  z-index: 5;
+}
+
+.app-content section,
+.app-content nav,
+.app-content main,
+.app-content footer {
+  animation: reveal-up 0.7s ease both;
+}
+
+.app-content a,
+.app-content button {
+  transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.app-content a:hover,
+.app-content button:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.18);
+  box-shadow: 0 0 20px rgba(79, 251, 255, 0.12);
+}
+
+.app-content :is(input, textarea, select) {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.app-content :is(input, textarea, select):focus {
+  border-color: rgba(89, 244, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(89, 244, 255, 0.16);
+}
+
+.app-content :is(.rounded-2xl, .rounded-3xl) {
+  box-shadow: 0 16px 38px rgba(2, 6, 23, 0.28);
+}
+
+.app-content :is(.rounded-2xl, .rounded-3xl):hover {
+  box-shadow:
+    0 22px 45px rgba(2, 6, 23, 0.34),
+    0 0 0 1px rgba(79, 251, 255, 0.12),
+    0 0 28px rgba(255, 82, 182, 0.1);
+}
+
+.wow-ring {
+  border: 1px solid rgba(89, 244, 255, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 110, 169, 0.15),
+    0 20px 35px rgba(8, 16, 36, 0.45);
+  background: linear-gradient(145deg, rgba(7, 14, 30, 0.85), rgba(11, 13, 24, 0.86));
+}
+
+.headline-glass {
+  background: linear-gradient(120deg, rgba(89, 244, 255, 0.12), rgba(255, 110, 169, 0.12));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 768px) {
+  .brand-ribbon {
+    top: 0.7rem;
+    left: 0.7rem;
+  }
+
+  .emoji-float {
+    opacity: 0.18;
+  }
+}
+
+.curiosity-glow {
+  animation: curiosity 5s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(16px, -22px, 0) scale(1.06); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes floaty {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes pulse-dot {
+  0% { opacity: 0.45; }
+  50% { opacity: 1; }
+  100% { opacity: 0.45; }
+}
+
+@keyframes curiosity {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getBlob } from '@/lib/blob'
-import { ensureQrSchema, sql } from '@/lib/db'
+import { deactivateExpiredDemoQr, ensureQrSchema, QRCode, sql } from '@/lib/db'
 
 export async function GET(
   _req: NextRequest,
@@ -10,16 +10,19 @@ export async function GET(
     await ensureQrSchema()
 
     const { slug } = await params
-    const rows = await sql`
-      SELECT is_claimed, audio_url
+    const rows = (await sql`
+      SELECT slug, is_demo, is_active, is_claimed, audio_url, demo_expires_at
       FROM qr_codes WHERE slug = ${slug}
-    `
+    `) as unknown as QRCode[]
 
     if (rows.length === 0) {
       return NextResponse.json({ error: 'QR kodu bulunamadı' }, { status: 404 })
     }
 
-    const qr = rows[0]
+    const qr = await deactivateExpiredDemoQr(rows[0])
+    if (qr.is_demo && qr.is_active === false) {
+      return NextResponse.json({ error: 'Demo QR süresi doldu' }, { status: 410 })
+    }
     if (!qr.is_claimed || !qr.audio_url) {
       return NextResponse.json({ error: 'Ses dosyası bulunamadı' }, { status: 404 })
     }

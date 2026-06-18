@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="45mm" height="25mm" viewBox="0 0 45 25">
+  <title>QRNot Çanta Etiketi - 45x25mm</title>
+  <desc>Premium çanta etiketi: koyu zemin, neon çerçeve, QR alanı ve Türkçe slogan.</desc>
+
+  <defs>
+    <linearGradient id="bagBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0E1D"/>
+      <stop offset="55%" stop-color="#101729"/>
+      <stop offset="100%" stop-color="#090D18"/>
+    </linearGradient>
+    <linearGradient id="bagNeonA" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#37CEFF"/>
+      <stop offset="52%" stop-color="#734BFF"/>
+      <stop offset="100%" stop-color="#E632FF"/>
+    </linearGradient>
+    <linearGradient id="bagNeonB" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B85CFF"/>
+      <stop offset="100%" stop-color="#1CC9FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="45" height="25" rx="3.6" ry="3.6" fill="url(#bagBg)"/>
+  <rect x="0.9" y="0.9" width="43.2" height="23.2" rx="3.1" ry="3.1" fill="none" stroke="url(#bagNeonA)" stroke-width="0.52"/>
+  <rect x="1.7" y="1.7" width="41.6" height="21.6" rx="2.7" ry="2.7" fill="none" stroke="url(#bagNeonB)" stroke-width="0.26" opacity="0.95"/>
+
+  <circle cx="4.7" cy="12.5" r="1.45" fill="#060A14" stroke="#CFD9EE" stroke-width="0.22"/>
+
+  <rect x="8.1" y="6.0" width="12.4" height="12.4" rx="0.9" fill="#FFFFFF"/>
+  <rect x="8.7" y="6.6" width="11.2" height="11.2" fill="none" stroke="#C9CFDA" stroke-width="0.2"/>
+  <text x="14.3" y="12.8" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="1.22" fill="#2F3749">QR</text>
+
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#EAF0FF">
+    <text x="30.0" y="8.3" font-size="2.35" font-weight="700">QRNot</text>
+    <line x1="23.4" y1="9.6" x2="36.6" y2="9.6" stroke="#BE35FF" stroke-width="0.24"/>
+    <path d="M28.5 11.4a1.5 1.5 0 0 1 3.0 0" fill="none" stroke="#EAF0FF" stroke-width="0.24" stroke-linecap="round"/>
+    <rect x="27.9" y="11.45" width="0.45" height="0.9" rx="0.2" fill="#EAF0FF"/>
+    <rect x="31.65" y="11.45" width="0.45" height="0.9" rx="0.2" fill="#EAF0FF"/>
+    <circle cx="30.0" cy="12.65" r="0.2" fill="#EAF0FF"/>
+    <text x="30.0" y="14.2" font-size="1.42">Bulduysan okut,</text>
+    <text x="30.0" y="16.6" font-size="1.42">sahibine ulaştır.</text>
+    <text x="30.0" y="18.2" font-size="1.05" fill="#EEF3FF">▼</text>
+    <text x="30.0" y="20.8" font-size="1.05" fill="#CCD6E9">ÇANTA ETİKETİ</text>
+  </g>
+</svg>

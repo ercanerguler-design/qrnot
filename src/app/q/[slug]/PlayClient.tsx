@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import AudioPlayer from '@/components/AudioPlayer'
 import Link from 'next/link'
+import BackToPrevious from '@/components/BackToPrevious'
 
 interface Note {
   slug: string
@@ -24,6 +25,9 @@ export default function PlayClient({ note }: { note: Note }) {
   return (
     <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
+        <div className="mb-4">
+          <BackToPrevious fallbackHref="/" />
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🎙️</div>

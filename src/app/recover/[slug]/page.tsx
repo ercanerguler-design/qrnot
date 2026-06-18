@@ -2,14 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
-interface Props {
-  params: Promise<{ slug: string }>
-}
-
-export default async function RecoverPage({ params }: Props) {
-  const { slug } = await params
-  return <RecoverClient slug={slug} />
+export default function RecoverPage() {
+  const params = useParams<{ slug: string }>()
+  return <RecoverClient slug={params.slug} />
 }
 
 function RecoverClient({ slug }: { slug: string }) {

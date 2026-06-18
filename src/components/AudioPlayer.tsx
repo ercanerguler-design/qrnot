@@ -14,42 +14,82 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const toggle = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
+
+    if (error) {
+      setError(null)
+      setLoading(true)
+      audio.load()
+      return
+    }
+
     if (playing) {
       audio.pause()
     } else {
-      audio.play()
+      const playPromise = audio.play()
+      if (playPromise) {
+        void playPromise.catch(() => {
+          setPlaying(false)
+          setError('Ses oynatılamadı. Tekrar dene.')
+        })
+      }
     }
     setPlaying(!playing)
-  }, [playing])
+  }, [error, playing])
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
-    const onLoaded = () => setLoading(false)
+    setLoading(true)
+    setError(null)
+
+    const onReady = () => {
+      setLoading(false)
+      setError(null)
+    }
     const onEnded = () => { setPlaying(false); setProgress(0); setCurrentTime(0) }
     const onDuration = () => setDuration(audio.duration)
     const onTimeUpdate = () => {
       setCurrentTime(audio.currentTime)
       setProgress(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0)
     }
+    const onPause = () => setPlaying(false)
+    const onPlay = () => setPlaying(true)
+    const onError = () => {
+      setLoading(false)
+      setPlaying(false)
+      setError('Ses dosyası yüklenemedi.')
+    }
 
-    audio.addEventListener('canplaythrough', onLoaded)
+    audio.addEventListener('loadedmetadata', onReady)
+    audio.addEventListener('canplay', onReady)
+    audio.addEventListener('canplaythrough', onReady)
     audio.addEventListener('ended', onEnded)
     audio.addEventListener('durationchange', onDuration)
     audio.addEventListener('timeupdate', onTimeUpdate)
+    audio.addEventListener('pause', onPause)
+    audio.addEventListener('play', onPlay)
+    audio.addEventListener('error', onError)
+
+    audio.load()
 
     return () => {
-      audio.removeEventListener('canplaythrough', onLoaded)
+      audio.removeEventListener('loadedmetadata', onReady)
+      audio.removeEventListener('canplay', onReady)
+      audio.removeEventListener('canplaythrough', onReady)
       audio.removeEventListener('ended', onEnded)
       audio.removeEventListener('durationchange', onDuration)
       audio.removeEventListener('timeupdate', onTimeUpdate)
+      audio.removeEventListener('pause', onPause)
+      audio.removeEventListener('play', onPlay)
+      audio.removeEventListener('error', onError)
     }
-  }, [])
+  }, [audioUrl])
 
   const seek = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current
@@ -89,7 +129,7 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
         <span className="text-neutral-500 text-xs">{fmt(currentTime)}</span>
         <button
           onClick={toggle}
-          disabled={loading}
+          disabled={loading && !error}
           className="w-14 h-14 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-violet-900/40"
           aria-label={playing ? 'Durdur' : 'Oynat'}
         >
@@ -110,6 +150,10 @@ export default function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
         </button>
         <span className="text-neutral-500 text-xs">{fmt(duration)}</span>
       </div>
+
+      {error && (
+        <p className="text-red-400 text-xs mt-4 text-center">{error}</p>
+      )}
     </div>
   )
 }

@@ -4,10 +4,20 @@ import { sql } from '@/lib/db'
 import { resolveDirectUpload } from '@/lib/directUpload'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 import type { GuestbookEntry } from '@/lib/guestbook'
-import { hashIp, hashPin, isGuestbookOwner, loadGuestbookQr } from '@/lib/guestbookServer'
+import {
+  findDuplicateEntry,
+  hashGuestDevice,
+  hashIp,
+  hashPin,
+  isGuestbookOwner,
+  loadGuestbookQr,
+  newGuestDevice,
+  readGuestDevice,
+  setGuestDeviceCookie,
+} from '@/lib/guestbookServer'
 
 // GET  → sahip (token ile) tüm anıları; misafir sadece onaylı anıları (herkese açık duvar açıksa) görür.
-// POST → misafir yeni anı bırakır.
+// POST → misafir yeni anı bırakır. Her misafir (cihaz / isim) bir anı defterine bir kez yazabilir.
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -17,8 +27,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
   }
 
   const owner = isGuestbookOwner(qr, req.nextUrl.searchParams.get('token'))
+  const device = readGuestDevice(req)
+  const alreadyPosted = device ? (await findDuplicateEntry(qr.id, hashGuestDevice(device), null)).byDevice : false
   if (!owner && !qr.settings.publicWall) {
-    return NextResponse.json({ entries: [] })
+    const res = NextResponse.json({ entries: [], alreadyPosted })
+    res.headers.set('Cache-Control', 'no-store')
+    return res
   }
 
   const entries = (owner
@@ -33,7 +47,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         ORDER BY created_at DESC LIMIT 300
       `) as unknown as GuestbookEntry[]
 
-  const res = NextResponse.json({ entries })
+  const res = NextResponse.json({ entries, alreadyPosted })
   res.headers.set('Cache-Control', 'no-store')
   return res
 }
@@ -60,7 +74,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     }
 
     const ip = clientIp(req.headers)
-    if (!(await consumeRateLimit(`gb:${slug}:${ip}`, 12, 3600))) {
+    // Düğünde misafirler aynı Wi-Fi'ı paylaşır: IP sınırı sadece kötüye kullanıma karşı; tekrar yazmayı cihaz/isim kontrolü engeller.
+    if (!(await consumeRateLimit(`gb:${slug}:${ip}`, 80, 3600))) {
       return fail('Çok fazla anı gönderildi. Lütfen biraz sonra tekrar dene.', 429)
     }
 
@@ -68,6 +83,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     const message = String(body.message || '').trim().slice(0, 2000)
     if (!authorName) return fail('Adını yazmalısın', 400)
     if (!message && !pendingBlobUrl) return fail('Bir mesaj yaz ya da ses/video/fotoğraf ekle', 400)
+
+    const deviceId = readGuestDevice(req) || newGuestDevice()
+    const deviceHash = hashGuestDevice(deviceId)
+    const duplicate = await findDuplicateEntry(qr.id, deviceHash, authorName)
+    if (duplicate.byDevice) return fail('Bu anı defterine zaten bir anı bıraktın. Teşekkürler! / You have already left a memory here.', 409)
+    if (duplicate.byName) return fail('Bu isimle zaten bir anı bırakılmış. Sen değilsen soyadını da ekle. / Someone already used this name — please add your surname.', 409)
 
     const countRows = (await sql`
       SELECT COUNT(*)::int AS count FROM guestbook_entries WHERE qr_id = ${qr.id} AND status <> 'rejected'
@@ -87,13 +108,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
 
     const status = qr.settings.moderation ? 'pending' : 'approved'
     const rows = (await sql`
-      INSERT INTO guestbook_entries (qr_id, author_name, message, media_type, blob_url, status, ip_hash)
-      VALUES (${qr.id}, ${authorName}, ${message}, ${mediaType}, ${blobUrl}, ${status}, ${hashIp(ip)})
+      INSERT INTO guestbook_entries (qr_id, author_name, message, media_type, blob_url, status, ip_hash, device_hash)
+      VALUES (${qr.id}, ${authorName}, ${message}, ${mediaType}, ${blobUrl}, ${status}, ${hashIp(ip)}, ${deviceHash})
       RETURNING id
     `) as Array<{ id: string }>
     pendingBlobUrl = null
 
-    return NextResponse.json({ id: rows[0]?.id, status })
+    const res = NextResponse.json({ id: rows[0]?.id, status })
+    setGuestDeviceCookie(res, deviceId)
+    return res
   } catch (err) {
     console.error('[guestbook/entries POST]', err)
     if (pendingBlobUrl) await deleteBlob(pendingBlobUrl).catch(() => undefined)

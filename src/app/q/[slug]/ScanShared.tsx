@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LangSwitch } from '@/components/warm/HeaderClient'
 import { uploadMediaDirect } from '@/lib/clientUpload'
@@ -279,3 +279,52 @@ export function OwnerSecrets({ slug, manageUrl, recoveryCode, lang }: { slug: st
   )
 }
 
+
+const GATE_T = {
+  tr: {
+    title: 'Önce giriş yap',
+    desc: 'QR kodun hesabına bağlanır; böylece sadece sen yönetebilir, kaybetsen bile hesabından geri bulabilirsin.',
+    cta: 'Giriş yap / ücretsiz hesap aç',
+  },
+  en: {
+    title: 'Sign in first',
+    desc: 'Your QR code is linked to your account, so only you can manage it — and you can always find it again in your account.',
+    cta: 'Sign in / create a free account',
+  },
+}
+
+/** Boş QR kurulumu üye girişi ister; giriş yoksa formu göstermeden giriş sayfasına yönlendirir. */
+export function SignInGate({ slug, lang, children }: { slug: string; lang: Lang; children: React.ReactNode }) {
+  const [state, setState] = useState<'checking' | 'in' | 'out'>('checking')
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((res) => alive && setState(res.ok ? 'in' : 'out'))
+      .catch(() => alive && setState('out'))
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (state === 'in') return <>{children}</>
+  const t = GATE_T[lang]
+  const loginHref = withLang(`/account?next=${encodeURIComponent(withLang(`/q/${slug}`, lang))}`, lang)
+  return (
+    <ScanShell lang={lang}>
+      <div className="w-card space-y-4 p-6 text-center">
+        {state === 'checking' ? (
+          <p className="text-sm text-muted">…</p>
+        ) : (
+          <>
+            <h1 className="font-display text-2xl font-semibold">{t.title}</h1>
+            <p className="text-ink-2">{t.desc}</p>
+            <Link href={loginHref} className="w-btn w-btn-primary w-full">
+              {t.cta}
+            </Link>
+          </>
+        )}
+      </div>
+    </ScanShell>
+  )
+}

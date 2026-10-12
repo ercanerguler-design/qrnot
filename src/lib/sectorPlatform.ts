@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'crypto'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { NextRequest, NextResponse } from 'next/server'
 import { hashPassword, normalizeEmail, verifyPassword } from '@/lib/auth'
 import { ensureQrSchema, sql } from '@/lib/db'
@@ -528,7 +529,7 @@ export async function sectorAdminAction(req: NextRequest, sector: SectorKey) {
   const action = String(body.action || '').trim()
   const password = String(body.password || '').trim()
   const user = await getAuthenticatedSectorUser(req, sector)
-  const bootstrapAuthorized = isAdminAuthorized(password)
+  const bootstrapAuthorized = await checkAdminPassword(req, password)
 
   if (!user && !bootstrapAuthorized) {
     return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })

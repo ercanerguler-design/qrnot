@@ -320,9 +320,11 @@ function EtsyTab({ call }: { call: Caller }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
+      <EtsyOrdersPanel call={call} />
+      <h2 className="text-lg font-semibold">Aktivasyonlar</h2>
       <p className="text-sm text-neutral-400">
-        Etsy panelindeki siparişlerle karşılaştır. Siparişi olmayan aktivasyonları <b>İptal</b> et — QR devre dışı kalır.
+        Sadece yukarıdaki listede olan siparişler aktive edilebilir. Şüpheli bir aktivasyonu <b>İptal</b> et: QR devre dışı kalır, sahiplenilemez.
       </p>
       <div className="overflow-x-auto rounded-2xl border border-neutral-800">
         <table className="w-full text-sm">
@@ -373,6 +375,160 @@ function EtsyTab({ call }: { call: Caller }) {
         {rows.length === 0 && <p className="p-6 text-center text-neutral-500">Henüz Etsy aktivasyonu yok</p>}
       </div>
     </div>
+  )
+}
+
+interface EtsyOrderRow {
+  order_number: string
+  quantity: number
+  buyer_name: string
+  sale_date: string
+  used: number
+}
+
+/** Basit CSV ayrıştırıcı (tırnaklı alanlar ve "" kaçışı desteklenir). */
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') {
+        field += '"'
+        i++
+      } else if (ch === '"') quoted = false
+      else field += ch
+    } else if (ch === '"') quoted = true
+    else if (ch === ',' || ch === ';' || ch === '\t') {
+      row.push(field)
+      field = ''
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++
+      row.push(field)
+      rows.push(row)
+      row = []
+      field = ''
+    } else field += ch
+  }
+  if (field || row.length) {
+    row.push(field)
+    rows.push(row)
+  }
+  return rows.filter((r) => r.some((cell) => cell.trim()))
+}
+
+/** Etsy "Sold Orders" CSV'si ya da satır başına "siparişNo[,adet]" listesi. */
+function parseEtsyOrders(text: string) {
+  const rows = parseCsv(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text)
+  if (rows.length === 0) return []
+  const header = rows[0].map((cell) => cell.trim().toLowerCase())
+  const idCol = header.indexOf('order id')
+  if (idCol >= 0) {
+    const qtyCol = header.indexOf('number of items')
+    const nameCol = header.indexOf('full name')
+    const dateCol = header.indexOf('sale date')
+    return rows.slice(1).map((r) => ({
+      orderNumber: (r[idCol] || '').trim(),
+      quantity: qtyCol >= 0 ? Number(r[qtyCol]) || 1 : 1,
+      buyerName: nameCol >= 0 ? (r[nameCol] || '').trim() : '',
+      saleDate: dateCol >= 0 ? (r[dateCol] || '').trim() : '',
+    }))
+  }
+  return rows.map((r) => ({ orderNumber: (r[0] || '').replace(/[\s#]/g, ''), quantity: Number(r[1]) || 1, buyerName: '', saleDate: '' }))
+}
+
+function EtsyOrdersPanel({ call }: { call: Caller }) {
+  const [orders, setOrders] = useState<EtsyOrderRow[]>([])
+  const [text, setText] = useState('')
+  const [info, setInfo] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    const data = await call<{ orders: EtsyOrderRow[] }>('etsy.orders.list')
+    if (data) setOrders(data.orders)
+  }, [call])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
+  }, [load])
+
+  const importOrders = async (raw: string) => {
+    const parsed = parseEtsyOrders(raw)
+    if (parsed.length === 0) {
+      setInfo('Geçerli sipariş bulunamadı')
+      return
+    }
+    const data = await call<{ imported: number; skipped: number }>('etsy.orders.import', { orders: parsed })
+    if (data) {
+      setInfo(`${data.imported} sipariş eklendi/güncellendi${data.skipped ? `, ${data.skipped} satır atlandı` : ''}`)
+      setText('')
+      await load()
+    }
+  }
+
+  return (
+    <section className="space-y-3 rounded-3xl border border-neutral-800 bg-neutral-950/70 p-5">
+      <h2 className="text-lg font-semibold">Etsy siparişleri</h2>
+      <p className="text-sm text-neutral-400">
+        Alıcılar sadece buradaki siparişleri aktive edebilir; her sipariş, ürün adedi kadar QR alır. Etsy → Shop Manager → Settings → Options → Download Data →
+        <b> Orders</b> CSV&apos;sini yükle ya da her satıra bir sipariş numarası yaz (isteğe bağlı: <code>numara,adet</code>).
+      </p>
+      <input
+        type="file"
+        accept=".csv,text/csv"
+        className="block text-sm text-neutral-400"
+        onChange={async (e) => {
+          const file = e.target.files?.[0]
+          if (file) await importOrders(await file.text())
+          e.target.value = ''
+        }}
+      />
+      <textarea className={`${input} h-24 font-mono`} value={text} onChange={(e) => setText(e.target.value)} placeholder={'3123456789\n3123456790,2'} />
+      <button className={`${btn} bg-cyan-500 text-neutral-950`} disabled={!text.trim()} onClick={() => importOrders(text)}>
+        Listeye ekle
+      </button>
+      {info && <p className="text-sm text-emerald-400">{info}</p>}
+      <div className="max-h-72 overflow-auto rounded-2xl border border-neutral-800">
+        <table className="w-full text-sm">
+          <thead className="bg-neutral-900 text-left text-neutral-400">
+            <tr>
+              <th className="px-3 py-2">Sipariş</th>
+              <th className="px-3 py-2">Alıcı</th>
+              <th className="px-3 py-2">Tarih</th>
+              <th className="px-3 py-2">Kullanılan</th>
+              <th className="px-3 py-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.order_number} className="border-t border-neutral-800">
+                <td className="px-3 py-2 font-mono">{order.order_number}</td>
+                <td className="px-3 py-2">{order.buyer_name}</td>
+                <td className="px-3 py-2 text-neutral-400">{order.sale_date}</td>
+                <td className="px-3 py-2">
+                  {order.used} / {order.quantity}
+                </td>
+                <td className="px-3 py-2">
+                  <button
+                    className="text-red-400 hover:underline"
+                    onClick={async () =>
+                      window.confirm(`${order.order_number} listeden silinsin mi? (Mevcut QR'lar etkilenmez)`) &&
+                      (await call('etsy.orders.delete', { orderNumber: order.order_number })) &&
+                      load()
+                    }
+                  >
+                    Sil
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {orders.length === 0 && <p className="p-6 text-center text-neutral-500">Liste boş — hiçbir Etsy siparişi aktive edilemez</p>}
+      </div>
+    </section>
   )
 }
 

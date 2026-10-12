@@ -6,7 +6,8 @@ import { createBlankQRCodes } from '@/lib/qr'
 import { SITE_URL } from '@/lib/site'
 
 // Etsy alıcısı sipariş numarası + e-posta ile kendine özel QR üretir.
-// Kayıtlar admin panelinde "Etsy" sekmesinde doğrulanır; sahte siparişler iptal edilebilir.
+// Sadece admin panelinden içe aktarılmış siparişler aktive edilebilir; QR sayısı siparişteki ürün adediyle sınırlıdır.
+// Şüpheli aktivasyonlar admin panelinde iptal edilebilir.
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +38,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
     }
 
-    const maxPerOrder = Math.max(1, Number(process.env.ETSY_MAX_PER_ORDER) || 3)
+    // Sipariş, admin panelinden içe aktarılan gerçek Etsy siparişleri arasında olmalı.
+    const orders = (await sql`SELECT quantity FROM etsy_orders WHERE order_number = ${orderNumber}`) as Array<{ quantity: number }>
+    if (orders.length === 0) {
+      return NextResponse.json(
+        { error: 'We could not find this order yet. New orders are added within 24 hours — please try again later or message us on Etsy.' },
+        { status: 404 }
+      )
+    }
+
+    const maxPerOrder = Math.max(1, Math.min(Number(orders[0].quantity) || 1, Number(process.env.ETSY_MAX_PER_ORDER) || 20))
     const existing = (await sql`
       SELECT a.email, q.slug, a.status
       FROM etsy_activations a JOIN qr_codes q ON q.id = a.qr_id
@@ -84,8 +94,8 @@ export async function POST(req: NextRequest) {
     `) as Array<{ id: string }>
 
     await sql`
-      INSERT INTO etsy_activations (order_number, email, qr_id, product, client_ip)
-      VALUES (${orderNumber}, ${email}, ${qrRows[0].id}, ${product}, ${ip})
+      INSERT INTO etsy_activations (order_number, email, qr_id, product, client_ip, status)
+      VALUES (${orderNumber}, ${email}, ${qrRows[0].id}, ${product}, ${ip}, 'verified')
     `
 
     return NextResponse.json({

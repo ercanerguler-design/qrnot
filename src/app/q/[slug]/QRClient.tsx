@@ -9,7 +9,7 @@ import type { PublicGuestbookSettings } from '@/lib/guestbook'
 import { withLang, type Lang } from '@/lib/i18n'
 import { getMaxVideoSeconds, spotifyEmbedUrl, youtubeEmbedUrl } from '@/lib/media'
 import { GuestbookSetupView, GuestbookView } from './GuestbookClient'
-import { attachMedia, composeProfileTitle, ErrorBox, MAX_AUDIO_SECONDS, OwnerSecrets, parseProfileTitle, QR_T, ScanShell } from './ScanShared'
+import { attachMedia, composeProfileTitle, ErrorBox, MAX_AUDIO_SECONDS, OwnerSecrets, parseProfileTitle, QR_T, ScanShell, SignInGate } from './ScanShared'
 
 interface Props {
   qr: QRCode
@@ -378,9 +378,19 @@ function PlayView({ qr, lang, viaNfc }: { qr: QRCode; lang: Lang; viaNfc?: boole
 export default function QRClient({ qr, lang, mode, guestbook, viaNfc }: Props) {
   if (qr.is_demo && qr.is_active === false) return <ExpiredDemoView lang={lang} />
   if (mode === 'guestbook' && guestbook) {
-    if (!qr.is_claimed) return <GuestbookSetupView qr={qr} lang={lang} />
+    if (!qr.is_claimed)
+      return (
+        <SignInGate slug={qr.slug} lang={lang}>
+          <GuestbookSetupView qr={qr} lang={lang} />
+        </SignInGate>
+      )
     return <GuestbookView qr={qr} lang={lang} settings={guestbook} />
   }
-  if (!qr.is_claimed) return <ClaimView qr={qr} lang={lang} />
+  if (!qr.is_claimed)
+    return (
+      <SignInGate slug={qr.slug} lang={lang}>
+        <ClaimView qr={qr} lang={lang} />
+      </SignInGate>
+    )
   return <PlayView qr={qr} lang={lang} viaNfc={viaNfc} />
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { ensureQrSchema, sql } from '@/lib/db'
 
 export async function POST(req: NextRequest) {
@@ -7,7 +8,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}))
     const providedPassword = String(body.password || '').trim()
-    const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
     const slug = String(body.slug || '').trim()
     const recordingLimit = Number(body.recordingLimit)
     const videoRecordingLimit = Number(body.videoRecordingLimit)
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       videoMaxSeconds = Math.floor(parsedVideoMaxSeconds)
     }
 
-    if (!providedPassword || providedPassword !== configuredPassword) {
+    if (!(await checkAdminPassword(req, providedPassword))) {
       return NextResponse.json({ error: 'Yetkisiz erisim' }, { status: 401 })
     }
 

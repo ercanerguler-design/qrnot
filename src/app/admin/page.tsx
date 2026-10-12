@@ -587,7 +587,7 @@ export default function AdminPage() {
             <div className="bg-neutral-800/70 border border-neutral-700 rounded-xl px-4 py-3 text-neutral-400 text-sm">
               {orderType === 'corporate'
                 ? `Kurumsal siparişte minimum 100 QR gerekir. 100 QR = ${currency.format(2599)}.`
-                : `Bireysel QR fiyatı ${currency.format(149)} olarak hesaplanır.`}
+                : `Bireysel QR fiyatı ${currency.format(249)} olarak hesaplanır.`}
             </div>
 
             {orderType === 'corporate' && (
@@ -599,11 +599,11 @@ export default function AdminPage() {
             <div className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm">
               <div className="flex items-center justify-between text-neutral-400 mb-1">
                 <span>Birim fiyat</span>
-                <span>{orderType === 'corporate' ? `${currency.format(25.99)} / QR` : currency.format(149)}</span>
+                <span>{orderType === 'corporate' ? `${currency.format(25.99)} / QR` : currency.format(249)}</span>
               </div>
               <div className="flex items-center justify-between text-white font-semibold">
                 <span>Tahmini toplam</span>
-                <span>{orderType === 'corporate' ? currency.format(Number((count * 25.99).toFixed(2))) : currency.format(count * 149)}</span>
+                <span>{orderType === 'corporate' ? currency.format(Number((count * 25.99).toFixed(2))) : currency.format(count * 249)}</span>
               </div>
             </div>
 

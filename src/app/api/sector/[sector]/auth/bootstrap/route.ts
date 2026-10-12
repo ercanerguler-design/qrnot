@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { createBootstrapPlatformAdminIfNeeded, normalizeSector } from '@/lib/sectorPlatform'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ sector: string }> }) {
@@ -18,6 +19,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sec
       return NextResponse.json({ error: 'Geçerli e-posta ve en az 6 karakter şifre gerekli' }, { status: 400 })
     }
 
+    if (!(await checkAdminPassword(req, bootstrapPassword))) {
+      return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
+    }
     const userId = await createBootstrapPlatformAdminIfNeeded(sector, email, password, bootstrapPassword)
     return NextResponse.json({ ok: true, userId })
   } catch (err) {

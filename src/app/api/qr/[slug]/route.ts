@@ -18,6 +18,9 @@ export async function GET(
     }
     // admin_token hiçbir zaman dışarı çıkmasın
     const qr = await deactivateExpiredDemoQr(rows[0]) as QRCode
+    if (!qr.is_demo && qr.is_active === false) {
+      return NextResponse.json({ error: 'Bulunamadı' }, { status: 404 })
+    }
     const mediaRows = (await sql`
       SELECT id, qr_id, media_type, source_type, blob_url, external_url, title, sort_order, is_primary, created_at, updated_at
       FROM qr_media

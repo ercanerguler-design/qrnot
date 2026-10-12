@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { createHotelUser, getHotelUserByEmail } from '@/lib/hotelAuth'
 import { getEducationUserByEmail } from '@/lib/educationAuth'
 
@@ -6,11 +7,10 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}))
     const bootstrapPassword = String(body.bootstrapPassword || '').trim()
-    const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
     const email = String(body.email || '').trim().toLowerCase()
     const password = String(body.password || '')
 
-    if (!bootstrapPassword || !configuredPassword || bootstrapPassword !== configuredPassword) {
+    if (!(await checkAdminPassword(req, bootstrapPassword))) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     }
 

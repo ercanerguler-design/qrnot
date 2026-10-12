@@ -5,6 +5,8 @@ import { sql, type QRCode } from '@/lib/db'
 import { clientIp, consumeRateLimit, ensureGrowthSchema } from '@/lib/growthSchema'
 import { maxUploadBytes, uploadPrefix, type UploadScope } from '@/lib/directUpload'
 import { readGuestbookSettings } from '@/lib/guestbook'
+import { getAuthenticatedUser } from '@/lib/auth'
+import { findDuplicateEntry, hashGuestDevice, readGuestDevice } from '@/lib/guestbookServer'
 
 // Tarayıcıdan doğrudan Blob yüklemesi için kısa ömürlü yükleme anahtarı üretir.
 // scope=qr → QR sahibinin medyası (sahiplenme veya sahip token'ı ile güncelleme)
@@ -48,9 +50,9 @@ export async function POST(req: NextRequest) {
         }
 
         const rows = (await sql`
-          SELECT id, slug, is_demo, is_active, is_claimed, admin_token, order_type, qr_mode, guestbook_settings
+          SELECT id, slug, is_demo, is_active, is_claimed, admin_token, order_type, qr_mode, guestbook_settings, creator_user_id
           FROM qr_codes WHERE slug = ${slug}
-        `) as unknown as Array<QRCode & { qr_mode?: string; guestbook_settings?: unknown }>
+        `) as unknown as Array<QRCode & { qr_mode?: string; guestbook_settings?: unknown; creator_user_id?: string | null }>
         const qr = rows[0]
         if (!qr || qr.is_active === false) {
           throw new Error('QR kodu bulunamadı')
@@ -59,6 +61,12 @@ export async function POST(req: NextRequest) {
         if (scope === 'qr') {
           if (qr.is_claimed && (!payload.token || payload.token !== qr.admin_token)) {
             throw new Error('Yetkisiz erişim')
+          }
+          // Sahipsiz QR'a yükleme = sahiplenme adımı: üye girişi şart (sahiplenme ile aynı kural).
+          if (!qr.is_claimed) {
+            const user = await getAuthenticatedUser(req)
+            if (!user) throw new Error('Devam etmek için giriş yap')
+            if (qr.creator_user_id && qr.creator_user_id !== user.id) throw new Error('Bu QR kodu başka bir hesaba ait')
           }
         } else {
           const settings = readGuestbookSettings(qr.guestbook_settings)
@@ -70,6 +78,10 @@ export async function POST(req: NextRequest) {
             if (pinHash !== settings.pinHash) {
               throw new Error('PIN hatalı')
             }
+          }
+          const device = readGuestDevice(req)
+          if (device && (await findDuplicateEntry(qr.id, hashGuestDevice(device), null)).byDevice) {
+            throw new Error('Bu anı defterine zaten bir anı bıraktın')
           }
         }
 

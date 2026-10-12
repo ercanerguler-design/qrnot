@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { ensureQrSchema } from '@/lib/db'
 import { createBlankQRCodes } from '@/lib/qr'
 
@@ -9,10 +10,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { password, count = 1, orderType = 'individual' } = body
     const providedPassword = String(password || '').trim()
-    const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
     const normalizedOrderType = orderType === 'corporate' ? 'corporate' : 'individual'
 
-    if (!providedPassword || providedPassword !== configuredPassword) {
+    if (!(await checkAdminPassword(req, providedPassword))) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     }
 

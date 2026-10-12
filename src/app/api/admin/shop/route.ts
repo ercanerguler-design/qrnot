@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createHash, timingSafeEqual } from 'crypto'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { sql } from '@/lib/db'
 import { getOrder, markOrderPaid, type OrderStatus } from '@/lib/commerce/orders'
 import { clientIp, consumeRateLimit, ensureGrowthSchema } from '@/lib/growthSchema'
@@ -11,14 +11,6 @@ import { SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
 
-function passwordOk(provided: unknown) {
-  const configured = String(process.env.ADMIN_PASSWORD || '').trim()
-  const given = String(provided || '').trim()
-  if (!configured || !given) return false
-  const a = createHash('sha256').update(configured).digest()
-  const b = createHash('sha256').update(given).digest()
-  return timingSafeEqual(a, b)
-}
 
 const ORDER_STATUSES: OrderStatus[] = ['pending', 'awaiting_transfer', 'paid', 'fulfilled', 'shipped', 'delivered', 'failed', 'cancelled', 'refunded']
 
@@ -29,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Çok fazla istek' }, { status: 429 })
     }
     const body = await req.json().catch(() => ({}))
-    if (!passwordOk(body.password)) return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
+    if (!(await checkAdminPassword(req, body.password))) return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     await ensureGrowthSchema()
 
     const action = String(body.action || '')
@@ -86,6 +78,44 @@ export async function POST(req: NextRequest) {
         LIMIT 300
       `
       return NextResponse.json({ activations: rows })
+    }
+
+    if (action === 'etsy.orders.list') {
+      const rows = await sql`
+        SELECT o.order_number, o.quantity, o.buyer_name, o.sale_date, o.created_at,
+               (SELECT COUNT(*)::int FROM etsy_activations a WHERE a.order_number = o.order_number AND a.status <> 'revoked') AS used
+        FROM etsy_orders o
+        ORDER BY o.created_at DESC
+        LIMIT 500
+      `
+      return NextResponse.json({ orders: rows })
+    }
+
+    if (action === 'etsy.orders.import') {
+      const input = Array.isArray(body.orders) ? body.orders.slice(0, 2000) : []
+      let imported = 0
+      for (const item of input) {
+        const orderNumber = String(item?.orderNumber || '').replace(/[\s#]/g, '')
+        if (!/^\d{8,12}$/.test(orderNumber)) continue
+        const quantity = Math.min(Math.max(1, Math.floor(Number(item?.quantity) || 1)), 100)
+        const buyerName = String(item?.buyerName || '').slice(0, 160)
+        const saleDate = String(item?.saleDate || '').slice(0, 32)
+        await sql`
+          INSERT INTO etsy_orders (order_number, quantity, buyer_name, sale_date)
+          VALUES (${orderNumber}, ${quantity}, ${buyerName}, ${saleDate})
+          ON CONFLICT (order_number) DO UPDATE
+            SET quantity = EXCLUDED.quantity,
+                buyer_name = CASE WHEN EXCLUDED.buyer_name <> '' THEN EXCLUDED.buyer_name ELSE etsy_orders.buyer_name END,
+                sale_date = CASE WHEN EXCLUDED.sale_date <> '' THEN EXCLUDED.sale_date ELSE etsy_orders.sale_date END
+        `
+        imported += 1
+      }
+      return NextResponse.json({ ok: true, imported, skipped: input.length - imported })
+    }
+
+    if (action === 'etsy.orders.delete') {
+      await sql`DELETE FROM etsy_orders WHERE order_number = ${String(body.orderNumber || '')}`
+      return NextResponse.json({ ok: true })
     }
 
     if (action === 'etsy.update') {

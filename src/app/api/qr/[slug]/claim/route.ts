@@ -14,6 +14,7 @@ import {
 } from '@/lib/media'
 import { randomBytes } from 'crypto'
 import { createHash } from 'crypto'
+import { requireClaimUser } from '@/lib/claimAuth'
 
 const WHATSAPP_CONTACT = '905433929230'
 
@@ -57,9 +58,14 @@ export async function POST(
     if (qr.is_demo && qr.is_active === false) {
       return NextResponse.json({ error: 'Demo QR süresi doldu' }, { status: 410 })
     }
+    if (qr.is_active === false) {
+      return NextResponse.json({ error: 'Bu QR kodu devre dışı bırakılmış' }, { status: 410 })
+    }
     if (qr.is_claimed) {
       return NextResponse.json({ error: 'Bu QR kodu zaten sahiplenilmiş' }, { status: 409 })
     }
+    const claimer = await requireClaimUser(req, qr.id)
+    if (claimer.error) return claimer.error
 
     const formData = await req.formData()
     const legacyAudioFile = formData.get('audio') as File | null
@@ -178,14 +184,17 @@ export async function POST(
           recording_count = recording_count + ${shouldIncreaseRecordingCount ? 1 : 0},
           video_recording_count = video_recording_count + ${uploadedMediaType === 'video' ? 1 : 0},
           title = ${title},
+          owner_user_id = ${claimer.user.id},
           updated_at = NOW()
       WHERE slug = ${slug}
+        AND is_claimed = FALSE
+        AND (creator_user_id IS NULL OR creator_user_id = ${claimer.user.id})
       RETURNING id
     `) as Array<{ id: string }>
 
     const qrId = updatedRows[0]?.id
     if (!qrId) {
-      return NextResponse.json({ error: 'QR kodu güncellenemedi' }, { status: 500 })
+      return NextResponse.json({ error: 'Bu QR kodu zaten sahiplenilmiş' }, { status: 409 })
     }
 
     let sortOrder = 0

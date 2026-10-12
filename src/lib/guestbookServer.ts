@@ -1,4 +1,5 @@
-import { createHash } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
+import type { NextRequest, NextResponse } from 'next/server'
 import { deactivateExpiredDemoQr, sql, type QRCode } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 import { readGuestbookSettings, type GuestbookSettings } from '@/lib/guestbook'
@@ -25,6 +26,44 @@ export function isGuestbookOwner(qr: GuestbookQr, token: string | null | undefin
 
 export function hashPin(pin: string) {
   return createHash('sha256').update(pin.trim()).digest('hex')
+}
+
+/** Misafir cihazını tanıyan kalıcı çerez: aynı kişi aynı anı defterine bir kez yazabilir. */
+export const GB_DEVICE_COOKIE = 'qrnot_gb_dev'
+
+export function readGuestDevice(req: NextRequest) {
+  const value = req.cookies.get(GB_DEVICE_COOKIE)?.value || ''
+  return /^[0-9a-f-]{36}$/.test(value) ? value : null
+}
+
+export function newGuestDevice() {
+  return randomUUID()
+}
+
+export function hashGuestDevice(deviceId: string) {
+  return createHash('sha256').update(`qrnote-gb-dev:${deviceId}`).digest('hex').slice(0, 32)
+}
+
+export function setGuestDeviceCookie(res: NextResponse, deviceId: string) {
+  res.cookies.set(GB_DEVICE_COOKIE, deviceId, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365 * 2,
+  })
+}
+
+/** Bu cihazdan ya da bu isimle (büyük/küçük harf duyarsız) reddedilmemiş bir anı var mı? */
+export async function findDuplicateEntry(qrId: string, deviceHash: string | null, authorName: string | null) {
+  const rows = (await sql`
+    SELECT
+      COALESCE(BOOL_OR(${deviceHash}::text IS NOT NULL AND device_hash = ${deviceHash}), FALSE) AS by_device,
+      COALESCE(BOOL_OR(${authorName}::text IS NOT NULL AND LOWER(TRIM(author_name)) = LOWER(TRIM(${authorName}))), FALSE) AS by_name
+    FROM guestbook_entries
+    WHERE qr_id = ${qrId} AND status <> 'rejected'
+  `) as Array<{ by_device: boolean; by_name: boolean }>
+  return { byDevice: Boolean(rows[0]?.by_device), byName: Boolean(rows[0]?.by_name) }
 }
 
 export function hashIp(ip: string) {

@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'crypto'
 import { sql } from '@/lib/db'
 import { readGuestbookSettings } from '@/lib/guestbook'
 import { hashPin, loadGuestbookQr } from '@/lib/guestbookServer'
+import { requireClaimUser } from '@/lib/claimAuth'
 
 // Anı defteri olarak üretilmiş (qr_mode=guestbook) boş bir QR'ı sahiplenir ve ayarlarını kaydeder.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -12,7 +13,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     if (!qr) return NextResponse.json({ error: 'QR kodu bulunamadı' }, { status: 404 })
     if (qr.is_demo && qr.is_active === false) return NextResponse.json({ error: 'Demo QR süresi doldu' }, { status: 410 })
     if (qr.qr_mode !== 'guestbook') return NextResponse.json({ error: 'Bu QR bir anı defteri değil' }, { status: 400 })
+    if (qr.is_active === false) return NextResponse.json({ error: 'Bu QR kodu devre dışı bırakılmış' }, { status: 410 })
     if (qr.is_claimed) return NextResponse.json({ error: 'Bu anı defteri zaten kurulmuş' }, { status: 409 })
+    const claimer = await requireClaimUser(req, qr.id)
+    if (claimer.error) return claimer.error
 
     const body = await req.json().catch(() => ({}))
     const eventName = String(body.eventName || '').trim().slice(0, 120)
@@ -43,8 +47,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
           recovery_code_hash = ${recoveryCodeHash},
           title = ${eventName.slice(0, 100)},
           guestbook_settings = ${JSON.stringify(settings)}::jsonb,
+          owner_user_id = ${claimer.user.id},
           updated_at = NOW()
       WHERE id = ${qr.id} AND is_claimed = FALSE
+        AND (creator_user_id IS NULL OR creator_user_id = ${claimer.user.id})
       RETURNING id
     `
     if (updated.length === 0) return NextResponse.json({ error: 'Bu anı defteri zaten kurulmuş' }, { status: 409 })

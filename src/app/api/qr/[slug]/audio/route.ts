@@ -20,6 +20,9 @@ export async function GET(
     }
 
     const qr = await deactivateExpiredDemoQr(rows[0])
+    if (!qr.is_demo && qr.is_active === false) {
+      return NextResponse.json({ error: 'QR kodu devre dışı' }, { status: 404 })
+    }
     if (qr.is_demo && qr.is_active === false) {
       return NextResponse.json({ error: 'Demo QR süresi doldu' }, { status: 410 })
     }

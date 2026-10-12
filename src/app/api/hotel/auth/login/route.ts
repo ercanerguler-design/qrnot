@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isLoginLocked, recordLoginFailure } from '@/lib/adminAuth'
 import { applyHotelAuthCookie, authenticateHotelCredentials, createHotelSession } from '@/lib/hotelAuth'
 import { listAdminRealmsByEmail, realmLoginPath } from '@/lib/adminRealm'
 
@@ -12,8 +13,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'E-posta ve şifre gerekli' }, { status: 400 })
     }
 
+    if (await isLoginLocked(req, 'hotel', email)) {
+      return NextResponse.json({ error: 'Çok fazla hatalı deneme. Lütfen 1 saat sonra tekrar dene.' }, { status: 429 })
+    }
     const user = await authenticateHotelCredentials(email, password)
     if (!user) {
+      await recordLoginFailure(req, 'hotel', email)
       const realms = await listAdminRealmsByEmail(email)
       if (!realms.includes('hotel') && realms.length > 0) {
         return NextResponse.json({ error: `Bu hesap ${realmLoginPath(realms[0])} paneline ait.` }, { status: 403 })

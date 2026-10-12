@@ -24,6 +24,7 @@ interface AccountQr {
   title: string
   play_count: number
   nfc_scan_count?: number
+  can_delete?: boolean
   qr_mode?: string
   created_at: string
 }
@@ -439,11 +440,11 @@ export default function AccountClient({ lang }: { lang: Lang }) {
                     <Link href={withLang(`/recover/${item.slug}`, lang)} className="w-btn w-btn-ghost w-btn-sm">
                       {t.recover}
                     </Link>
-                  ) : (
+                  ) : item.can_delete !== false ? (
                     <button type="button" onClick={() => handleDelete(item.slug)} className="w-btn w-btn-ghost w-btn-sm">
                       {t.remove}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </article>
             )

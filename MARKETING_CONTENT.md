@@ -320,7 +320,7 @@ Sonuç: İki taraf da kazanır
 ```
 "hediye bütçesi var ama ne alacağını bilmiyor"
 → bu senin kullanıcın
-→ 149 TL'ye çöz
+→ 249 TL'ye çöz
 
 qrnot.com
 ```
@@ -347,7 +347,7 @@ ilgileniyor musunuz?
 ```
 bireysel plan:
 - 1 ücretsiz QR (test)
-- 149 TL = 1 gerçek QR
+- 249 TL = 1 gerçek QR
 
 ilk ayda:
 - 240 hesap (organic)

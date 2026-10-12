@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { deactivateAllExpiredDemoQrs, ensureQrSchema, QRCode, sql } from '@/lib/db'
 
-const INDIVIDUAL_PRICE = 149
+const INDIVIDUAL_PRICE = 249
 const CORPORATE_UNIT_PRICE = 25.99
 
 export async function POST(req: NextRequest) {
@@ -11,11 +12,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}))
     const providedPassword = String(body.password || '').trim()
-    const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
     const filter = String(body.filter || 'all')
     const orderType = String(body.orderType || 'all')
 
-    if (!providedPassword || providedPassword !== configuredPassword) {
+    if (!(await checkAdminPassword(req, providedPassword))) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     }
 

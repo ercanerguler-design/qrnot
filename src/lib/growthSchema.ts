@@ -15,6 +15,9 @@ export function ensureGrowthSchema() {
       await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS nfc_encoded_at TIMESTAMP WITH TIME ZONE`
       await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS nfc_locked BOOLEAN NOT NULL DEFAULT FALSE`
       await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS source_channel VARCHAR(24)`
+      // Boş QR'ı (ürün, Etsy, anı defteri) sahiplenen üye. creator_user_id'den ayrı: sahiplenilen QR hesaptan silinemez.
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS owner_user_id UUID`
+      await sql`CREATE INDEX IF NOT EXISTS idx_qr_codes_owner_user_id ON qr_codes(owner_user_id)`
 
       await sql`
         CREATE TABLE IF NOT EXISTS shop_orders (
@@ -68,6 +71,17 @@ export function ensureGrowthSchema() {
       await sql`CREATE INDEX IF NOT EXISTS idx_etsy_activations_order ON etsy_activations(order_number)`
       await sql`CREATE INDEX IF NOT EXISTS idx_etsy_activations_status ON etsy_activations(status)`
 
+      // Admin'in Etsy'den içe aktardığı gerçek siparişler. Aktivasyon sadece bu listedeki siparişlere açılır.
+      await sql`
+        CREATE TABLE IF NOT EXISTS etsy_orders (
+          order_number VARCHAR(24) PRIMARY KEY,
+          quantity INTEGER NOT NULL DEFAULT 1,
+          buyer_name VARCHAR(160) NOT NULL DEFAULT '',
+          sale_date VARCHAR(32) NOT NULL DEFAULT '',
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+
       await sql`
         CREATE TABLE IF NOT EXISTS guestbook_entries (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -83,6 +97,8 @@ export function ensureGrowthSchema() {
         )
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_guestbook_entries_qr ON guestbook_entries(qr_id, created_at DESC)`
+      // Aynı misafirin (cihazın) aynı anı defterine tekrar yazmasını engellemek için
+      await sql`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS device_hash VARCHAR(64) NOT NULL DEFAULT ''`
 
       await sql`
         CREATE TABLE IF NOT EXISTS rate_limits (

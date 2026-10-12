@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { applyAuthCookie, createUser, createUserSession, getUserByEmail, normalizeEmail, validatePassword, verifyPassword } from '@/lib/auth'
+import { isLoginLocked, recordLoginFailure } from '@/lib/adminAuth'
+import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +19,10 @@ export async function POST(req: NextRequest) {
 
     const existingUser = await getUserByEmail(email)
     if (existingUser) {
+      // Kayıt formu giriş gibi de çalışır; giriş kilidi burada da geçerli olmalı.
+      if (await isLoginLocked(req, 'user', email)) {
+        return NextResponse.json({ error: 'Çok fazla hatalı deneme. Lütfen 1 saat sonra tekrar dene.' }, { status: 429 })
+      }
       // Idempotent registration UX: if password matches, continue as login.
       if (verifyPassword(password, existingUser.password_hash)) {
         const token = await createUserSession(existingUser.id)
@@ -35,7 +41,13 @@ export async function POST(req: NextRequest) {
         return applyAuthCookie(res, token)
       }
 
+      await recordLoginFailure(req, 'user', email)
       return NextResponse.json({ error: 'Bu e-posta zaten kayıtlı. Şifrenle giriş yapabilirsin.' }, { status: 409 })
+    }
+
+    // Her yeni hesap ücretsiz QR hakkı aldığı için toplu hesap açmayı sınırla.
+    if (!(await consumeRateLimit(`register:${clientIp(req.headers)}`, 5, 3600))) {
+      return NextResponse.json({ error: 'Çok fazla hesap oluşturuldu. Lütfen daha sonra tekrar dene.' }, { status: 429 })
     }
 
     const user = await createUser(email, password)

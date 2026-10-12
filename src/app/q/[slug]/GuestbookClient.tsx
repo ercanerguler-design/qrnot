@@ -44,7 +44,7 @@ const GB_T = {
     thanksTitle: 'Teşekkürler! 💛',
     thanksPending: 'Anın kaydedildi. Ev sahibi onayladıktan sonra görünecek.',
     thanksApproved: 'Anın anı defterine eklendi.',
-    another: 'Bir anı daha bırak',
+    already: 'Bu anı defterine zaten bir anı bıraktın. Teşekkürler!',
     closed: 'Bu anı defteri şu an yeni anı kabul etmiyor.',
     wall: 'Anılar',
     empty: 'İlk anıyı sen bırak!',
@@ -87,7 +87,7 @@ const GB_T = {
     thanksTitle: 'Thank you! 💛',
     thanksPending: 'Your memory was saved. It will appear after the hosts approve it.',
     thanksApproved: 'Your memory was added to the guestbook.',
-    another: 'Leave another memory',
+    already: 'You have already left a memory in this guestbook. Thank you!',
     closed: 'This guestbook is not accepting new memories right now.',
     wall: 'Memories',
     empty: 'Be the first to leave a memory!',
@@ -222,6 +222,7 @@ export function GuestbookView({ qr, lang, settings }: { qr: QRCode; lang: Lang; 
   const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sentStatus, setSentStatus] = useState<'pending' | 'approved' | null>(null)
+  const [alreadyPosted, setAlreadyPosted] = useState(false)
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [ownerToken, setOwnerToken] = useState<string | null>(null)
 
@@ -231,25 +232,19 @@ export function GuestbookView({ qr, lang, settings }: { qr: QRCode; lang: Lang; 
   }, [qr.slug])
 
   useEffect(() => {
-    if (!settings.publicWall) return
     let cancelled = false
     fetch(`/api/qr/${qr.slug}/guestbook/entries`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled && Array.isArray(data.entries)) setEntries(data.entries)
+        if (cancelled) return
+        if (Array.isArray(data.entries)) setEntries(data.entries)
+        if (data.alreadyPosted) setAlreadyPosted(true)
       })
       .catch(() => undefined)
     return () => {
       cancelled = true
     }
-  }, [qr.slug, settings.publicWall, sentStatus])
-
-  const reset = () => {
-    setMediaMode('none')
-    setMediaFile(null)
-    setMessage('')
-    setSentStatus(null)
-  }
+  }, [qr.slug, sentStatus])
 
   const send = async () => {
     if (!name.trim()) return setError(t.needName)
@@ -302,9 +297,11 @@ export function GuestbookView({ qr, lang, settings }: { qr: QRCode; lang: Lang; 
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-sage-soft text-3xl">💛</div>
           <h2 className="font-display text-2xl font-semibold">{t.thanksTitle}</h2>
           <p className="mt-2 text-ink-2">{sentStatus === 'approved' ? t.thanksApproved : t.thanksPending}</p>
-          <button type="button" onClick={reset} className="w-btn w-btn-ghost mt-6">
-            {t.another}
-          </button>
+        </div>
+      ) : alreadyPosted ? (
+        <div className="w-card p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-sage-soft text-3xl">💛</div>
+          <p className="text-ink-2">{t.already}</p>
         </div>
       ) : (
         <div className="w-card space-y-5 p-5 sm:p-6">

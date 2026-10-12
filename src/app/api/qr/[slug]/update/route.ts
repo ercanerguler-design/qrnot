@@ -64,6 +64,9 @@ export async function PUT(
       return NextResponse.json({ error: 'QR kodu bulunamadı' }, { status: 404 })
     }
     const qr = await deactivateExpiredDemoQr(rows[0]) as QRCode
+    if (!qr.is_demo && qr.is_active === false) {
+      return NextResponse.json({ error: 'QR kodu devre dışı' }, { status: 404 })
+    }
     if (qr.is_demo && qr.is_active === false) {
       return NextResponse.json({ error: 'Demo QR süresi doldu' }, { status: 410 })
     }

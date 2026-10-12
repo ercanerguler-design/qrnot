@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isLoginLocked, recordLoginFailure } from '@/lib/adminAuth'
 import { applySectorAuthCookie, authenticateSectorCredentials, createSectorSession, normalizeSector } from '@/lib/sectorPlatform'
 import { listAdminRealmsByEmail, realmLoginPath } from '@/lib/adminRealm'
 
@@ -18,8 +19,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sec
       return NextResponse.json({ error: 'E-posta ve şifre gerekli' }, { status: 400 })
     }
 
+    if (await isLoginLocked(req, `sector-${sector}`, email)) {
+      return NextResponse.json({ error: 'Çok fazla hatalı deneme. Lütfen 1 saat sonra tekrar dene.' }, { status: 429 })
+    }
     const user = await authenticateSectorCredentials(sector, email, password)
     if (!user) {
+      await recordLoginFailure(req, `sector-${sector}`, email)
       const realms = await listAdminRealmsByEmail(email)
       if (!realms.includes(sector) && realms.length > 0) {
         return NextResponse.json({ error: `Bu hesap ${realmLoginPath(realms[0])} paneline ait.` }, { status: 403 })

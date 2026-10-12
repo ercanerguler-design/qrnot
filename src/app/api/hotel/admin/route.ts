@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { createHotelUser, getAuthenticatedHotelUser, getHotelUserByEmail } from '@/lib/hotelAuth'
 import { createEducationUser, getAuthenticatedEducationUser, getEducationUserByEmail } from '@/lib/educationAuth'
 import { findAdminRealmByEmail, realmLoginPath } from '@/lib/adminRealm'
@@ -28,10 +29,6 @@ import {
 
 let hotelEducationAutoUpgradePromise: Promise<void> | null = null
 
-function isAdminAuthorized(password: string) {
-  const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
-  return Boolean(password && configuredPassword && password === configuredPassword)
-}
 
 function canManageHotel(userRole: string, userHotelCode: string | null, requestedHotelCode: string) {
   if (userRole === 'platform_admin') return true
@@ -641,7 +638,7 @@ export async function POST(req: NextRequest) {
     const hotelAuthUser = await getAuthenticatedHotelUser(req)
     const educationAuthUser = await getAuthenticatedEducationUser(req)
     const authUser = scope === 'education' ? educationAuthUser : hotelAuthUser
-    const bootstrapAuthorized = isAdminAuthorized(password)
+    const bootstrapAuthorized = await checkAdminPassword(req, password)
 
     if (!authUser && !bootstrapAuthorized) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })

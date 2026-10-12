@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminPassword } from '@/lib/adminAuth'
 import { deactivateAllExpiredDemoQrs, ensureQrSchema, sql } from '@/lib/db'
 
 function csvEscape(value: unknown) {
@@ -16,10 +17,9 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}))
     const providedPassword = String(body.password || '').trim()
-    const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim()
     const exportType = String(body.exportType || '').trim()
 
-    if (!providedPassword || providedPassword !== configuredPassword) {
+    if (!(await checkAdminPassword(req, providedPassword))) {
       return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
     }
 

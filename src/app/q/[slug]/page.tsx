@@ -61,6 +61,8 @@ export default async function QRPage({ params, searchParams }: Props) {
   if (rows.length === 0) notFound()
 
   const qr = (await deactivateExpiredDemoQr(rows[0])) as QrRow
+  // Admin tarafından iptal edilen (ör. sahte Etsy aktivasyonu) QR'lar hiç açılmaz.
+  if (!qr.is_demo && qr.is_active === false) notFound()
 
   if (qr.is_claimed && qr.is_active !== false) {
     await sql`UPDATE qr_codes SET play_count = play_count + 1 WHERE slug = ${slug}`

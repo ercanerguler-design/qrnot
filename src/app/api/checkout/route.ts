@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
     if (cart.lines.length === 0 || cart.total <= 0) return bad(en ? 'Your cart is empty.' : 'Sepetin boş.')
 
     const user = await getAuthenticatedUser(req)
-    if (cart.requiresAccount && !user) {
-      return bad(en ? 'Please sign in: digital products are added to your account.' : 'Dijital ürünler hesabına tanımlanacağı için giriş yapmalısın.', 401, {
+    // Tüm satın almalar üye hesabına bağlanır.
+    if (!user) {
+      return bad(en ? 'Please sign in: your purchases are linked to your account.' : 'Satın aldığın ürünler hesabına tanımlanacağı için giriş yapmalısın.', 401, {
         needLogin: true,
       })
     }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isLoginLocked, recordLoginFailure } from '@/lib/adminAuth'
 import { applyAuthCookie, createUserSession, getUserByEmail, normalizeEmail, verifyPassword } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
@@ -7,8 +8,12 @@ export async function POST(req: NextRequest) {
     const email = normalizeEmail(String(body.email || ''))
     const password = String(body.password || '')
 
+    if (await isLoginLocked(req, 'user', email)) {
+      return NextResponse.json({ error: 'Çok fazla hatalı deneme. Lütfen 1 saat sonra tekrar dene.' }, { status: 429 })
+    }
     const user = await getUserByEmail(email)
     if (!user || !verifyPassword(password, user.password_hash)) {
+      await recordLoginFailure(req, 'user', email)
       return NextResponse.json({ error: 'E-posta veya şifre hatalı' }, { status: 401 })
     }
 

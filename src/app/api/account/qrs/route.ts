@@ -21,11 +21,12 @@ export async function GET(req: NextRequest) {
     const paidRemaining = Math.max(0, user.paidSlots - Math.max(0, user.usedSlots - effectiveFreeSlots))
 
     const items = (await sql`
-      SELECT slug, order_type, is_claimed, title, play_count, created_at, updated_at, qr_mode, nfc_scan_count
+      SELECT slug, order_type, is_claimed, title, play_count, created_at, updated_at, qr_mode, nfc_scan_count,
+             (creator_user_id IS NOT NULL AND creator_user_id = ${user.id}) AS can_delete
       FROM qr_codes
-      WHERE creator_user_id = ${user.id}
+      WHERE creator_user_id = ${user.id} OR owner_user_id = ${user.id}
       ORDER BY created_at DESC
-    `) as Array<Pick<QRCode, 'slug' | 'order_type' | 'is_claimed' | 'title' | 'play_count' | 'created_at' | 'updated_at'> & { qr_mode: string; nfc_scan_count: number }>
+    `) as Array<Pick<QRCode, 'slug' | 'order_type' | 'is_claimed' | 'title' | 'play_count' | 'created_at' | 'updated_at'> & { qr_mode: string; nfc_scan_count: number; can_delete: boolean }>
 
     return NextResponse.json({
       user: {

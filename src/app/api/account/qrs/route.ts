@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/auth'
-import { ensureQrSchema, QRCode, sql } from '@/lib/db'
+import { QRCode, sql } from '@/lib/db'
+import { ensureGrowthSchema } from '@/lib/growthSchema'
 
 export const dynamic = 'force-dynamic'
 const FREE_TRIAL_LIMIT = 1
 
 export async function GET(req: NextRequest) {
   try {
-    await ensureQrSchema()
+    await ensureGrowthSchema()
 
     const user = await getAuthenticatedUser(req)
     if (!user) {
@@ -20,11 +21,11 @@ export async function GET(req: NextRequest) {
     const paidRemaining = Math.max(0, user.paidSlots - Math.max(0, user.usedSlots - effectiveFreeSlots))
 
     const items = (await sql`
-      SELECT slug, order_type, is_claimed, title, play_count, created_at, updated_at
+      SELECT slug, order_type, is_claimed, title, play_count, created_at, updated_at, qr_mode, nfc_scan_count
       FROM qr_codes
       WHERE creator_user_id = ${user.id}
       ORDER BY created_at DESC
-    `) as Array<Pick<QRCode, 'slug' | 'order_type' | 'is_claimed' | 'title' | 'play_count' | 'created_at' | 'updated_at'>>
+    `) as Array<Pick<QRCode, 'slug' | 'order_type' | 'is_claimed' | 'title' | 'play_count' | 'created_at' | 'updated_at'> & { qr_mode: string; nfc_scan_count: number }>
 
     return NextResponse.json({
       user: {

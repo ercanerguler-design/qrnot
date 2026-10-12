@@ -1,0 +1,540 @@
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { formatMoney, type Currency, type PricedLine } from '@/lib/commerce/catalog'
+import { describeNfcError, isWebNfcSupported, writeUrlToTag } from '@/lib/webNfc'
+
+// Mağaza siparişleri, Etsy aktivasyonları, toplu üretim ve NFC yazma istasyonu.
+
+type Tab = 'orders' | 'etsy' | 'production'
+
+interface AdminOrder {
+  order_no: string
+  access_key: string
+  status: string
+  provider: string
+  currency: Currency
+  total: number
+  email: string
+  full_name: string
+  phone: string
+  address: { line: string; district: string; city: string; postalCode: string; country: string } | null
+  items: PricedLine[]
+  customer_note: string
+  admin_note: string
+  tracking_no: string
+  created_at: string
+}
+
+interface EtsyRow {
+  id: string
+  order_number: string
+  email: string
+  product: string
+  status: string
+  slug: string
+  is_claimed: boolean
+  is_active: boolean
+  created_at: string
+}
+
+interface NfcRow {
+  slug: string
+  is_claimed: boolean
+  qr_mode: string
+  source_channel: string | null
+  nfc_encoded_at: string | null
+  nfc_locked: boolean
+}
+
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://qrnot.com').replace(/\/$/, '')
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'Ödeme bekliyor',
+  awaiting_transfer: 'Havale bekliyor',
+  paid: 'Ödendi',
+  fulfilled: 'Tamamlandı',
+  shipped: 'Kargoda',
+  delivered: 'Teslim edildi',
+  failed: 'Başarısız',
+  cancelled: 'İptal',
+  refunded: 'İade',
+}
+
+const input = 'w-full bg-neutral-900 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-cyan-400'
+const btn = 'rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-40'
+
+export default function AdminShopPage() {
+  const [password, setPassword] = useState('')
+  const [authed, setAuthed] = useState(false)
+  const [tab, setTab] = useState<Tab>('orders')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('qrnote_admin_pw')
+    if (saved) {
+      const raf = window.requestAnimationFrame(() => {
+        setPassword(saved)
+        setAuthed(true)
+      })
+      return () => window.cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  const call = useCallback(
+    async <T,>(action: string, payload: Record<string, unknown> = {}): Promise<T | null> => {
+      setError(null)
+      const res = await fetch('/api/admin/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, action, ...payload }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.status === 401) {
+        setAuthed(false)
+        sessionStorage.removeItem('qrnote_admin_pw')
+        setError('Şifre hatalı')
+        return null
+      }
+      if (!res.ok) {
+        setError(data.error || 'İşlem başarısız')
+        return null
+      }
+      return data as T
+    },
+    [password]
+  )
+
+  if (!authed) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-sm space-y-3 rounded-3xl border border-neutral-800 bg-neutral-950/80 p-6">
+          <h1 className="text-xl font-bold">Mağaza Yönetimi</h1>
+          <input className={input} type="password" placeholder="Admin şifresi" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {error && <p className="text-sm text-red-400">{error}</p>}
+          <button
+            className={`${btn} w-full bg-cyan-500 text-neutral-950`}
+            disabled={!password}
+            onClick={async () => {
+              const res = await fetch('/api/admin/shop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password, action: 'orders.list' }),
+              })
+              if (res.ok) {
+                sessionStorage.setItem('qrnote_admin_pw', password)
+                setAuthed(true)
+              } else setError('Şifre hatalı')
+            }}
+          >
+            Giriş
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-16">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Mağaza · Etsy · Üretim</h1>
+        <Link href="/admin" className="text-sm text-cyan-300 hover:underline">
+          ← Ana admin paneli
+        </Link>
+      </div>
+      <div className="mb-6 flex gap-2">
+        {(
+          [
+            ['orders', '🛒 Siparişler'],
+            ['etsy', '🧡 Etsy'],
+            ['production', '🏭 Üretim & NFC'],
+          ] as const
+        ).map(([key, label]) => (
+          <button key={key} className={`${btn} ${tab === key ? 'bg-white text-neutral-950' : 'bg-neutral-800 text-neutral-200'}`} onClick={() => setTab(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {error && <p className="mb-4 rounded-xl border border-red-800 bg-red-950/40 px-4 py-2 text-sm text-red-300">{error}</p>}
+      {tab === 'orders' && <OrdersTab call={call} />}
+      {tab === 'etsy' && <EtsyTab call={call} />}
+      {tab === 'production' && <ProductionTab call={call} />}
+    </div>
+  )
+}
+
+type Caller = <T>(action: string, payload?: Record<string, unknown>) => Promise<T | null>
+
+function OrdersTab({ call }: { call: Caller }) {
+  const [orders, setOrders] = useState<AdminOrder[]>([])
+  const [status, setStatus] = useState('')
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    const data = await call<{ orders: AdminOrder[] }>('orders.list', { status: status || null, q })
+    if (data) setOrders(data.orders)
+  }, [call, q, status])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
+  }, [load])
+
+  const update = async (orderNo: string, payload: Record<string, unknown>) => {
+    if (await call('orders.update', { orderNo, ...payload })) await load()
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <select className={`${input} w-auto`} value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="">Tüm durumlar</option>
+          {Object.entries(STATUS_LABEL).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <input className={`${input} max-w-xs`} placeholder="Sipariş no, e-posta, isim" value={q} onChange={(e) => setQ(e.target.value)} />
+        <button className={`${btn} bg-neutral-800`} onClick={() => void load()}>
+          ↻ Yenile
+        </button>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-neutral-800">
+        {orders.length === 0 && <p className="p-6 text-center text-neutral-500">Sipariş yok</p>}
+        {orders.map((order) => (
+          <div key={order.order_no} className="border-b border-neutral-800 last:border-0">
+            <button
+              className="grid w-full grid-cols-2 gap-2 px-4 py-3 text-left text-sm hover:bg-neutral-900 md:grid-cols-6"
+              onClick={() => setOpen(open === order.order_no ? null : order.order_no)}
+            >
+              <span className="font-mono font-semibold">{order.order_no}</span>
+              <span>{STATUS_LABEL[order.status] || order.status}</span>
+              <span className="truncate">{order.full_name}</span>
+              <span className="truncate text-neutral-400">{order.email}</span>
+              <span className="font-semibold">{formatMoney(order.total, order.currency)}</span>
+              <span className="text-neutral-400">
+                {order.provider} · {new Date(order.created_at).toLocaleString('tr-TR')}
+              </span>
+            </button>
+            {open === order.order_no && (
+              <OrderDetail
+                order={order}
+                onUpdate={(payload) => update(order.order_no, payload)}
+                onMarkPaid={async () => {
+                  if (window.confirm('Ödeme alındı olarak işaretlensin mi? Dijital ürünler otomatik teslim edilir.')) {
+                    if (await call('orders.markPaid', { orderNo: order.order_no })) await load()
+                  }
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function OrderDetail({ order, onUpdate, onMarkPaid }: { order: AdminOrder; onUpdate: (p: Record<string, unknown>) => void; onMarkPaid: () => void }) {
+  const [tracking, setTracking] = useState(order.tracking_no)
+  const [note, setNote] = useState(order.admin_note)
+  return (
+    <div className="grid gap-4 bg-neutral-950/60 px-4 py-4 text-sm md:grid-cols-3">
+      <div className="space-y-1">
+        <p className="font-semibold text-neutral-300">Ürünler</p>
+        {order.items.map((item, index) => (
+          <p key={index}>
+            {item.quantity}× {item.name}
+            {item.variantLabel ? ` (${item.variantLabel})` : ''}
+          </p>
+        ))}
+        {order.customer_note && <p className="mt-2 text-amber-300">Not: {order.customer_note}</p>}
+      </div>
+      <div className="space-y-1">
+        <p className="font-semibold text-neutral-300">Müşteri</p>
+        <p>{order.full_name}</p>
+        <p>{order.phone}</p>
+        <p>{order.email}</p>
+        {order.address && (
+          <p className="text-neutral-400">
+            {order.address.line}, {order.address.district} / {order.address.city} {order.address.postalCode} {order.address.country}
+          </p>
+        )}
+        <a className="text-cyan-300 hover:underline" href={`/order/${order.order_no}?key=${order.access_key}`} target="_blank" rel="noopener noreferrer">
+          Müşteri sipariş sayfası ↗
+        </a>
+      </div>
+      <div className="space-y-2">
+        {(order.status === 'awaiting_transfer' || order.status === 'pending' || order.status === 'failed') && (
+          <button className={`${btn} w-full bg-emerald-500 text-neutral-950`} onClick={onMarkPaid}>
+            ✓ Ödeme alındı (havale onayı)
+          </button>
+        )}
+        <div className="flex gap-2">
+          <input className={input} placeholder="Kargo takip no" value={tracking} onChange={(e) => setTracking(e.target.value)} />
+          <button className={`${btn} bg-cyan-500 text-neutral-950`} onClick={() => onUpdate({ trackingNo: tracking, status: 'shipped' })}>
+            Kargola
+          </button>
+        </div>
+        <textarea className={`${input} min-h-16`} placeholder="Admin notu" value={note} onChange={(e) => setNote(e.target.value)} />
+        <div className="flex flex-wrap gap-2">
+          <button className={`${btn} bg-neutral-800`} onClick={() => onUpdate({ adminNote: note })}>
+            Notu kaydet
+          </button>
+          <button className={`${btn} bg-neutral-800`} onClick={() => onUpdate({ status: 'delivered' })}>
+            Teslim edildi
+          </button>
+          <button className={`${btn} bg-neutral-800`} onClick={() => window.confirm('Sipariş iptal edilsin mi?') && onUpdate({ status: 'cancelled' })}>
+            İptal
+          </button>
+          <button
+            className={`${btn} bg-neutral-800`}
+            onClick={() =>
+              window.confirm('İade edildi olarak işaretlensin mi? (Para iadesini ödeme panelinden yapmalısın)') && onUpdate({ status: 'refunded' })
+            }
+          >
+            İade
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EtsyTab({ call }: { call: Caller }) {
+  const [rows, setRows] = useState<EtsyRow[]>([])
+  const load = useCallback(async () => {
+    const data = await call<{ activations: EtsyRow[] }>('etsy.list')
+    if (data) setRows(data.activations)
+  }, [call])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
+  }, [load])
+
+  const update = async (id: string, status: string) => {
+    if (await call('etsy.update', { id, status })) await load()
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-neutral-400">
+        Etsy panelindeki siparişlerle karşılaştır. Siparişi olmayan aktivasyonları <b>İptal</b> et — QR devre dışı kalır.
+      </p>
+      <div className="overflow-x-auto rounded-2xl border border-neutral-800">
+        <table className="w-full text-sm">
+          <thead className="bg-neutral-900 text-left text-neutral-400">
+            <tr>
+              <th className="px-3 py-2">Tarih</th>
+              <th className="px-3 py-2">Etsy sipariş</th>
+              <th className="px-3 py-2">E-posta</th>
+              <th className="px-3 py-2">Ürün</th>
+              <th className="px-3 py-2">QR</th>
+              <th className="px-3 py-2">Durum</th>
+              <th className="px-3 py-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id} className="border-t border-neutral-800">
+                <td className="px-3 py-2 text-neutral-400">{new Date(row.created_at).toLocaleString('tr-TR')}</td>
+                <td className="px-3 py-2 font-mono">{row.order_number}</td>
+                <td className="px-3 py-2">{row.email}</td>
+                <td className="px-3 py-2">{row.product}</td>
+                <td className="px-3 py-2 font-mono">
+                  <a className="text-cyan-300 hover:underline" href={`/q/${row.slug}`} target="_blank" rel="noopener noreferrer">
+                    {row.slug}
+                  </a>
+                  {row.is_claimed ? ' ✓' : ''}
+                </td>
+                <td className="px-3 py-2">{row.status}</td>
+                <td className="space-x-2 whitespace-nowrap px-3 py-2">
+                  {row.status !== 'verified' && (
+                    <button className={`${btn} bg-emerald-600`} onClick={() => update(row.id, 'verified')}>
+                      Doğrula
+                    </button>
+                  )}
+                  {row.status !== 'revoked' && (
+                    <button
+                      className={`${btn} bg-red-700`}
+                      onClick={() => window.confirm('Aktivasyon iptal edilip QR devre dışı bırakılsın mı?') && update(row.id, 'revoked')}
+                    >
+                      İptal
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {rows.length === 0 && <p className="p-6 text-center text-neutral-500">Henüz Etsy aktivasyonu yok</p>}
+      </div>
+    </div>
+  )
+}
+
+function ProductionTab({ call }: { call: Caller }) {
+  const [count, setCount] = useState(20)
+  const [mode, setMode] = useState<'standard' | 'guestbook'>('standard')
+  const [channel, setChannel] = useState('kolye')
+  const [created, setCreated] = useState<Array<{ slug: string; qrUrl: string; nfcUrl: string }>>([])
+  const [queue, setQueue] = useState<NfcRow[]>([])
+  const [filterChannel, setFilterChannel] = useState('')
+  const [lock, setLock] = useState(true)
+  const [running, setRunning] = useState(false)
+  const [current, setCurrent] = useState<string | null>(null)
+  const [log, setLog] = useState<string[]>([])
+  const [nfcSupported, setNfcSupported] = useState(false)
+  const stopRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    const raf = window.requestAnimationFrame(() => setNfcSupported(isWebNfcSupported()))
+    return () => window.cancelAnimationFrame(raf)
+  }, [])
+
+  const loadQueue = useCallback(async () => {
+    const data = await call<{ items: NfcRow[] }>('nfc.list', { onlyPending: true, channel: filterChannel })
+    if (data) setQueue(data.items)
+  }, [call, filterChannel])
+
+  useEffect(() => {
+    void loadQueue()
+  }, [loadQueue])
+
+  const createBatch = async () => {
+    const data = await call<{ created: Array<{ slug: string; qrUrl: string; nfcUrl: string }> }>('qr.batch', { count, mode, channel })
+    if (data) {
+      setCreated(data.created)
+      await loadQueue()
+    }
+  }
+
+  const downloadCsv = () => {
+    const csv = ['slug,qr_url,nfc_url', ...created.map((row) => `${row.slug},${row.qrUrl},${row.nfcUrl}`)].join('\n')
+    const href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    const link = document.createElement('a')
+    link.href = href
+    link.download = `qrnot-${channel}-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(href), 3000)
+  }
+
+  const runStation = async () => {
+    setRunning(true)
+    const pending = [...queue]
+    for (const item of pending) {
+      const controller = new AbortController()
+      stopRef.current = controller
+      setCurrent(item.slug)
+      try {
+        await writeUrlToTag(`${SITE}/n/${item.slug}`, { lock, signal: controller.signal })
+        await call('nfc.mark', { slug: item.slug, locked: lock })
+        setLog((prev) => [`✓ ${item.slug} yazıldı${lock ? ' + kilitlendi' : ''}`, ...prev])
+        setQueue((prev) => prev.filter((row) => row.slug !== item.slug))
+        if ('vibrate' in navigator) navigator.vibrate(120)
+      } catch (err) {
+        if (controller.signal.aborted) break
+        setLog((prev) => [`✕ ${item.slug}: ${describeNfcError(err, 'tr')}`, ...prev])
+        break
+      }
+    }
+    setCurrent(null)
+    setRunning(false)
+  }
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <section className="space-y-3 rounded-3xl border border-neutral-800 bg-neutral-950/70 p-5">
+        <h2 className="text-lg font-semibold">1 · Toplu boş QR üret</h2>
+        <p className="text-sm text-neutral-400">Kolye/anahtarlık üretimi için. Çıkan CSV&apos;yi lazer kazıma / baskı yazılımına ver.</p>
+        <div className="grid grid-cols-3 gap-2">
+          <input className={input} type="number" min={1} max={500} value={count} onChange={(e) => setCount(Number(e.target.value) || 1)} />
+          <select className={input} value={mode} onChange={(e) => setMode(e.target.value as 'standard' | 'guestbook')}>
+            <option value="standard">Standart</option>
+            <option value="guestbook">Anı defteri</option>
+          </select>
+          <input className={input} value={channel} onChange={(e) => setChannel(e.target.value)} placeholder="kanal (kolye, anahtarlik…)" />
+        </div>
+        <button className={`${btn} bg-cyan-500 text-neutral-950`} onClick={createBatch}>
+          {count} QR üret
+        </button>
+        {created.length > 0 && (
+          <div className="space-y-2">
+            <button className={`${btn} bg-neutral-800`} onClick={downloadCsv}>
+              ⬇ CSV indir ({created.length})
+            </button>
+            <div className="max-h-48 overflow-auto rounded-xl bg-neutral-900 p-3 font-mono text-xs text-neutral-300">
+              {created.map((row) => (
+                <p key={row.slug}>
+                  {row.slug} · {row.qrUrl}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3 rounded-3xl border border-neutral-800 bg-neutral-950/70 p-5">
+        <h2 className="text-lg font-semibold">2 · NFC yazma istasyonu</h2>
+        {!nfcSupported ? (
+          <p className="rounded-xl border border-amber-800 bg-amber-950/40 p-3 text-sm text-amber-200">
+            Bu sayfayı Android telefonda Chrome ile aç. Web NFC sadece Android Chrome&apos;da çalışır. Diğer cihazlarda listeyi NFC Tools ile yazıp aşağıdan
+            elle işaretleyebilirsin.
+          </p>
+        ) : (
+          <p className="text-sm text-neutral-400">Sıradaki etiketi telefona dokundur; yazılınca otomatik bir sonrakine geçer.</p>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <input className={`${input} max-w-[12rem]`} placeholder="kanal filtresi" value={filterChannel} onChange={(e) => setFilterChannel(e.target.value)} />
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={lock} onChange={(e) => setLock(e.target.checked)} /> Yazınca kilitle
+          </label>
+          <button className={`${btn} bg-neutral-800`} onClick={() => void loadQueue()}>
+            ↻
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <button className={`${btn} bg-emerald-500 text-neutral-950`} disabled={!nfcSupported || running || queue.length === 0} onClick={runStation}>
+            ▶ Başlat ({queue.length} bekliyor)
+          </button>
+          {running && (
+            <button className={`${btn} bg-red-700`} onClick={() => stopRef.current?.abort()}>
+              ■ Durdur
+            </button>
+          )}
+        </div>
+        {current && (
+          <div className="rounded-2xl border border-emerald-700 bg-emerald-950/40 p-4 text-center">
+            <p className="text-sm text-emerald-300">Etiketi dokundur</p>
+            <p className="mt-1 font-mono text-3xl font-bold">{current}</p>
+          </div>
+        )}
+        <div className="max-h-56 overflow-auto rounded-xl bg-neutral-900 p-3 text-xs">
+          {queue.slice(0, 50).map((row) => (
+            <div key={row.slug} className="flex items-center justify-between gap-2 py-1">
+              <span className="font-mono">
+                {row.slug}{' '}
+                <span className="text-neutral-500">
+                  {row.source_channel || ''} {row.qr_mode === 'guestbook' ? '📖' : ''}
+                </span>
+              </span>
+              <button className="text-cyan-300 hover:underline" onClick={async () => (await call('nfc.mark', { slug: row.slug, locked: lock })) && loadQueue()}>
+                elle işaretle
+              </button>
+            </div>
+          ))}
+        </div>
+        {log.length > 0 && (
+          <div className="max-h-40 overflow-auto rounded-xl bg-neutral-900 p-3 font-mono text-xs text-neutral-300">
+            {log.map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}

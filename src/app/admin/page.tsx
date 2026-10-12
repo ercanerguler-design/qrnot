@@ -520,6 +520,12 @@ export default function AdminPage() {
             <h1 className="text-2xl font-bold text-white">Admin Paneli</h1>
           </div>
           <p className="text-neutral-500 text-sm">Boş QR kodları oluştur, yazdır, müşterilere gönder.</p>
+          <Link
+            href="/admin/shop"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20"
+          >
+            🛒 Mağaza siparişleri · Etsy · Üretim &amp; NFC istasyonu →
+          </Link>
         </div>
 
         {/* Form */}

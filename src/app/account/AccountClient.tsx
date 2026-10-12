@@ -24,7 +24,6 @@ interface AccountQr {
   title: string
   play_count: number
   nfc_scan_count?: number
-  can_delete?: boolean
   qr_mode?: string
   created_at: string
 }
@@ -83,8 +82,9 @@ const T = {
     setup: 'İçerik ekle',
     manage: 'Yönet',
     recover: 'Sahip linkini geri al',
-    remove: 'Sil',
-    confirmDelete: 'Bu QR silinsin mi? Bu işlem geri alınamaz ve hak iadesi yapılmaz.',
+    remove: "QR'ı sil",
+    confirmDelete:
+      "Bu QR ve içindeki tüm ses, video ve fotoğraflar KALICI olarak silinsin mi?\n\nKolye / anahtarlık gibi bir ürüne aitse, ürünün QR'ı ve NFC'si artık çalışmaz. Bu işlem geri alınamaz ve ücret iadesi yapılmaz.",
     orders: 'Siparişlerim',
     viewOrder: 'Detay',
     timeout: 'Güvenlik için oturumun kapatıldı. Lütfen tekrar giriş yap.',
@@ -128,8 +128,9 @@ const T = {
     setup: 'Add content',
     manage: 'Manage',
     recover: 'Recover owner link',
-    remove: 'Delete',
-    confirmDelete: 'Delete this QR? This cannot be undone and the credit is not refunded.',
+    remove: 'Delete QR',
+    confirmDelete:
+      "Permanently delete this QR and all its voice messages, videos and photos?\n\nIf it belongs to a necklace or keychain, the product's QR and NFC will stop working. This cannot be undone and is not refunded.",
     orders: 'My orders',
     viewOrder: 'Details',
     timeout: 'You were signed out for security. Please sign in again.',
@@ -440,12 +441,11 @@ export default function AccountClient({ lang }: { lang: Lang }) {
                     <Link href={withLang(`/recover/${item.slug}`, lang)} className="w-btn w-btn-ghost w-btn-sm">
                       {t.recover}
                     </Link>
-                  ) : item.can_delete !== false ? (
-                    <button type="button" onClick={() => handleDelete(item.slug)} className="w-btn w-btn-ghost w-btn-sm">
-                      {t.remove}
-                    </button>
                   ) : null}
                 </div>
+                <button type="button" onClick={() => handleDelete(item.slug)} className="w-link self-start text-xs text-coral">
+                  🗑 {t.remove}
+                </button>
               </article>
             )
           })}

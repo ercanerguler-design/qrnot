@@ -324,7 +324,7 @@ function EtsyTab({ call }: { call: Caller }) {
       <EtsyOrdersPanel call={call} />
       <h2 className="text-lg font-semibold">Aktivasyonlar</h2>
       <p className="text-sm text-neutral-400">
-        Sadece yukarıdaki listede olan siparişler aktive edilebilir. Şüpheli bir aktivasyonu <b>İptal</b> et: QR devre dışı kalır, sahiplenilemez.
+        Sadece yukarıdaki listede olan siparişler aktive edilebilir. Şüpheli bir aktivasyonu <b>İptal ve sil</b>: QR tüm içeriğiyle kalıcı olarak silinir.
       </p>
       <div className="overflow-x-auto rounded-2xl border border-neutral-800">
         <table className="w-full text-sm">
@@ -362,9 +362,9 @@ function EtsyTab({ call }: { call: Caller }) {
                   {row.status !== 'revoked' && (
                     <button
                       className={`${btn} bg-red-700`}
-                      onClick={() => window.confirm('Aktivasyon iptal edilip QR devre dışı bırakılsın mı?') && update(row.id, 'revoked')}
+                      onClick={() => window.confirm('Aktivasyon iptal edilip QR tüm içeriğiyle KALICI olarak silinsin mi? Bu işlem geri alınamaz.') && update(row.id, 'revoked')}
                     >
-                      İptal
+                      İptal ve sil
                     </button>
                   )}
                 </td>

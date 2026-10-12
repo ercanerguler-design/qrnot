@@ -6,6 +6,7 @@ import { clientIp, consumeRateLimit, ensureGrowthSchema } from '@/lib/growthSche
 import { DEFAULT_GUESTBOOK_LIMIT } from '@/lib/guestbook'
 import { createBlankQRCodes } from '@/lib/qr'
 import { SITE_URL } from '@/lib/site'
+import { deleteQrWithMedia } from '@/lib/qrDelete'
 
 // Mağaza / Etsy / NFC üretim yönetimi — tek uç nokta, ADMIN_PASSWORD ile korunur.
 
@@ -121,11 +122,19 @@ export async function POST(req: NextRequest) {
     if (action === 'etsy.update') {
       const status = body.status === 'verified' || body.status === 'revoked' || body.status === 'pending' ? body.status : null
       if (!status) return NextResponse.json({ error: 'Geçersiz durum' }, { status: 400 })
+      const id = String(body.id || '')
+      // İptal = QR'ı tüm içeriğiyle sil (aktivasyon kaydı CASCADE ile gider).
+      if (status === 'revoked') {
+        const found = (await sql`SELECT qr_id FROM etsy_activations WHERE id = ${id}`) as Array<{ qr_id: string }>
+        if (found.length === 0) return NextResponse.json({ error: 'Kayıt bulunamadı' }, { status: 404 })
+        const result = await deleteQrWithMedia(found[0].qr_id)
+        if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 })
+        return NextResponse.json({ ok: true, deleted: true })
+      }
       const rows = (await sql`
-        UPDATE etsy_activations SET status = ${status}, updated_at = NOW() WHERE id = ${String(body.id || '')} RETURNING qr_id
+        UPDATE etsy_activations SET status = ${status}, updated_at = NOW() WHERE id = ${id} RETURNING qr_id
       `) as Array<{ qr_id: string }>
       if (rows.length === 0) return NextResponse.json({ error: 'Kayıt bulunamadı' }, { status: 404 })
-      await sql`UPDATE qr_codes SET is_active = ${status !== 'revoked'}, updated_at = NOW() WHERE id = ${rows[0].qr_id}`
       return NextResponse.json({ ok: true })
     }
 

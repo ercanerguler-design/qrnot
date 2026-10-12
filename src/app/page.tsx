@@ -21,7 +21,7 @@ const C = {
     heroDesc:
       "Kolyenin ya da anahtarlığın arkasındaki QR'ı okutan, senin sesini duyar, videonu izler, fotoğraflarını görür. Uygulama gerekmez; içeriği istediğin zaman değiştirirsin.",
     ctaShop: 'Ürünleri gör',
-    ctaFree: 'Ücretsiz dene',
+    ctaFree: 'Dijital QR al',
     trust: ['Uygulama gerekmez', 'iPhone & Android', 'İçerik her zaman güncellenebilir', 'Hediye kutusunda gönderim'],
     demoTitle: 'Bir örnek dinle',
     demoLabel: 'Annemin sesi ❤️',
@@ -101,7 +101,7 @@ const C = {
     heroDesc:
       'Whoever scans the QR on the back of the necklace or keychain hears your voice, watches your video, sees your photos. No app needed — and you can change the content any time.',
     ctaShop: 'Shop now',
-    ctaFree: 'Try it free',
+    ctaFree: 'Get a digital QR',
     trust: ['No app needed', 'iPhone & Android', 'Update content any time', 'Gift-ready packaging'],
     demoTitle: 'Listen to an example',
     demoLabel: "Mom's voice ❤️",
@@ -208,7 +208,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             <Link href={withLang('/shop', lang)} className="w-btn w-btn-primary px-7 py-4 text-base">
               {c.ctaShop}
             </Link>
-            <Link href={withLang('/account', lang)} className="w-btn w-btn-ghost px-7 py-4 text-base">
+            <Link href={withLang('/shop/dijital-qr', lang)} className="w-btn w-btn-ghost px-7 py-4 text-base">
               {c.ctaFree}
             </Link>
           </div>

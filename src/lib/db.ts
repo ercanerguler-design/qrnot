@@ -61,7 +61,7 @@ export function ensureQrSchema() {
           email VARCHAR(255) UNIQUE NOT NULL,
           password_hash TEXT NOT NULL,
           account_type VARCHAR(16) NOT NULL DEFAULT 'individual',
-          free_slots INTEGER NOT NULL DEFAULT 1,
+          free_slots INTEGER NOT NULL DEFAULT 0,
           paid_slots INTEGER NOT NULL DEFAULT 0,
           used_slots INTEGER NOT NULL DEFAULT 0,
           created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -69,10 +69,12 @@ export function ensureQrSchema() {
         )
       `
       await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS account_type VARCHAR(16) NOT NULL DEFAULT 'individual'`
-      await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS free_slots INTEGER NOT NULL DEFAULT 1`
-      await client`ALTER TABLE users ALTER COLUMN free_slots SET DEFAULT 1`
+      await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS free_slots INTEGER NOT NULL DEFAULT 0`
+      await client`ALTER TABLE users ALTER COLUMN free_slots SET DEFAULT 0`
       await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS paid_slots INTEGER NOT NULL DEFAULT 0`
       await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS used_slots INTEGER NOT NULL DEFAULT 0`
+      // Ücretsiz deneme kaldırıldı: kullanılmamış deneme hakları sıfırlanır, kullanılmış olan (hak hesabı doğru kalsın diye) korunur.
+      await client`UPDATE users SET free_slots = LEAST(used_slots, 1) WHERE free_slots > LEAST(used_slots, 1)`
       await client`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS recording_count INTEGER NOT NULL DEFAULT 0`
       await client`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS recording_limit INTEGER NOT NULL DEFAULT 3`
       await client`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS video_recording_count INTEGER NOT NULL DEFAULT 0`

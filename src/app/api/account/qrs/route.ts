@@ -4,6 +4,7 @@ import { QRCode, sql } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 
 export const dynamic = 'force-dynamic'
+// Ücretsiz deneme kaldırıldı (yeni hesaplarda free_slots = 0). Sınır, geçmişte kullanılmış deneme hakkını doğru saymak için duruyor.
 const FREE_TRIAL_LIMIT = 1
 
 export async function GET(req: NextRequest) {

@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bu e-posta zaten kayıtlı. Şifrenle giriş yapabilirsin.' }, { status: 409 })
     }
 
-    // Her yeni hesap ücretsiz QR hakkı aldığı için toplu hesap açmayı sınırla.
+    // Toplu / otomatik hesap açmayı sınırla.
     if (!(await consumeRateLimit(`register:${clientIp(req.headers)}`, 5, 3600))) {
       return NextResponse.json({ error: 'Çok fazla hesap oluşturuldu. Lütfen daha sonra tekrar dene.' }, { status: 429 })
     }

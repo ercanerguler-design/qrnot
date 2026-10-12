@@ -754,7 +754,7 @@ export default function AdminPage() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-8">
           <div className="mb-5">
             <h2 className="text-white font-semibold">Kullanıcı Hak Yönetimi</h2>
-            <p className="text-neutral-500 text-sm">Yeni uyelere 1 ucretsiz hak verilir. Satin alan kullanicilara buradan ek hak tanimlayabilirsin.</p>
+            <p className="text-neutral-500 text-sm">Ucretsiz hak verilmez; QR hakki sadece satin alma ile eklenir. Gerekirse buradan elle hak tanimlayabilirsin.</p>
           </div>
 
           {users.length === 0 ? (

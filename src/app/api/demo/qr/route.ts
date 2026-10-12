@@ -5,6 +5,7 @@ import { createBlankQRCodes } from '@/lib/qr'
 
 export const dynamic = 'force-dynamic'
 
+// Ücretsiz deneme kaldırıldı (yeni hesaplarda free_slots = 0). Sınır, geçmişte kullanılmış deneme hakkını doğru saymak için duruyor.
 const FREE_TRIAL_LIMIT = 1
 
 function withNoStore(res: NextResponse) {
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     const policyRemaining = Math.max(0, effectiveFreeSlots + user.paidSlots - user.usedSlots)
 
     if (policyRemaining <= 0) {
-      return withNoStore(NextResponse.json({ error: 'Bu hesap için ücretsiz hak bitti. Satın alma sonrası yeni hak eklenebilir.', remaining: 0 }, { status: 429 }))
+      return withNoStore(NextResponse.json({ error: 'QR oluşturmak için QR hakkı satın almalısın.', remaining: 0 }, { status: 429 }))
     }
 
     const body = await req.json().catch(() => ({}))

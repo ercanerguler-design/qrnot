@@ -284,12 +284,12 @@ const GATE_T = {
   tr: {
     title: 'Önce giriş yap',
     desc: 'QR kodun hesabına bağlanır; böylece sadece sen yönetebilir, kaybetsen bile hesabından geri bulabilirsin.',
-    cta: 'Giriş yap / ücretsiz hesap aç',
+    cta: 'Giriş yap / hesap aç',
   },
   en: {
     title: 'Sign in first',
     desc: 'Your QR code is linked to your account, so only you can manage it — and you can always find it again in your account.',
-    cta: 'Sign in / create a free account',
+    cta: 'Sign in / create an account',
   },
 }
 

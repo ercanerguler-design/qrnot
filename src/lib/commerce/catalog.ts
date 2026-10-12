@@ -201,8 +201,9 @@ export const PRODUCTS: Product[] = [
 ]
 
 export const SHIPPING = {
+  // Kargo alıcı ödemelidir: ücret sitede alınmaz, teslimatta kargo firmasına ödenir.
   TRY: { flat: 0, freeAbove: 0 },
-  USD: { flat: 900, freeAbove: 6000 },
+  USD: { flat: 0, freeAbove: 0 },
 }
 
 export function getProduct(id: string): Product | null {

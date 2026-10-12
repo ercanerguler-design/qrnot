@@ -75,19 +75,64 @@ const C = {
       ],
       [
         'Kargo ve iade nasıl?',
-        'Siparişler 1-3 iş gününde kargoya verilir, Türkiye geneli kargo ücretsiz. Kullanılmamış ürünlerde 14 gün içinde iade hakkın var.',
+        'Siparişler 1-3 iş gününde kargoya verilir. Kargo alıcı ödemelidir; kargo ücreti teslimatta kargo firmasına ödenir. Kullanılmamış ürünlerde 14 gün içinde iade hakkın var.',
       ],
     ],
     b2bKicker: 'Kurumsal',
     b2bTitle: 'İşletmeler için QR çözümleri',
-    b2bDesc: 'Otel, eğitim, sağlık, fabrika, perakende ve lojistik için özel paneller. Toplu üretim ve pazaryeri entegrasyonu.',
+    b2bDesc:
+      'Her sektöre özel yönetim paneli: QR\'ları toplu üretirsin, içeriklerini tek yerden güncellersin, gelen talepleri ve kayıtları canlı izlersin. Okutan kişinin uygulama indirmesi gerekmez.',
+    sectorQuote: 'Teklif al',
+    sectorLogin: 'Panel girişi',
+    sectorQuoteMsg: 'Merhaba QRNot, {sector} için QR çözümünüz hakkında bilgi ve teklif almak istiyorum.',
+    b2bExtra: 'Toplu QR / NFC üretimi, logo baskısı ve pazaryeri sipariş entegrasyonu için bizimle iletişime geç.',
     sectors: [
-      ['🏨', 'Otel', '/hotel'],
-      ['🎓', 'Eğitim', '/education'],
-      ['🏥', 'Sağlık', '/health'],
-      ['🏭', 'Fabrika', '/factory'],
-      ['🛍️', 'Perakende', '/retail'],
-      ['🚚', 'Lojistik', '/logistics'],
+      {
+        icon: '🏨',
+        name: 'Otel',
+        href: '/hotel',
+        desc: 'Her odaya bir QR: misafir resepsiyonu aramadan talebini iletir.',
+        uses: ['Oda servisi siparişi', 'Temizlik, teknik ve concierge talebi', 'Canlı operasyon paneli, toplu oda QR üretimi'],
+      },
+      {
+        icon: '🎓',
+        name: 'Eğitim',
+        href: '/education',
+        desc: 'Sınıf kapısına, kitaba ya da panoya QR: öğrenci tek okutmayla ulaşır.',
+        uses: ['QR ile sınıf yoklaması', 'Ders materyali, ses ve video anlatım', 'Ödev / quiz, duyuru ve destek talebi'],
+      },
+      {
+        icon: '🏥',
+        name: 'Sağlık',
+        href: '/health',
+        desc: 'Hasta ve personel için doğru bilgi, doğru yerde.',
+        uses: ['İlaç ve tıbbi cihaz kullanım talimatı', 'Klinik yönlendirme, randevu ve taburculuk bilgisi', 'Hijyen denetimi ve acil durum protokolü'],
+      },
+      {
+        icon: '🏭',
+        name: 'Fabrika & üretim',
+        href: '/factory',
+        desc: 'Makinenin ya da ürettiğin ürünün üzerine QR: kılavuz hep elinin altında.',
+        uses: [
+          'Kullanım kılavuzu ve montaj videosu (video, görsel ya da PDF bağlantısı)',
+          'İş güvenliği akışı, bakım ve arıza bildirimi',
+          'Operatör eğitimi, kalite kontrol, bant ürün sayımı',
+        ],
+      },
+      {
+        icon: '🛍️',
+        name: 'Perakende',
+        href: '/retail',
+        desc: 'Raf etiketindeki QR ürünü anlatır, mağaza ekibini düzenler.',
+        uses: ['Ürün hikâyesi: tanıtım videosu, içerik, menşe', 'Fiyat ve kampanya kontrolü', 'Mağaza kontrol listesi, personel görevleri, müşteri anketi'],
+      },
+      {
+        icon: '🚚',
+        name: 'Lojistik',
+        href: '/logistics',
+        desc: 'Kolide, araçta ve depoda QR: her adım kayıt altında.',
+        uses: ['Teslimat kanıtı ve hasar bildirimi', 'Araç kontrolü, rota devri, soğuk zincir takibi', 'Depo girişi, stok sayımı, gümrük evrakı'],
+      },
     ],
     b2bCta: 'Kurumsal teklif al',
     partner: 'Pazaryeri ortaklığı',
@@ -150,18 +195,63 @@ const C = {
         'Can anyone who scans see my content?',
         'Yes — anyone who scans sees the content, so add what you want to share with the recipient. Only you can change it.',
       ],
-      ['Shipping & returns?', 'Orders ship within 1-3 business days. Unused items can be returned within 14 days.'],
+      ['Shipping & returns?', 'Orders ship within 1-3 business days. Shipping is paid by the recipient on delivery. Unused items can be returned within 14 days.'],
     ],
     b2bKicker: 'Business',
     b2bTitle: 'QR solutions for businesses',
-    b2bDesc: 'Dedicated panels for hotels, education, healthcare, factories, retail and logistics. Bulk production and marketplace integrations.',
+    b2bDesc:
+      'A dedicated management panel for each industry: produce QR codes in bulk, update their content from one place and follow requests and records live. No app needed for whoever scans.',
+    sectorQuote: 'Get a quote',
+    sectorLogin: 'Panel login',
+    sectorQuoteMsg: 'Hello QRNot, I would like information and a quote for your {sector} QR solution.',
+    b2bExtra: 'Contact us for bulk QR / NFC production, logo printing and marketplace order integration.',
     sectors: [
-      ['🏨', 'Hotels', '/hotel'],
-      ['🎓', 'Education', '/education'],
-      ['🏥', 'Healthcare', '/health'],
-      ['🏭', 'Factories', '/factory'],
-      ['🛍️', 'Retail', '/retail'],
-      ['🚚', 'Logistics', '/logistics'],
+      {
+        icon: '🏨',
+        name: 'Hotels',
+        href: '/hotel',
+        desc: 'A QR in every room: guests send requests without calling reception.',
+        uses: ['Room service orders', 'Housekeeping, maintenance and concierge requests', 'Live operations panel, bulk room QR production'],
+      },
+      {
+        icon: '🎓',
+        name: 'Education',
+        href: '/education',
+        desc: 'A QR on the classroom door, book or board — one scan away.',
+        uses: ['QR class attendance', 'Lesson materials, audio and video explanations', 'Homework / quizzes, announcements and support'],
+      },
+      {
+        icon: '🏥',
+        name: 'Healthcare',
+        href: '/health',
+        desc: 'The right information for patients and staff, in the right place.',
+        uses: ['Medication and medical device instructions', 'Clinic wayfinding, appointment and discharge info', 'Hygiene audits and emergency protocols'],
+      },
+      {
+        icon: '🏭',
+        name: 'Factories & manufacturing',
+        href: '/factory',
+        desc: 'A QR on the machine or on the product you make: the manual is always at hand.',
+        uses: [
+          'User manuals and assembly videos (video, images or a PDF link)',
+          'Safety flows, maintenance and fault reports',
+          'Operator training, quality checks, conveyor counts',
+        ],
+      },
+      {
+        icon: '🛍️',
+        name: 'Retail',
+        href: '/retail',
+        desc: 'The shelf-tag QR tells the product story and organises the store team.',
+        uses: ['Product story: intro video, details, origin', 'Price and campaign checks', 'Store checklists, staff tasks, customer surveys'],
+      },
+      {
+        icon: '🚚',
+        name: 'Logistics',
+        href: '/logistics',
+        desc: 'QR on parcels, vehicles and in the warehouse: every step recorded.',
+        uses: ['Proof of delivery and damage reports', 'Vehicle checks, route handoffs, cold-chain tracking', 'Warehouse intake, stock counts, customs documents'],
+      },
     ],
     b2bCta: 'Get a business quote',
     partner: 'Marketplace partnership',
@@ -353,14 +443,43 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
           <Kicker>{c.b2bKicker}</Kicker>
           <h2 className="font-display mt-2 text-3xl font-semibold">{c.b2bTitle}</h2>
           <p className="mt-3 max-w-2xl text-ink-2">{c.b2bDesc}</p>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {c.sectors.map(([icon, label, href]) => (
-              <Link key={href} href={withLang(href, lang)} className="rounded-2xl border border-line bg-paper p-4 text-center font-semibold hover:border-ink-2">
-                <span className="block text-2xl">{icon}</span>
-                <span className="mt-1 block text-sm">{label}</span>
-              </Link>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {c.sectors.map((sector) => (
+              <div key={sector.href} className="flex flex-col rounded-2xl border border-line bg-paper p-5">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl" aria-hidden="true">
+                    {sector.icon}
+                  </span>
+                  <h3 className="font-display text-xl font-semibold">{sector.name}</h3>
+                </div>
+                <p className="mt-3 text-sm text-ink-2">{sector.desc}</p>
+                <ul className="mt-3 space-y-1.5 text-sm text-ink-2">
+                  {sector.uses.map((use) => (
+                    <li key={use} className="flex gap-2">
+                      <span className="text-sage" aria-hidden="true">
+                        ✓
+                      </span>
+                      <span>{use}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                  <a
+                    href={whatsappHref(c.sectorQuoteMsg.replace('{sector}', sector.name))}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-btn w-btn-dark w-btn-sm"
+                  >
+                    {c.sectorQuote}
+                  </a>
+                  <Link href={withLang(sector.href, lang)} className="text-xs text-muted hover:underline">
+                    {c.sectorLogin} →
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
+          <p className="mt-6 text-sm text-ink-2">{c.b2bExtra}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
               href={whatsappHref(lang === 'en' ? 'Hello QRNot, I would like a business quote.' : 'Merhaba QRNot, kurumsal teklif almak istiyorum.')}

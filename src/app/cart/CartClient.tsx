@@ -17,6 +17,8 @@ const T = {
     subtotal: 'Ara toplam',
     shipping: 'Kargo',
     free: 'Ücretsiz',
+    shippingCod: 'Alıcı ödemeli',
+    shippingCodNote: 'Kargo ücreti teslimatta kargo firmasına ödenir.',
     total: 'Toplam',
     contact: 'İletişim bilgileri',
     fullName: 'Ad soyad',
@@ -63,6 +65,8 @@ const T = {
     subtotal: 'Subtotal',
     shipping: 'Shipping',
     free: 'Free',
+    shippingCod: 'Paid on delivery',
+    shippingCodNote: 'Shipping is paid to the carrier on delivery.',
     total: 'Total',
     contact: 'Contact details',
     fullName: 'Full name',
@@ -351,9 +355,10 @@ export default function CartClient({
             {cart.hasPhysical && (
               <div className="flex justify-between">
                 <dt className="text-ink-2">{t.shipping}</dt>
-                <dd>{cart.shipping > 0 ? formatMoney(cart.shipping, currency) : t.free}</dd>
+                <dd>{cart.shipping > 0 ? formatMoney(cart.shipping, currency) : t.shippingCod}</dd>
               </div>
             )}
+            {cart.hasPhysical && cart.shipping === 0 && <p className="text-xs text-muted">{t.shippingCodNote}</p>}
             <div className="flex justify-between text-lg font-bold">
               <dt>{t.total}</dt>
               <dd>{formatMoney(cart.total, currency)}</dd>

@@ -34,7 +34,7 @@
 | Dijital Anı Defteri | Düğünde misafirlerin sesini topla | 499 TL |
 | Dijital QR Hakkı | Kendi kartına ya da paketine bas | 249 TL |
 
-Türkiye geneli ücretsiz kargo · 1–3 iş günü kargoya teslim · Fiziksel ürünlerde 14 gün iade.
+Kargo alıcı ödemeli · 1–3 iş günü kargoya teslim · Fiziksel ürünlerde 14 gün iade.
 
 ---
 

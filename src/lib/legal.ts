@@ -31,7 +31,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', '2. Sözleşme Konusu Ürün / Hizmet'],
       [
         'p',
-        'Ürünün temel nitelikleri, adedi, vergiler dahil satış fiyatı, varsa kargo bedeli ve toplam ödeme tutarı sipariş özetinde (sepet ve ödeme sayfasında) gösterilmektedir. QR/NFC ürünleri, sitedeki dijital içerik sayfasına (ses, video, fotoğraf, bağlantı) erişim hizmeti ile birlikte sunulur.',
+        'Ürünün temel nitelikleri, adedi, vergiler dahil satış fiyatı ve toplam ödeme tutarı sipariş özetinde (sepet ve ödeme sayfasında) gösterilmektedir. Fiziksel ürünlerde kargo alıcı ödemelidir; kargo bedeli satış fiyatına dahil değildir ve teslimat sırasında ALICI tarafından kargo firmasına ödenir. QR/NFC ürünleri, sitedeki dijital içerik sayfasına (ses, video, fotoğraf, bağlantı) erişim hizmeti ile birlikte sunulur.',
       ],
       ['h2', '3. Ödeme ve Teslimat'],
       [
@@ -245,7 +245,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     blocks: [
       [
         'ul',
-        'Physical products can be returned within 14 days of delivery, unused and in original packaging.|Email ' +
+        'Shipping is paid by the recipient to the carrier on delivery and is not included in the product price.|Physical products can be returned within 14 days of delivery, unused and in original packaging.|Email ' +
           COMPANY.email +
           " or message us on WhatsApp with your order number to start a return.|Refunds are issued to the original payment method within 14 days of approval.|If an item arrives damaged or defective, we cover return shipping or send a replacement.|Digital products that have been delivered to your account and used are non-refundable; if you have a technical problem, contact us and we will fix it or refund you.|Etsy purchases follow Etsy's order and refund process — please contact us through Etsy messages.",
       ],

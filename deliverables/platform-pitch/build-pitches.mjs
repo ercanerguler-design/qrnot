@@ -1,0 +1,221 @@
+// Pazaryeri ortaklık sunumlarını üretir: node deliverables/platform-pitch/build-pitches.mjs
+// Çıktı: deliverables/platform-pitch/sunum-<platform>.html (A4 yatay, tarayıcıdan PDF'e yazdırılabilir)
+// Ürün ve fiyatlar src/lib/commerce/catalog.ts ile aynı tutulmalıdır.
+
+import { writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const OUT = dirname(fileURLToPath(import.meta.url))
+
+const PRODUCTS = [
+  ['Sesli Anı Kolyesi', 'Pleksi, neon damla baskı, arkada kişiye özel QR', 449],
+  ['NFC + QR Anı Kolyesi', 'Dokun-aç NFC çip + QR yedeği, kilitli programlanmış', 599],
+  ['Sesli Anahtarlık', 'Ses, video ve kayıp durumunda acil iletişim', 349],
+  ['NFC + QR Anahtarlık', 'Kartvizit, evcil hayvan künyesi, hediye', 499],
+  ['Dijital Anı Defteri', 'Düğün ve etkinlikte misafirlerin sesli-videolu anıları', 499],
+  ['Dijital QR Hakkı', 'Kendi kartına, paketine ya da ürününe basılan QR', 249],
+]
+
+const PLATFORMS = {
+  ciceksepeti: {
+    name: 'ÇiçekSepeti',
+    headline: 'Çiçeğin yanındaki not artık konuşuyor.',
+    sub: 'Çiçek ve hediye kutusu siparişlerine sesli / videolu mesaj katmanı.',
+    scenarios: [
+      ['Sesli not kartı', 'Çiçek siparişine eklenen Dijital QR kartı: gönderen sesini kaydeder, alan kişi kartı okutup dinler.'],
+      ['Özel gün kutuları', 'Sevgililer Günü ve Anneler Günü kutularında Sesli Anı Kolyesi ile birlikte gönderim.'],
+      ['Etkinlik ve düğün', 'Düğün / nişan çiçek siparişlerine Dijital Anı Defteri: misafirler sesli anı bırakır.'],
+    ],
+    categories: 'Çiçek · Hediye kutusu · Özel gün koleksiyonları',
+    model: 'Mağaza (Model A) ile başla; pilot verisi olumluysa ürün sayfasında "Sesli not ekle" sepet eklentisi (Model C).',
+  },
+  trendyol: {
+    name: 'Trendyol',
+    headline: 'Takı ve aksesuar kategorisine fiyat dışı bir fark.',
+    sub: 'Sesli ve NFC\'li kolye ve anahtarlıklar — özel gün koleksiyonlarına hazır.',
+    scenarios: [
+      ['Özel gün koleksiyonları', 'Sevgililer Günü, Anneler Günü, mezuniyet: kolye ve anahtarlıklar tema vitrinlerinde.'],
+      ['Kişiye özel hediye', 'Ürün fiziksel olarak aynı, değeri içindeki ses: aynı fiyat bandında daha güçlü hikâye.'],
+      ['Satıcı eklentisi', 'Trendyol\'daki hediyelik satıcılarına toplu Dijital QR hakkı ve NFC etiket tedariki (Model B).'],
+    ],
+    categories: 'Takı · Aksesuar · Hediyelik',
+    model: 'Mağaza (Model A) ile başla; ardından hediyelik satıcılarına toplu QR / NFC tedariki (Model B).',
+  },
+  hepsiburada: {
+    name: 'Hepsiburada',
+    headline: 'Premium hediye segmentine dijital bir katman.',
+    sub: 'NFC\'li, güncellenebilir, hesaba bağlı hediye ürünleri.',
+    scenarios: [
+      ['Premium hediye', 'NFC + QR Anı Kolyesi ve Anahtarlık: dokun-aç deneyim, kilitli programlanmış çip.'],
+      ['Teknoloji meraklısı alıcı', 'NFC kartvizit anahtarlığı: iletişim bilgisi ya da portfolyo tek dokunuşla.'],
+      ['Kurumsal hediye', 'Şirket etkinlikleri için toplu anahtarlık ve Dijital Anı Defteri paketleri.'],
+    ],
+    categories: 'Hediyelik · Elektronik aksesuar · Kurumsal hediye',
+    model: 'Mağaza (Model A) ile başla; kurumsal hediye kanalında toplu paket teklifi.',
+  },
+  n11: {
+    name: 'N11',
+    headline: 'Kampanya dönemlerinde kişiselleştirilebilir hediye.',
+    sub: 'Hızlı kurulan, ses ve videoyla kişiselleşen ürünler.',
+    scenarios: [
+      ['Kampanya paketleri', 'Özel gün kampanyalarında kolye + anahtarlık setleri.'],
+      ['Uygun fiyatlı giriş', 'Sesli Anahtarlık ve Dijital QR Hakkı ile düşük bütçeli kişisel hediye.'],
+      ['Etkinlik', 'Doğum günü ve mezuniyet için Dijital Anı Defteri.'],
+    ],
+    categories: 'Hediyelik · Kampanya ürünleri',
+    model: 'Mağaza (Model A) ile başla; kampanya takvimine bağlı vitrin denemesi.',
+  },
+}
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+function page(inner, cls = '') {
+  return `<section class="page ${cls}">${inner}<footer><span>QRNot × {{PLATFORM}}</span><span>qrnot.com</span></footer></section>`
+}
+
+function render(key, p) {
+  const pages = [
+    page(
+      `<div class="cover">
+        <p class="eyebrow">Ortaklık önerisi · 2026</p>
+        <h1>QRNot <span>×</span> ${esc(p.name)}</h1>
+        <p class="lead">${esc(p.headline)}</p>
+        <p class="muted">${esc(p.sub)}</p>
+        <div class="tags"><span>🎙️ Ses</span><span>🎬 Video</span><span>🖼️ Fotoğraf</span><span>📶 NFC</span></div>
+      </div>`,
+      'cover-page'
+    ),
+    page(
+      `<h2>QRNot nedir?</h2>
+      <p class="lead">Fiziksel bir hediyeye; sesli mesaj, video, fotoğraf ve link taşıyan, sonradan güncellenebilen kişisel bir sayfa bağlıyoruz.</p>
+      <div class="steps">
+        <div><b>1</b><h3>Satın al</h3><p>Ürün ${esc(p.name)} üzerinden alınır.</p></div>
+        <div><b>2</b><h3>Kur</h3><p>Alıcı QRNot hesabıyla QR'ı okutur, sesini kaydeder ya da video yükler. QR o hesaba bağlanır.</p></div>
+        <div><b>3</b><h3>Hediye et</h3><p>Alan kişi okutur ya da telefonunu dokundurur. Uygulama gerekmez.</p></div>
+      </div>`
+    ),
+    page(
+      `<h2>Ürün gamı</h2>
+      <table><thead><tr><th>Ürün</th><th>Ne yapar</th><th class="r">Liste fiyatı</th></tr></thead><tbody>
+      ${PRODUCTS.map(([n, d, pr]) => `<tr><td><b>${esc(n)}</b></td><td>${esc(d)}</td><td class="r">${pr} TL</td></tr>`).join('')}
+      </tbody></table>
+      <p class="note">Ücretsiz ürün veya deneme yoktur; her QR satın alınmış bir ürüne bağlıdır. Pazaryeri satış fiyatı komisyon modeline göre ayrıca belirlenir.</p>`
+    ),
+    page(
+      `<h2>${esc(p.name)} için senaryolar</h2>
+      <div class="cards">${p.scenarios.map(([t, d]) => `<div><h3>${esc(t)}</h3><p>${esc(d)}</p></div>`).join('')}</div>
+      <p class="note"><b>Öncelikli kategoriler:</b> ${esc(p.categories)}</p>`
+    ),
+    page(
+      `<h2>Güven ve güvenlik</h2>
+      <table><tbody>
+        <tr><td><b>Sahiplik</b></td><td>Her QR satın alan üyenin hesabına bağlanır; başka hesap sahiplenemez.</td></tr>
+        <tr><td><b>Sipariş doğrulama</b></td><td>Dijital ürünler yalnızca doğrulanmış pazaryeri siparişleriyle aktive edilir.</td></tr>
+        <tr><td><b>İptal ve iade</b></td><td>İptal edilen siparişin QR'ı otomatik olarak devre dışı kalır.</td></tr>
+        <tr><td><b>NFC</b></td><td>Çip QR sayfasına programlanır ve kilitlenir; yeniden yazılamaz.</td></tr>
+        <tr><td><b>Anı defteri</b></td><td>Ev sahibi onayı, PIN koruması; aynı misafir bir deftere bir kez yazar.</td></tr>
+        <tr><td><b>Yasal</b></td><td>KVKK aydınlatma metni, mesafeli satış sözleşmesi ve iade politikası yayında.</td></tr>
+      </tbody></table>`
+    ),
+    page(
+      `<h2>İş modeli ve entegrasyon</h2>
+      <div class="cards four">
+        <div><h3>A · Mağaza</h3><p>QRNot, ${esc(p.name)}'da satıcı mağazası olarak listeler. Pazaryeri tarafında geliştirme gerekmez.</p></div>
+        <div><h3>B · Satıcı eklentisi</h3><p>Hediyelik satıcılarına toplu QR hakkı ve NFC etiket tedariki.</p></div>
+        <div><h3>C · Sepet eklentisi</h3><p>Ürün sayfasında "Sesli mesaj ekle"; gelir paylaşımı.</p></div>
+        <div><h3>D · White-label</h3><p>Platform markasıyla deneyim; yıllık lisans.</p></div>
+      </div>
+      <p class="note"><b>Önerimiz:</b> ${esc(p.model)}</p>
+      <div class="flow"><span>Sipariş</span>→<span>Satıcı API senkronu</span>→<span>Üretim / aktivasyon kodu</span>→<span>Alıcı hesabıyla sahiplenir</span></div>`
+    ),
+    page(
+      `<h2>90 günlük pilot</h2>
+      <table><thead><tr><th>Faz</th><th>Süre</th><th>Çıktı</th></tr></thead><tbody>
+        <tr><td><b>Kurulum</b></td><td>Hafta 1–2</td><td>Mağaza açılışı, ürün listeleri, sipariş API bağlantısı</td></tr>
+        <tr><td><b>Lansman</b></td><td>Hafta 3–6</td><td>Kategori vitrini / kampanya alanı denemesi</td></tr>
+        <tr><td><b>Ölçüm</b></td><td>Hafta 7–10</td><td>Dönüşüm, sepet tutarı, iade, yorum puanı, kurulum tamamlama</td></tr>
+        <tr><td><b>Karar</b></td><td>Hafta 11–12</td><td>Sonuç raporu ve Model B / C için ticari teklif</td></tr>
+      </tbody></table>
+      <p class="note">Bu sunumda dönüşüm ya da iade etkisine dair rakam vaat edilmez; etki pilot verisiyle ölçülür ve ${esc(p.name)} ile birlikte raporlanır.</p>`
+    ),
+    page(
+      `<div class="cover">
+        <p class="eyebrow">Talep</p>
+        <h1 class="small">Birlikte ölçülebilir bir pilot başlatalım.</h1>
+        <ul class="ask">
+          <li>Kategori yöneticisiyle haftalık temas</li>
+          <li>Bir özel gün kampanyasında görünürlük</li>
+          <li>Pilot süresince satış verisinin paylaşımı</li>
+        </ul>
+        <p class="muted">QRNot taahhüdü: 1–3 iş günü kargo · WhatsApp ve e-posta destek · haftalık KPI raporu</p>
+        <p class="contact">qrnot.com · sce@scegrup.com</p>
+      </div>`,
+      'cover-page'
+    ),
+  ]
+
+  return `<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QRNot × ${esc(p.name)} — Ortaklık Önerisi 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --cream:#fff8f3; --cream2:#fdeee4; --ink:#1f2440; --ink2:#4a4f6a; --coral:#e8505b; --coral-soft:#fde4e3; --gold:#c9963a; --sage:#3f8f6b; --line:#efe1d6; }
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #e9e4df; color: var(--ink); font-family: Geist, system-ui, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 297mm; height: 210mm; margin: 10mm auto; padding: 18mm 20mm 16mm; background: var(--cream); position: relative; overflow: hidden; page-break-after: always; display: flex; flex-direction: column; }
+  .page:last-child { page-break-after: auto; }
+  .cover-page { background: radial-gradient(900px 500px at 85% 10%, var(--coral-soft), transparent 60%), var(--cream); justify-content: center; }
+  footer { position: absolute; left: 20mm; right: 20mm; bottom: 8mm; display: flex; justify-content: space-between; font-size: 9pt; color: var(--ink2); border-top: 1px solid var(--line); padding-top: 3mm; }
+  h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 600; margin: 0; }
+  h1 { font-size: 44pt; line-height: 1.05; }
+  h1 span { color: var(--coral); }
+  h1.small { font-size: 32pt; max-width: 200mm; }
+  h2 { font-size: 26pt; margin-bottom: 8mm; }
+  h3 { font-size: 14pt; margin-bottom: 2mm; }
+  p { margin: 0; line-height: 1.5; font-size: 11.5pt; color: var(--ink2); }
+  .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 9.5pt; font-weight: 600; color: var(--coral); margin-bottom: 6mm; }
+  .lead { font-size: 16pt; color: var(--ink); margin: 6mm 0 3mm; max-width: 230mm; }
+  .muted { color: var(--ink2); }
+  .tags { display: flex; gap: 3mm; margin-top: 10mm; }
+  .tags span { background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 2mm 5mm; font-size: 11pt; }
+  .steps, .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 6mm; }
+  .cards.four { grid-template-columns: repeat(4, 1fr); }
+  .steps > div, .cards > div { background: #fff; border: 1px solid var(--line); border-radius: 5mm; padding: 7mm; }
+  .steps b { display: inline-flex; width: 10mm; height: 10mm; align-items: center; justify-content: center; border-radius: 50%; background: var(--coral); color: #fff; margin-bottom: 4mm; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 4mm; overflow: hidden; border: 1px solid var(--line); }
+  th, td { text-align: left; padding: 3.2mm 5mm; font-size: 11pt; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--cream2); font-size: 9.5pt; text-transform: uppercase; letter-spacing: .06em; color: var(--ink2); }
+  tr:last-child td { border-bottom: 0; }
+  .r { text-align: right; white-space: nowrap; }
+  .note { margin-top: 6mm; font-size: 10.5pt; background: var(--cream2); border-radius: 3mm; padding: 4mm 5mm; }
+  .flow { display: flex; align-items: center; gap: 3mm; margin-top: 6mm; font-size: 10.5pt; color: var(--ink2); flex-wrap: wrap; }
+  .flow span { background: #fff; border: 1px solid var(--line); border-radius: 3mm; padding: 2.5mm 4mm; color: var(--ink); font-weight: 500; }
+  .ask { margin: 8mm 0; padding-left: 6mm; font-size: 15pt; line-height: 1.8; }
+  .contact { margin-top: 8mm; font-weight: 600; color: var(--coral); font-size: 13pt; }
+  @media screen and (max-width: 1150px) {
+    .page { width: auto; height: auto; min-height: 0; margin: 12px; padding: 24px 16px 48px; }
+    h1 { font-size: 34px; } h2 { font-size: 24px; } .steps, .cards, .cards.four { grid-template-columns: 1fr; }
+    footer { left: 16px; right: 16px; bottom: 12px; }
+  }
+  @media print { html, body { background: none; } .page { margin: 0; } }
+</style>
+</head>
+<body>
+${pages.join('\n').replaceAll('{{PLATFORM}}', esc(p.name))}
+</body>
+</html>
+`
+}
+
+for (const [key, p] of Object.entries(PLATFORMS)) {
+  const file = join(OUT, `sunum-${key}.html`)
+  writeFileSync(file, render(key, p))
+  console.log('yazıldı', file)
+}

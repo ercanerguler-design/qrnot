@@ -1,303 +1,240 @@
-# QRNote x Pazaryerleri 2026 Stratejik Sunum
+# QRNot × Pazaryerleri — Ortaklık Sunumu 2026
 
-## Slayt 1 - Kapak
-**Baslik:** Hediyeyi Dijital Deneyime Donusturen Katman: QRNote
-
-**Alt Baslik:** CicekSepeti, Trendyol, Hepsiburada, N11 ve benzeri platformlar icin 2026 buyume ortakligi
-
-**Mesaj:**
-- Fiziksel hediye urunleri tek seferlik satin alinir.
-- QRNote, urunu tekrar ziyaret edilen bir deneyime donusturur.
-- Bu, platformlara daha yuksek donusum, daha dusuk iade riski ve ek gelir katmani saglar.
+> Hedef kitle: ÇiçekSepeti, Trendyol, Hepsiburada, N11 ve Amazon.com.tr kategori / iş geliştirme ekipleri.
+> Süre: 15 dakika sunum + 10 dakika soru-cevap. Her slaytta **başlık**, **ana mesaj** ve **konuşma notu** var.
+> Teknik entegrasyonun detayı için: `deliverables/pazaryeri-entegrasyon/PAZARYERI-ENTEGRASYON-TASARIMI.md`
 
 ---
 
-## Slayt 2 - 30 Saniyelik Ozet
-**Yatirim/Ortaklik Tezi:**
-- QR tabanli ses-video-gorsel-link deneyimi, hediyelik urunlerde duygusal degeri artirir.
-- Duygusal deger arttikca sepete ekleme ve tekrar satin alma olasiligi artar.
-- Pazaryeri entegrasyonu ile kategori bazli farklilasma ve premiumlasma saglanir.
+## Slayt 1 — Kapak
 
-**Hedef Sonuc (12 Ay):**
-- Hediye kategorilerinde donusum artisi: +%2 ila +%6
-- Ortalama sepet tutarina etki: +%5 ila +%12
-- Iade oraninda azalma (kisisellestirilmis urunlerde): -%10 ila -%25
+**QRNot: Hediyeye ses veren ürün katmanı**
+
+Sesli, videolu ve NFC'li hediye ürünleri — pazaryeri entegrasyonuna hazır.
+
+*qrnot.com · SCE Grup*
 
 ---
 
-## Slayt 3 - Problem ve Firsat
-**Problem:**
-- Hediyelik urun pazarinda urunler birbirine benziyor, fiyat rekabeti marjlari eritiyor.
-- Musteri urun hikayesi yerine fiyata karar veriyor.
-- Platformlarin hediye kategorisinde farklilastirma alani sinirli.
+## Slayt 2 — Tek cümlede QRNot
 
-**Firsat:**
-- Fiziksel urune dijital bir katman (ses, video, anilar, link) eklendiginde urun bir "anlam urunu"ne donusur.
-- Ayni urun, daha yuksek algi degeri ve daha guclu satis hikayesiyle satilir.
+**Fiziksel bir hediyeye; sesli mesaj, video, fotoğraf ve link taşıyan, sonradan güncellenebilen kişisel bir sayfa bağlıyoruz.**
 
----
+- Hediyeyi alan kişi QR'ı okutur ya da telefonunu NFC çipe dokundurur.
+- Uygulama indirmeden, gönderenin sesini duyar, videosunu izler.
+- QR ve NFC çip hiç değişmez; içerik hesap sahibi tarafından istenildiği zaman güncellenir.
 
-## Slayt 4 - Urun: QRNote Ne Sunuyor?
-**Cekirdek Yetenekler:**
-- Ses kaydi ve ses dosyasi yukleme
-- Video kaydi/yukleme
-- Gorsel yukleme
-- YouTube/Spotify/link baglama
-- QR sabit kalirken icerigi sonradan guncelleme
-- Sahiplenme (claim) ve yonetim paneli
-
-**Platform degeri:**
-- Teknik kuruluma gerek yok
-- Mobil odakli akis
-- Hediye urun detay sayfasina guclu hikaye katmani
+**Konuşma notu:** "Kart notu okunur ve atılır. QRNot ürünü yıllarca yeniden açılır."
 
 ---
 
-## Slayt 5 - Ozellik-Kullanim Haritasi
-| Ozellik | Son Kullanici Faydasi | Satici Faydasi | Pazaryeri Faydasi |
-|---|---|---|---|
-| Sesli Mesaj | Duygusal bag kurar | Urunu premium konumlar | Donusum ve memnuniyet artar |
-| Video Mesaj | Daha guclu kisisellestirme | UGC benzeri satis argumani | Iade itirazinda guclu kanit |
-| Gorsel Yukleme | Aniyi kalici yapar | Kampanya paketleri satilir | Kategori ayrisimi artar |
-| Spotify/YouTube | Deneyimi zenginlestirir | Paket satisa olanak verir | Kullanim suresi uzar |
-| Sonradan Guncelleme | Urun omru uzar | Tekrarlayan gelir modeli | Uzun vadeli musteri bagliligi |
+## Slayt 3 — Problem
+
+| Pazaryerinde bugün | Sonuç |
+|---|---|
+| Hediyelik ürünler birbirine benziyor | Rekabet fiyata kayıyor, marj eriyor |
+| Kişiselleştirme çoğunlukla isim baskısı ile sınırlı | Duygusal fark yaratma alanı dar |
+| "Hediye notu" alanı düz metin | Hediye verenin asıl istediği — sesi, anısı — taşınamıyor |
 
 ---
 
-## Slayt 6 - 2026 Pazar Gorunumu (Turkiye)
-**Veri Sinyalleri (2026):**
-- Turkiye e-ticaret pazari buyuklugu: yaklasik **US$48.0B (2025 baz)**, 2026 icin **%10-%15 buyume trendi** (ECDB sample)
-- Diger kaynakta Turkiye e-ticaret pazarinin 2025 icin **US$93.5B** seviyesine ciktigi ve 2030'a kadar yuksek CAGR ile buyudugu belirtiliyor (ITA/Trade.gov)
-- Mobil e-ticaret islemlerinin payi: yaklasik **%72** (ITA/Trade.gov)
+## Slayt 4 — Çözüm: Ürün gamı
 
-**Yorum:**
-- Kaynak metodolojileri farkli oldugu icin tek bir mutlak rakam yerine band kullanilmalidir.
-- Stratejik karar icin onemli olan metrik: buyume hizi + mobil agirligi + hediye kategorisinin premiumlasmaya uygunlugu.
+| Ürün | Ne yapar | Liste fiyatı (TL) |
+|---|---|---|
+| Sesli Anı Kolyesi | Pleksi, neon damla baskı, arkada kişiye özel QR | 449 |
+| NFC + QR Anı Kolyesi | Dokun-aç NFC çip + QR yedeği, kilitli programlanmış | 599 |
+| Sesli Anahtarlık | Ses / video / acil iletişim bilgisi tek QR'da | 349 |
+| NFC + QR Anahtarlık | Kartvizit, evcil hayvan künyesi, hediye | 499 |
+| Dijital Anı Defteri | Düğün / etkinlik: misafirler sesli-videolu anı bırakır | 499 |
+| Dijital QR Hakkı | Satıcının kendi ürününe / kartına basacağı QR | 249 |
 
----
-
-## Slayt 7 - Platform Konumlari (2026)
-**Trafik liderligi sinyali (Similarweb, Mart 2026):**
-1. sahibinden.com (kategori lider trafik)
-2. trendyol.com
-3. hepsiburada.com
-4. akakce.com
-5. amazon.com.tr
-
-**Hediyelik odakli stratejik hedef platformlar:**
-- CicekSepeti (hediye use-case uyumu cok yuksek)
-- Trendyol (olcek ve kategori derinligi)
-- Hepsiburada (guculu pazar yeri + premium urun konumlama)
-- N11 (kampanya odakli segment)
+- Ücretsiz ürün ya da deneme yoktur; her QR satın alınmış bir ürüne veya hakka bağlıdır.
+- Fiyatlar QRNot mağaza liste fiyatlarıdır; pazaryeri fiyatlaması komisyon modeline göre ayrıca belirlenir.
 
 ---
 
-## Slayt 8 - Pazar Payi Yaklasimi (Karar Verdiren Model)
-Bu bolumde iki katmanli model kullanin:
+## Slayt 5 — Kullanıcı deneyimi (3 adım)
 
-**Katman A - Pazar Seviyesi:**
-- Toplam e-ticaret pazar buyuklugu bandi (US$48B - US$93.5B referans araligi)
+1. **Satın al** — Ürün pazaryerinden ya da qrnot.com'dan alınır.
+2. **Kur** — Alıcı QRNot hesabıyla giriş yapar, QR'ı okutur; sesini kaydeder veya video / fotoğraf yükler. QR o hesaba bağlanır.
+3. **Hediye et** — Alan kişi okutur ya da dokundurur; içerik anında açılır. Uygulama gerekmez.
 
-**Katman B - Kategoriye Inis (Hediyelik + Kisisellestirme):**
-- TAM: Turkiye e-ticaret hacmi
-- SAM: Hediyelik + kisisellestirilebilir urun alt segmenti
-- SOM: Ilk yil hedeflenen pazaryeri kategori payi
-
-**Ornek SOM hedefi (12 ay):**
-- Entegre olunan her platformda hedef kategori icinde %0.3-%1.0 arasi penetrasyon
-- 3 buyuk platform + 1 orta platform kombinasyonunda kritik olcek yakalanir
+**Neden hesap zorunlu?** Ürünün içeriğini sadece sahibi yönetebilir; kayıp ya da cihaz değişikliğinde QR hesaptan geri bulunur. Bu, pazaryeri için "satış sonrası destek yükü" riskini azaltır.
 
 ---
 
-## Slayt 9 - Neden Simdi?
-**2026 Tetikleyicileri:**
-- Mobil ve hizli satin alma davranisi olgunlasti
-- Standart urun sayfalari doygun, hikaye bazli farklilasma ihtiyaci yuksek
-- Saticilar marj korumak icin premiumlasma araclari ariyor
-- Platformlar kategori bazli "deger artiran" cozumleri onceliklendiriyor
+## Slayt 6 — Güven ve güvenlik (pazaryeri için kritik)
+
+| Konu | QRNot'ta nasıl çözüldü |
+|---|---|
+| Sahiplik | Her QR satın alan üyenin hesabına bağlanır; başka hesap sahiplenemez |
+| Sahte aktivasyon | Pazaryeri siparişleri doğrulanmadan dijital ürün aktive edilemez |
+| İptal / iade | İptal edilen siparişin QR'ı devre dışı kalır; içerik açılmaz |
+| Kötüye kullanım | Giriş ve yönetim uç noktalarında deneme sınırı, oturum güvenliği |
+| Anı defteri | Aynı misafir aynı deftere bir kez anı bırakır; ev sahibi onayı (moderasyon) ve PIN |
+| NFC | Çip, QR sayfasına programlanır ve kilitlenir; başkası yeniden yazamaz |
+| Altyapı | Vercel üzerinde yayında, Neon PostgreSQL, Vercel Blob medya depolama |
 
 ---
 
-## Slayt 10 - Is Modeli Secenekleri (Platforma Gore)
-**Model 1 - Seller Tool (Satici Araci):**
-- Saticilar panelden QRNote aktivasyonu yapar
-- Gelir: B2B lisans + kullanim bazli ucret
+## Slayt 7 — Pazaryerine değeri
 
-**Model 2 - Co-Branded Checkout Add-on:**
-- Urun sayfasinda "Sesli Hediye Ekle" opsiyonu
-- Gelir: Islem basi komisyon paylasimi
-
-**Model 3 - White-Label Experience:**
-- Platform markasiyla son kullanici deneyimi
-- Gelir: Yillik lisans + hacim kademesi
+| Paydaş | Kazanım |
+|---|---|
+| **Pazaryeri** | Hediye kategorisinde fark yaratan, fiyat dışı rekabet unsuru; özel gün kampanyalarına yeni ürün tipi |
+| **Satıcı** | Aynı ürünü daha yüksek algı değeriyle satma; "dijital QR hakkı" ile kendi ürününe katman ekleme |
+| **Alıcı** | Unutulmayan, yeniden açılan, güncellenebilen hediye |
 
 ---
 
-## Slayt 11 - Platforma Ozel Teklifler
-**CicekSepeti:**
-- Senaryo: Cicek + not yerine sesli/video not
-- KPI: Siparis basina ek gelir, teslimat sonrasi memnuniyet
+## Slayt 8 — İş modelleri
 
-**Trendyol:**
-- Senaryo: Hediyelik aksesuar ve ozel gun koleksiyonlari
-- KPI: Donusum, AOV, tekrar satin alma
+**Model A — QRNot mağazası (hemen başlar)**
+QRNot, pazaryerinde satıcı mağazası olarak fiziksel ürünleri listeler. Standart komisyon, QRNot lojistik ve destek.
 
-**Hepsiburada:**
-- Senaryo: Premium hediye kategorisi rozetleme
-- KPI: Kategori marji, iade orani, yorum skoru
+**Model B — Satıcı eklentisi (B2B)**
+Pazaryerindeki hediye satıcıları ürünlerine QRNot QR / NFC etiketi ekler. QRNot, satıcıya toplu QR hakkı ya da etiket satar.
 
-**N11:**
-- Senaryo: Kampanya donemlerinde kisisellestirme add-on
-- KPI: Kampanya donusum artisi, sepet degeri
+**Model C — Sepet eklentisi (co-branded add-on)**
+Ürün sayfasında "Sesli mesaj ekle" seçeneği. Add-on bedelinden pazaryeri ile gelir paylaşımı.
 
----
+**Model D — White-label**
+Pazaryeri markasıyla sunulan deneyim. Yıllık lisans + hacim kademesi.
 
-## Slayt 12 - Rekabet Analizi
-**Alternatifler:**
-- Duz metin not kartlari
-- Kisisellestirme baski urunleri
-- QR uretip sadece link yonlendiren basit cozumler
-
-**QRNote farki:**
-- Tek QR, coklu medya
-- Sahiplenme + guncelleme + yonetim
-- Hediyelik use-case'e ozel urunlestirilmis akis
-- B2C ve B2B entegrasyon modelinin ayni platformda calisabilmesi
+Önerilen sıra: **A ile başla → pilot verisiyle B ve C'ye geç.**
 
 ---
 
-## Slayt 13 - Unit Economics (Ornek)
-**Birim gelir modeli ornegi (platform add-on):**
-- Add-on son kullanici fiyati: 49 TL
-- Platform payi: %25
-- QRNote payi: %75
+## Slayt 9 — Entegrasyon özeti
 
-**1 milyon hediye siparisinde varsayim:**
-- Add-on attach rate: %3
-- Add-on satin alma adedi: 30,000
-- Toplam add-on ciro: 1,470,000 TL
-- Platform payi: 367,500 TL
-- QRNote payi: 1,102,500 TL
+```
+Pazaryeri siparişi ──► QRNot sipariş senkronu (API) ──► Doğrulanmış sipariş kaydı
+                                                         │
+             ┌───────────────────────────────────────────┼─────────────────────────────┐
+             ▼                                           ▼                             ▼
+   Fiziksel ürün: üretim kuyruğu               Dijital ürün: aktivasyon kodu   İptal / iade: QR devre dışı
+   (QR kazıma + NFC yazma istasyonu)           (pakete / mesaja eklenir)       (otomatik)
+             │                                           │
+             └──────────────► Alıcı QRNot hesabıyla QR'ı sahiplenir ◄─────────┘
+```
 
-Not: Bu tablo gorusme amacli ornek modeldir; platform bazli revize edilir.
-
----
-
-## Slayt 14 - Pilot Tasarimi (90 Gun)
-**Faz 1 (Hafta 1-2):**
-- Kategori secimi (hediyelik, cicek, ozel gun)
-- Teknik entegrasyon kapsaminin netlestirilmesi
-
-**Faz 2 (Hafta 3-6):**
-- Sinirli satici grubu ile pilot
-- A/B test: QRNote add-on acik vs kapali
-
-**Faz 3 (Hafta 7-10):**
-- KPI olcumu: CR, AOV, iade, yorum puani, NPS
-
-**Faz 4 (Hafta 11-12):**
-- Sonuc sunumu + ticari yayginlastirma plani
+- Pazaryeri tarafında **ek geliştirme gerekmez** (Model A); QRNot, pazaryerinin satıcı API'lerini kullanır.
+- Model C için ürün sayfası add-on alanı ve sipariş satırında "kişiselleştirme" bilgisinin taşınması gerekir.
 
 ---
 
-## Slayt 15 - KPI Agaci
-**Ust KPI'lar:**
-- Donusum orani (CR)
-- Ortalama sepet tutari (AOV)
-- Iade orani
-- Yorum/NPS
+## Slayt 10 — Platforma özel senaryolar
 
-**Alt KPI'lar:**
-- Add-on goruntuleme oranı
-- Add-on tiklama orani
-- Add-on satin alma orani
-- Claim tamamlama orani
-- 7/30 gunluk yeniden ziyaret
+| Platform | Senaryo | Öncelikli kategori |
+|---|---|---|
+| ÇiçekSepeti | Çiçek + sesli/videolu not (dijital QR kartı) | Çiçek, hediye kutusu |
+| Trendyol | Özel gün koleksiyonları: kolye, anahtarlık | Takı, aksesuar |
+| Hepsiburada | Premium hediye, NFC'li ürünler | Hediyelik, elektronik aksesuar |
+| N11 | Kampanya dönemlerinde kişiselleştirilebilir paketler | Hediyelik |
+| Amazon.com.tr | Anı defteri (düğün / etkinlik) | Parti ve etkinlik |
 
 ---
 
-## Slayt 16 - Teknoloji ve Operasyon Hazirligi
-**Operasyonel Yeterlilik:**
-- Hesap bazli hak yonetimi
-- Ucretsiz ve ucretli akisin ayrimi
-- Admin paneli (kredi, tip, reset, silme)
-- Medya yonetimi ve sinirlandirma
+## Slayt 11 — Pilot önerisi (90 gün)
 
-**Guvenlik ve Surdurulebilirlik:**
-- Oturum yonetimi ve otomatik logout
-- Kaynak ve limit yonetimi
-- Uretime cikmis altyapi (Vercel)
+| Faz | Süre | Çıktı |
+|---|---|---|
+| 1. Kurulum | Hafta 1–2 | Mağaza açılışı, 6 ürün listesi, sipariş API bağlantısı |
+| 2. Lansman | Hafta 3–6 | Kategori vitrini / kampanya alanı denemesi |
+| 3. Ölçüm | Hafta 7–10 | Dönüşüm, sepet tutarı, iade, yorum puanı, kurulum tamamlama oranı |
+| 4. Karar | Hafta 11–12 | Sonuç raporu, Model B/C için ticari teklif |
 
----
+**Pazaryerinden talebimiz:** Kategori yöneticisi ile haftalık temas, bir özel gün kampanyasında görünürlük, pilot süresince satış verisi paylaşımı.
 
-## Slayt 17 - Riskler ve Onlemler
-**Risk 1 - Dusuk attach rate:**
-- Onlem: Urun sayfasi UX optimizasyonu, checkout teklif metni A/B test
-
-**Risk 2 - Satici adaptasyonu:**
-- Onlem: Satici paneli egitimi + hazir kreatif set
-
-**Risk 3 - Musteri karmasasi:**
-- Onlem: 3 adimlik net onboarding + basit sahiplenme akis
-
-**Risk 4 - Operasyonel destek yuklu:**
-- Onlem: Self-service destek ve SSS + WhatsApp hizli destek kanali
+**QRNot taahhüdü:** 1–3 iş günü kargo, WhatsApp + e-posta destek, haftalık KPI raporu.
 
 ---
 
-## Slayt 18 - 2026-2027 Yol Haritasi
-**Q2 2026:**
-- 1 buyuk platformda pilot baslatma
+## Slayt 12 — Ölçeceğimiz KPI'lar
 
-**Q3 2026:**
-- 2. platform entegrasyonu
-- Seller tool standardizasyonu
+| KPI | Tanım |
+|---|---|
+| Dönüşüm oranı | Ürün sayfası ziyaretinden siparişe |
+| Ortalama sepet tutarı | Add-on içeren / içermeyen siparişlerde |
+| Kurulum tamamlama oranı | Satılan ürünlerden QR'ı sahiplenilenlerin oranı |
+| Tekrar açılma | QR / NFC okutma sayısı (ilk 30 gün) |
+| İade oranı | Kategori ortalamasıyla karşılaştırmalı |
+| Yorum puanı | Ürün yorumları ortalaması |
 
-**Q4 2026:**
-- 3. platform aktivasyonu
-- Kurumsal toplu paket modelinin olceklendirilmesi
-
-**Q1 2027:**
-- Coklu platform performans konsolidasyonu
-- Ulke ici yeni kategori acilimlari
+> Not: Bu sunumda dönüşüm veya iade etkisine dair rakam **vaat edilmez**; pilot verisiyle ölçülür ve raporlanır.
 
 ---
 
-## Slayt 19 - Ticari Talep (Can Alici Sayfa)
-**Ortaklik Talebi:**
-- 90 gunluk kontrollu pilot
-- Kategori bazli vitrin destegi
-- A/B test olcumu icin analitik erisim
+## Slayt 13 — Birim ekonomi (örnek, Model C)
 
-**QRNote Taahhudu:**
-- Hizli entegrasyon
-- KPI odakli haftalik raporlama
-- Pilot sonunda net ROI sunumu
+Varsayımlarla hazırlanmış görüşme modeli — gerçek değerler pilotta belirlenir.
 
-**Kazan-Kazan Cikarimi:**
-- Platform: Daha yuksek donusum + sepet degeri + kategori farkliligi
-- Satici: Premium urun satisi ve marj artisi
-- Son kullanici: Unutulmaz hediye deneyimi
+| Kalem | Varsayım |
+|---|---|
+| Add-on (dijital QR kartı) fiyatı | 249 TL |
+| Pazaryeri payı | Platformun standart komisyon oranı |
+| Attach rate (hediye siparişlerinde) | Senaryo: %1 / %2 / %3 |
+
+Formül: `Ek ciro = Hediye sipariş sayısı × attach rate × 249 TL`
+Örnek: 100.000 hediye siparişi × %2 × 249 TL = **498.000 TL ek ciro**
 
 ---
 
-## Slayt 20 - Kapanis
-**Mesaj:**
-Bugun hediye urunleri satiliyor. Yarin deneyim satilacak.
+## Slayt 14 — Riskler ve önlemler
 
-**Cagrı:**
-Hediye kategorisinde Turkiye'nin en guclu dijital farklilastirma pilotunu birlikte baslatalim.
-
----
-
-## Ek A - Kaynaklar (2026 Referanslari)
-- Similarweb, Turkey Ecommerce & Shopping Ranking, Mart 2026 (trafik liderligi siralamasi)
-- ITA/Trade.gov Turkey eCommerce Guide (2026-01-29) (pazar buyuklugu, mobil pay, trendler)
-- ECDB Turkiye sample market verileri (2025 gelir, 2026 buyume araligi, lider retailer sinyali)
-
-Not: Kaynaklarin metodolojileri farkli oldugu icin final board sunumunda tek bir mutlak rakam yerine aralik ve senaryo sunumu onerilir.
+| Risk | Önlem |
+|---|---|
+| Alıcı kurulumu tamamlamaz | Paket içi kart (3 adım), sipariş sonrası hatırlatma mesajı, WhatsApp destek |
+| Hesap açma adımı sürtünme yaratır | Tek ekran kayıt, kayıt sonrası doğrudan QR kurulumuna dönüş |
+| Hatalı / sahte aktivasyon | Sipariş API doğrulaması; iptalde otomatik devre dışı |
+| Üretim kapasitesi | Toplu QR üretimi + NFC yazma istasyonu; kampanya öncesi stok planı |
+| İçerik uygunluğu | Anı defterinde moderasyon; şikayet halinde içerik kaldırma süreci |
 
 ---
 
-## Ek B - Toplanti Konusma Metni (2 Dakika)
-"Turkiye e-ticaret pazari buyumeye devam ediyor ve mobil agirligi tarihin en yuksek seviyelerinde. Bu ortamda hediye kategorisindeki asil rekabet artik fiyat degil, deneyim rekabeti. QRNote, fiziksel urune dijital bir anlam katmani ekleyerek platformun donusumunu, sepet degerini ve musteri memnuniyetini yukseltiyor. Biz burada sadece bir ozellik satmiyoruz; platformun hediye kategorisinde ayristiran bir buyume mekanigi sunuyoruz. Onerimiz net: 90 gunluk olculebilir bir pilot. KPI'lar basindan belli, riskler kontrollu, cikti net. Basarili olursa platform genelinde olceklenecek bir gelir katmanina donusuyor." 
+## Slayt 15 — Yol haritası
+
+| Dönem | Hedef |
+|---|---|
+| Q4 2026 | İlk pazaryerinde mağaza (Model A), sipariş senkronu, yılbaşı kampanyası |
+| Q1 2027 | Sevgililer Günü kampanyası, 2. pazaryeri, satıcı eklentisi (Model B) pilotu |
+| Q2 2027 | Anneler Günü + düğün sezonu: anı defteri odaklı kampanyalar, sepet eklentisi (Model C) görüşmesi |
+| Q3 2027 | Çok kanallı sipariş yönetimi, kurumsal (B2B) toplu paketler |
+
+---
+
+## Slayt 16 — Kapanış
+
+**Hediyeler satılıyor. Anılar yeniden açılıyor.**
+
+90 günlük, ölçülebilir bir pilotla başlayalım.
+
+İletişim: qrnot.com · sce@scegrup.com
+
+---
+
+## Ek A — 2 dakikalık konuşma metni
+
+"Hediyelik kategorisinde ürünler birbirine benziyor ve rekabet fiyata kayıyor. QRNot bu kategoriye fiyat dışı bir fark getiriyor: kolyeye, anahtarlığa ya da bir karta, gönderenin sesini, videosunu ve fotoğraflarını taşıyan kişisel bir sayfa bağlıyoruz. Alan kişi uygulama indirmeden, okutarak ya da NFC ile dokunarak açıyor. İçerik sonradan güncellenebildiği için ürün yıllarca yeniden açılıyor.
+
+Bugün altı ürünle satıştayız; hepsi ücretli, her QR satın alan üyenin hesabına bağlı. Pazaryeri siparişlerini API ile doğruluyoruz, iptal edilen siparişin QR'ı otomatik kapanıyor. Önerimiz basit: mağaza olarak 90 günlük bir pilot. Dönüşüm, sepet tutarı ve iade üzerindeki etkiyi birlikte ölçelim; veri olumluysa satıcı eklentisi ve sepet eklentisi modellerine geçelim."
+
+## Ek B — Sık sorulan sorular
+
+**Alıcının uygulama indirmesi gerekiyor mu?** Hayır. QR kamera ile, NFC ise iPhone XS ve sonrası ile NFC'si açık Android telefonlarda doğrudan açılır.
+
+**Neden üyelik gerekiyor?** QR'ın sahibini güvenle belirlemek ve kaybolma / cihaz değişikliğinde erişimi korumak için. Üyelik ücretsizdir; ürünler ücretlidir.
+
+**İçerik ne kadar süre saklanır?** Ürün aktif olduğu sürece. Hesap sahibi içeriği istediği zaman değiştirebilir veya kaldırabilir.
+
+**İade nasıl işler?** Fiziksel ürünlerde yasal 14 günlük cayma hakkı geçerlidir. Hesaba tanımlanmış ve kullanılmaya başlanmış dijital ürünlerde cayma hakkı bulunmaz (mesafeli sözleşmeler mevzuatı).
+
+**Kişisel veriler?** KVKK aydınlatma metni ve gizlilik politikası qrnot.com'da yayındadır; medya dosyaları yalnızca QR sahibinin paylaşım tercihine göre erişilebilir.
+
+## Ek C — Sunumdan önce kontrol listesi
+
+- [ ] Pazar büyüklüğü verisi kullanılacaksa güncel ve kaynaklı rakam ekle (ör. ETBİS / Ticaret Bakanlığı e-ticaret bülteni).
+- [ ] Hedef platformun güncel komisyon oranlarını ilgili kategori için teyit et.
+- [ ] Canlı demo: bir kolye + bir anı defteri QR'ı hazır olsun, telefonla okut.
+- [ ] Her slayt için gerçek ürün fotoğrafı (neon kolye, anahtarlık, masa kartı).

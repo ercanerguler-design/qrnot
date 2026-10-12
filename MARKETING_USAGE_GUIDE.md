@@ -1,6 +1,12 @@
-# QRNote Sosyal Medya - NASIL KULLAN Rehberi
+# QRNot Sosyal Medya — Nasıl Kullanılır Rehberi
 
-**TL;DR:** İçeriği al → Visüal hazırla → Paylaş. İşte detay.
+**TL;DR:** İçeriği al → görseli hazırla → paylaş. İşte detay.
+
+> **Paylaşmadan önce 4 kural** (ayrıntı: `MARKETING_CONTENT.md` → Marka çekirdeği)
+> 1. "Ücretsiz dene / ilk QR bizden" yazma — ücretsiz ürün yok. Üyelik ücretsiz, ürünler ücretli.
+> 2. Fiyat yazacaksan qrnot.com/shop'taki güncel fiyatı kullan.
+> 3. Müşteri yorumu / videosu sadece gerçek müşteriden, yazılı izinle.
+> 4. Pazaryeri adını sadece anlaşma imzalandıktan sonra "ortağımız" diye kullan.
 
 ---
 

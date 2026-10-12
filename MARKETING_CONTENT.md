@@ -1,415 +1,299 @@
-# QRNote - Sosyal Medya Pazarlama İçeriği (2026)
+# QRNot — Pazarlama İçerik Kiti (2026)
+
+> Hesaplar: Instagram / TikTok **@qrnotcom** · LinkedIn **QRNot / SCE Grup** · X **@scegrup**
+> Nasıl paylaşılır: `MARKETING_USAGE_GUIDE.md` · Pazaryeri sunumu: `SUNUM_QRNOTE_PAZARYERI_2026.md`
 
 ---
 
-## 📱 INSTAGRAM (@qrnotcom)
+## 1. Marka çekirdeği
 
-### Post 1: Hediye Aksiyonu
-**Caption:**
-```
-Hediye veriyorsun, ama sesini vermiyorsun mı? 🎙️
+**Slogan:** Hediyene bir ses ver.
+**Tek cümle:** QRNot; kolyeye, anahtarlığa ya da bir karta sesini, videonu ve fotoğraflarını bağlar. Alan kişi okutur ya da dokundurur, uygulama indirmeden dinler.
 
-QRNote ile hediyene bir ses kat.
-Anahtarlık, bileklik, sticker—hepsi konuşabilir.
+**Üç vaat (her içerikte en az biri geçmeli):**
+1. **Sesin hediyede kalır.** Ses, video, fotoğraf, şarkı linki.
+2. **İçerik hep güncel.** QR ve NFC çip değişmez; sen istediğin zaman yeni mesaj eklersin.
+3. **Sadece senin.** QR, hesabına bağlanır; başkası değiştiremez.
 
-Biri tarayınca:
-→ Senin sesini duyar
-→ Fotoğraflarını görür
-→ Videonu izler
-→ Şarkını çalar
+**Ton:** Sıcak, samimi, abartısız. Duyguyu ürün anlatır; "viral", "inanılmaz", "%X dönüşüm" gibi iddialar kullanılmaz.
 
-QR kodu hiç değişmez. İçerik? Her zaman güncel. ✨
+### Yapılmaması gerekenler
+- ❌ "Ücretsiz dene", "ilk QR bizden" — **ücretsiz ürün yoktur.** Üyelik ücretsizdir, ürünler ücretlidir.
+- ❌ Uydurma istatistik veya müşteri yorumu. Yorum / video yalnızca **gerçek müşteriden, yazılı izinle** kullanılır.
+- ❌ Rakip veya pazaryeri adını izinsiz etiketleyip "ortaklık" ima etmek.
+- ✅ Fiyat yazılacaksa katalogdaki güncel fiyat kullanılır (aşağıdaki tablo).
 
-Başla: qrnot.com
-```
+### Ürünler ve fiyatlar (qrnot.com/shop ile aynı)
 
-**Hashtag:**
-`#QRNote #HediyeFikriEkle #SesliHediye #KişiselleştirilmişHediye #DigitalHediye #HediyeGünü #UGC #Nostalji #VerilenHediyeler #HediyeFikirleri`
+| Ürün | Kısa anlatım | Fiyat |
+|---|---|---|
+| Sesli Anı Kolyesi | Arkasındaki QR okutulunca senin sesin çalar | 449 TL |
+| NFC + QR Anı Kolyesi | Telefonu dokundurmak yeter — QR yedekte | 599 TL |
+| Sesli Anahtarlık | Her gün yanında taşınan bir ses | 349 TL |
+| NFC + QR Anahtarlık | Dokun, dinle. Kamera bile gerekmez | 499 TL |
+| Dijital Anı Defteri | Düğünde misafirlerin sesini topla | 499 TL |
+| Dijital QR Hakkı | Kendi kartına ya da paketine bas | 249 TL |
 
----
-
-### Post 2: Behind-the-Scenes (Video Reel)
-**Caption:**
-```
-Bu ses kaydı 1 dakikada nasıl mümkün oldu? 🎬
-
-→ Sesini kaydet (10 sn yeterli)
-→ QR tarana kadar seni bekleme konusunda merak yaşat
-→ Arkadaşınız tarıyor
-→ Şaşkınlık + tebessüm = priceless 🎯
-
-Denediler mi? DM'de anlatsın 👇
-```
-
-**Format:** 15-30 saniyelik Reel, ses-video-kurulum gösterişi
+Türkiye geneli ücretsiz kargo · 1–3 iş günü kargoya teslim · Fiziksel ürünlerde 14 gün iade.
 
 ---
 
-### Post 3: User Generated Content
-**Caption:**
+## 2. Instagram (@qrnotcom)
+
+### Post 1 — Tanıtım (tekli görsel: neon kolye + telefon)
 ```
-"Annemin sesini içine koymak istememiştim ama... 😭"
+Hediye veriyorsun. Peki sesini de veriyor musun? 🎙️
 
-Gözlü hikayeler #QRNote çıkarmaya başladı.
-Senin hikayeni de paylaş, repost edelim!
+Sesli Anı Kolyesi'nin arkasındaki QR'ı okutan kişi
+senin sesini duyar, videonu izler, fotoğraflarınıza bakar.
 
-DM veya @qrnotcom mention yap.
+Uygulama yok. Pil yok. İçeriği istediğin zaman değiştirirsin.
+
+🔗 qrnot.com
+```
+**Hashtag:** `#QRNot #SesliHediye #KişiyeÖzelHediye #AnıKolyesi #HediyeFikri #SevgiliyeHediye`
+
+### Post 2 — Carousel: "Nasıl çalışır?" (4 slayt)
+1. **Satın al** — Kolye, anahtarlık ya da anı defteri.
+2. **Hesabınla kur** — QR'ı okut, sesini kaydet. QR artık senin.
+3. **Hediye et** — Kutuyu aç, okut, dinle.
+4. **İstediğin zaman güncelle** — Yıl dönümünde yeni bir mesaj ekle.
+
+```
+4 adımda sesli hediye 👇
+Kaydır, nasıl çalıştığını gör.
 ```
 
-**Format:** Kullanıcı testimoni/feedback
+### Post 3 — Carousel: 5 kullanım alanı
+1. 💍 Sevgiliye: yıl dönümü mesajı
+2. 👩‍👧 Anneye: çocuklarının sesi
+3. 🎓 Mezuniyet: ailenin tebrik videosu
+4. 🐾 Evcil hayvan: NFC künye, kaybolursa iletişim bilgisi
+5. 💒 Düğün: Dijital Anı Defteri ile misafir anıları
+
+```
+Bir QR, beş ayrı hikâye. Seninki hangisi?
+```
+
+### Post 4 — NFC tanıtımı (Reel, 10–15 sn)
+```
+Dokun. Dinle. 📶
+NFC + QR Anı Kolyesi'nde kamera bile açmana gerek yok.
+iPhone XS ve sonrası, NFC'si açık Android telefonlarla çalışır.
+```
+**Çekim:** Telefon kolyeye yaklaşır → ekranda ses oynatıcı açılır → gülümseyen yüz.
+
+### Post 5 — Dijital Anı Defteri (düğün sezonu)
+```
+Düğününüzde kimin ne dediğini 10 yıl sonra da dinleyin. 💒
+
+Masalara tek bir QR kart koyun.
+Misafirler sesli mesaj, video ya da fotoğraf bıraksın.
+Siz onaylayın, saklayın, istediğiniz zaman dinleyin.
+
+Yazdırılabilir masa kartları dahil · qrnot.com
+```
+
+### Post 6 — Gerçek müşteri (yalnızca izin alındıktan sonra)
+```
+"[Müşterinin kendi cümlesi]"
+— [Ad], [şehir]
+
+Kendi hikâyeni paylaşmak istersen @qrnotcom'u etiketle 💛
+```
+
+### Story şablonları
+- **Anket:** "Hediyede ses mi, video mu?"
+- **Soru kutusu:** "QRNot hakkında merak ettiklerini sor"
+- **Geri sayım:** Sevgililer Günü / Anneler Günü son sipariş tarihi
+- **Nasıl yapılır:** Ekran kaydı — giriş yap → QR okut → kaydet
 
 ---
 
-### Post 4: Carousel - 5 Kullanım Senaryosu
-**Slaylar:**
-1. 🔑 Anahtarlık: Sevgiline kişisel mesaj
-2. 🎁 Hediye: Sürpriz sesi olan paket
-3. 👶 Bebek Anısı: İlk kelimeler kaydı
-4. 💍 Özel Günler: Söz/nişan/yıldönümü
-5. 🎓 Mezun: Mesajı kalıcı kıl
+## 3. TikTok (@qrnotcom)
 
-**Caption:**
+### Video 1 — "POV: Hediyenin içinde bir ses var" (15 sn)
 ```
-5 düşün, biri seninle konuşacak. 🎙️
+[0–3]  Kutu açılıyor, neon kolye
+[3–7]  Telefon arkadaki QR'ı okutuyor
+[7–12] Ses çalıyor, tepki
+[12–15] Yazı: "Hediyene bir ses ver · qrnot.com"
 ```
+`#QRNot #SesliHediye #HediyeFikri #POV`
 
----
-
-### Stories Template
-- Poll: "Hangi hediye senin ilk sesin olurdu?"
-- Q&A: "QRNote hakkında merak ettiklerini sor"
-- Countdown: Trendyol/CicekSepeti partnerlik duyurusu (yakında)
-
----
-
-## 🎵 TIKTOK (@qrnotcom)
-
-### Video 1: "POV: Hediye İçinde Ses Var" (15 sn)
+### Video 2 — "Aynı hediye, iki versiyon" (20 sn)
 ```
-[0-3sn] Anahtarlık görünümü, QR göstermek
-[3-7sn] Birinin QR taraması (telefon ekranı)
-[7-12sn] Ses çalması + kişinin yüz ifadesi
-[12-15sn] "QRNote: Hediyene Ses Ver" text overlay
-
-Trend Sound: Duygusal/şaşırtıcı ses
-Hashtag: #FYP #SosyalMedya #HediyeGünü #Viral #QRNote
+[0–6]  Sıradan anahtarlık hediyesi, "teşekkürler" tepkisi
+[6–14] Aynı anahtarlık, QR okutuluyor, ses çalıyor
+[14–20] Yazı: "Fark, içindeki ses."
 ```
 
----
-
-### Video 2: "Güzel Ama Sıkıcı Hediye vs. Sesli Hediye" (20 sn)
+### Video 3 — 15 saniyede kurulum (ekran kaydı)
 ```
-[0-5sn] Sıradan hediye görselieri (dumbing doll style)
-[5-10sn] "ama..." → aynı hediye QR koduyla
-[10-15sn] Birisi tarayıp sesini duyuyor
-[15-20sn] Text: "QR kod hiç değişmez. İçerik? Her zaman güncel."
-
-Sound: Trending audio
-Hashtag: #BeforeAndAfter #HediyeÖneri #DigitalHediye
+[0–3]  "Sesli hediye nasıl hazırlanır?"
+[3–7]  Hesaba giriş
+[7–11] QR okut → kaydet
+[11–15] "Hazır. İçeriği istediğin zaman değiştir."
 ```
 
----
-
-### Video 3: "30 Saniye Değme Challange" (30 sn)
+### Video 4 — NFC dokunma (10 sn)
 ```
-Kuru üniversitesi/ofis arkadaşları:
-- Biri QR taraması
-- Diğerleri reaksiyon veriyor (gülüş, şaşkınlık, tebessüm)
-- Sonda: "Senin sıran. QRNote kur!"
-
-Sound: Upbeat, energetic
-Hashtag: #Challenge #OfficeLife #FriendsChallenge #QRNote
+Telefon kolyeye dokunur → video açılır.
+Yazı: "Kamera yok, uygulama yok. Sadece dokun."
 ```
 
----
-
-### Video 4: Hızlı Tutorial (15 sn)
+### Video 5 — Düğün anı defteri (20 sn)
 ```
-[0-3sn] "5 Adımda Sesli Hediye Yap"
-[3-6sn] Hesap aç (screen recording)
-[6-9sn] QR oluştur
-[9-12sn] Ses kaydet
-[12-15sn] Link paylaş + "Hazır!" text
-
-Sound: Fast-paced
-Hashtag: #DIY #HowTo #Tutorial #QRNote
-```
-
----
-
-### Video 5: "OMG Bu Anahtarlık Konuşuyor!" (20 sn)
-```
-Başka birinin tepkisi:
-- Anahtarlık görünümü
-- "Bu ne?" sorusu
-- QR taraması
-- Reaksiyon
-- "Sen de yap! qrnot.com"
-
-Sound: Surprised/happy reaction
-Hashtag: #OMG #Viral #Trending #HediyeFikirleri
-```
-
----
-
-## 💼 LINKEDIN
-
-### Post 1: B2B - E-Ticaret Trendleri
-```
-🚀 E-ticaret'te Yeni Dalga: Duygusal Değer + Dijital Katman
-
-2026'de büyüyen sorular:
-❌ "Bu hediye neye fark etmiş?"
-✅ "Bu hediyenin arkasında bir hikaye var mı?"
-
-Pazaryeri analitiklerine bakınca:
-→ Kişiselleştirilmiş ürünlerin dönüşümü %15-25 daha yüksek
-→ İade oranı %20-30 daha düşük
-→ Ortalama sepet tutarı +%8 artıyor
-
-QRNote, fiziksel ürüne dijital bir katman ekleyerek:
-📍 Satıcılara marj koruma sağlıyor
-📍 Pazaryerlerine kategori farklılaştırma
-📍 Tüketiciye duygusal bağ
-
-Bunun gelecekte B2B standart olacağına bahis oynuyoruz.
-
-Bu trend hakkında düşünceleriniz nelerdir? 👇
-
-#ECommerce #Retail #Innovation #CustomerExperience #DigitalTransformation
+Masadaki QR kart → misafir okutup sesli mesaj bırakıyor →
+çift, düğünden sonra kanepede mesajları dinliyor.
+Yazı: "Düğünün sesi, yıllar sonra da sizinle."
 ```
 
 ---
 
-### Post 2: Pazaryeri Partnership (Duyuru)
+## 4. LinkedIn (B2B, pazaryeri ve kurumsal)
+
+### Post 1 — Ürün kategorisi tezi
 ```
-📢 Duyuru: [Platform Adı] ile İş Ortaklığı Başladı
+Hediyelik kategorisinde ürünler birbirine benziyor; rekabet fiyata kayıyor.
 
-[Trendyol/Hepsiburada/CicekSepeti] ile birlikte, hediye kategorisinde yeni bir deneyim sunuyoruz.
+QRNot'ta fiziksel ürüne dijital bir katman ekliyoruz:
+🎙️ Sesli mesaj · 🎬 Video · 🖼️ Fotoğraf · 📶 NFC
 
-Satıcılar artık ürünlerine:
-🎙️ Ses mesajı
-🎬 Video anlatım
-🖼️ Fotoğraf galerisi
-🎵 Spotify bağlantısı
+QR ve çip değişmiyor, içerik güncellenebiliyor.
+Her QR, satın alan üyenin hesabına bağlı.
 
-...ekleyebilecekler. QR kodu hiç değişmez, içerik her zaman güncel.
+Hediyelik satıcıları ve pazaryerleriyle pilot görüşmelerine açığız.
 
-Beta test başladı. İlgilenen satıcılar iletişime geçebilir.
-
-#Retail #ECommerce #Partnership #Innovation #DigitalWallet
+#ECommerce #Retail #Hediye #ÜrünTasarımı
 ```
 
----
-
-### Post 3: Müşteri Hikayesi / Case Study
+### Post 2 — Kurumsal hediye
 ```
-Bir e-commerce yazarı olarak gördüğüm:
+Kurumsal hediyede kartvizit yerine ses.
 
-Normal hediye: "Fiyat ve ürün kalitesi karar veriyor"
-QRNote ücretsiz deneme sonrası: "Kişisel ses mesajı geldikten sonra dönüşüm +%4"
+NFC + QR anahtarlıklar:
+• Genel müdürün yeni yıl mesajı
+• Ürün tanıtım videosu
+• Ekibe teşekkür kaydı
 
-Neden bu kadar etkili?
-
-Duygusal tasarım = Rasyonel karar + İrasyonel memnuniyet
-
-İlginiz varsa DM'den ilk erişim talep edebilirsiniz.
-
-#UX #ProductDesign #Ecommerce #CustomerPsychology
+Toplu siparişlerde logo baskısı ve içerik kurulumu desteği.
+İletişim: sce@scegrup.com
 ```
 
----
-
-### Post 4: Pazarlama Insight
+### Post 3 — Ürün geliştirme günlüğü (güven)
 ```
-💡 Hediye pazarında gözardı edilen faktör:
+QRNot'ta bu ay neleri sağlamlaştırdık:
 
-Hediye verenlerin %73'ü "hediyeyi başarılı mı oldu" kaygısı taşıyor.
-Hediye alanların %81'i "hediye arkasında bir hikaye var mı" değerlendiriyor.
+✔ Her QR üyenin hesabına bağlanıyor; başkası sahiplenemiyor
+✔ Pazaryeri siparişleri doğrulanmadan dijital ürün aktive edilemiyor
+✔ İptal edilen siparişin QR'ı otomatik kapanıyor
+✔ Dijital anı defterinde her misafir bir kez yazabiliyor
 
-Pazaryerindeki hediye kategorisini harita çizersen:
-→ Fiyat rekabeti (marj eyer)
-→ Ürün kalitesi (threshold)
-→ Hikaye/anı (diferensiasyon) ← Burası boş
+Duygusal bir ürün, ancak güvenilir olduğunda değerli.
 
-QRNote buraya giriyor. Teknik olmayan, duygusal çözüm.
+#ProductManagement #Security #ECommerce
+```
 
-Benzer insight'lar sizin sektörlerde de var mı? Tartışalım.
+### Post 4 — Pazaryeri duyurusu (yalnızca anlaşma imzalandıktan sonra)
+```
+📢 QRNot ürünleri artık [Platform] üzerinde.
 
-#Insight #MarketResearch #RetailPsychology #ProductStrategy
+Sesli Anı Kolyesi, NFC'li anahtarlıklar ve Dijital Anı Defteri
+[Platform] mağazamızda.
+
+[Mağaza linki]
 ```
 
 ---
 
-## 🐦 X (@scegrup)
+## 5. X (@scegrup)
 
-### Tweet 1: Hook
+### Tweet 1
 ```
-bir baktı hediye "QR kodlu" olmuş
-hiç beklemiyor ki biri tarayana başlasın sesini oynatmasına
-
-merak + sürpriz = dönüşüm +%15
-
-QRNote: hediye = geri konuşabilir ürün ✨
+hediye notu okunur ve atılır.
+sesli kolye yıllarca yeniden açılır.
 
 qrnot.com
 ```
 
----
-
-### Tweet 2: B2B Angle
+### Tweet 2
 ```
-e-commerce'in söylemediği:
+QR değişmiyor.
+NFC çip değişmiyor.
+içindeki mesaj, istediğin zaman değişiyor.
 
-pazaryerlerde hediye kategorisinin problem'i:
-- satıcılar fiyata mahkûm
-- alıcılar özensizlikten korkar
-- platform fark yaratamaz
-
-çözüm: fiziksel ürün + dijital anı
-
-1 saniye tara → ses + video + link
-
-iş ortakları için SaaS arıyoruz.
-#BuildInPublic
+yıl dönümünde yeni bir ses kaydı eklemek için hediyeyi geri istemene gerek yok.
 ```
 
----
-
-### Tweet 3: Thread - "Neden Fiziksel Ürünler Tekrar Konuşmalı"
+### Tweet 3 — Thread: "Neden hesap zorunlu?"
 ```
-🧵 Hediye Pazarında Gelecek:
+1/ QRNot'ta ürünü kurmak için hesap açmak gerekiyor. neden?
 
-1/
-2026'de e-ticaret soyut hale geliyor.
-Ürün kalitesi threshold. Fiyat basit.
+2/ çünkü QR bir kez sahiplenildiğinde senin hesabına kilitleniyor.
+kargoda biri okutsa bile içeriği değiştiremez.
 
-Fark = Hikaye
-Hikaye = Hatırlanabilir anı
-Anı = Tekrar satın alma + tavsiye
+3/ telefonunu değiştirdin, linki kaybettin — sorun değil.
+hesabına gir, QR'ın orada.
 
-Soru: Hediye ürünlerinde bu anı nasıl taşıyabilirsin?
-Cevap: Ses ve görsel katman
+4/ üyelik ücretsiz. ürünler ücretli. bu kadar basit.
+```
 
-2/
-Fizikte başlayan ürün, dijitalde yaşayan ürüne dönüşüyor.
+### Tweet 4 — Özel gün hatırlatma
+```
+Anneler Günü'ne [X] gün kaldı.
+çocuklarının sesini bir kolyeye sığdır.
 
-Anahtarlık → Kişi taradığında sesini duyar
-Bileklik → Video mesajı açılır
-Sticker → Hikaye görüntüsü
-
-QR kodu sabit. Ürünün 5 yıl sonra değişecek içeriği güncellenebilir.
-
-3/
-Pazaryeri açısından:
-- Kategori farklılaşması
-- Iade oranı azalır
-- AOV artar
-- Satıcılar premium konumlanır
-
-Sonuç: İki taraf da kazanır
-
-2026 standart olmadan önce, kimin bunu ilk entegre edeceğini merak ediyorum.
-
-#FutureOfECommerce #Retail #Innovation
+son sipariş: [tarih] · qrnot.com
 ```
 
 ---
 
-### Tweet 4: Hızlı Retweet Hook
-```
-"hediye bütçesi var ama ne alacağını bilmiyor"
-→ bu senin kullanıcın
-→ 249 TL'ye çöz
+## 6. Kampanya takvimi (Türkiye)
 
-qrnot.com
-```
+| Dönem | Ana ürün | Mesaj | İçerik başlangıcı |
+|---|---|---|---|
+| Yılbaşı (31 Ara) | Kolye, anahtarlık | "Yeni yıl mesajın hediyende kalsın" | 1 Aralık |
+| Sevgililer Günü (14 Şub) | NFC + QR Kolye | "Sesini ona taşı" | 15 Ocak |
+| Anneler Günü (Mayıs 2. pazar) | Sesli Anı Kolyesi | "Çocuklarının sesi hep yanında" | 15 Nisan |
+| Düğün sezonu (Mayıs–Eylül) | Dijital Anı Defteri | "Düğününüzün sesi" | 1 Nisan |
+| Babalar Günü (Haziran 3. pazar) | Anahtarlık | "Her gün cebinde" | 20 Mayıs |
+| Mezuniyet (Haziran) | Kolye, anahtarlık | "Ailenin tebriği, hep seninle" | 25 Mayıs |
+| Öğretmenler Günü (24 Kas) | Dijital QR Hakkı | "Sınıfın sesi, bir kartta" | 1 Kasım |
 
----
-
-### Tweet 5: Pazaryeri Mention
-```
-@Trendyol @Hepsiburada @CicekSepeti
-
-hediye kategorisinde farklılaştırma yapan var mı?
-
-QRNote: B2B partner arıyor
-- teknik integrasyon kolay
-- satıcı aracı basit
-- müşteri deneyimi solid
-
-ilgileniyor musunuz?
-```
+**Kargo uyarısı:** Her kampanyada "son sipariş tarihi"ni özel günden en az 4 iş günü önceye koy.
 
 ---
 
-### Tweet 6: Pazarlama Metrikleri
-```
-bireysel plan:
-- 1 ücretsiz QR (test)
-- 249 TL = 1 gerçek QR
+## 7. 4 haftalık yayın planı (örnek: Sevgililer Günü)
 
-ilk ayda:
-- 240 hesap (organic)
-- %18 conversion free → paid
-
-2. ayda:
-- "bunu neden bilmiyorduk?" başladı
-
-kurumsal plan geliştiriliyorum
-
-bizi takip edin 🚀
-```
+| Hafta | Instagram | TikTok | LinkedIn | X |
+|---|---|---|---|---|
+| 1 | Post 1 (tanıtım) | Video 1 (POV) | Post 1 (kategori tezi) | Tweet 1 |
+| 2 | Post 2 (nasıl çalışır) + Story anketi | Video 4 (NFC) | Post 3 (güven) | Tweet 3 (thread) |
+| 3 | Post 4 (NFC Reel) | Video 2 (iki versiyon) | Post 2 (kurumsal) | Tweet 2 |
+| 4 | Story geri sayım + son sipariş | Video 3 (kurulum) | — | Tweet 4 (hatırlatma) |
 
 ---
 
-## 📅 PAYLAŞIM TAKVİMİ
+## 8. Ölçüm
 
-### Hafta 1
-- **Instagram:** Post 1 (Hediye Aksiyonu)
-- **TikTok:** Video 1 (POV)
-- **LinkedIn:** Post 1 (E-Ticaret Trendleri)
-- **X:** Tweet 1 (Hook)
+Hedefler ilk ayın gerçek verisiyle belirlenir; aşağıdakiler takip edilecek metriklerdir.
 
-### Hafta 2
-- **Instagram:** Reels 2 + Stories
-- **TikTok:** Video 2 (Before/After)
-- **LinkedIn:** Post 2 (Partnership duyurusu - hazır olursa)
-- **X:** Thread başla
+| Kanal | Metrik | Nereden |
+|---|---|---|
+| Instagram / TikTok | Erişim, kaydetme, profil → site tıklaması | Uygulama içi analiz |
+| LinkedIn | Etkileşim, profil ziyareti, gelen B2B mesaj | LinkedIn analiz |
+| Site | Ziyaret → sepet → sipariş | qrnot.com analiz + admin sipariş paneli |
+| Ürün | Kurulum tamamlama (satılan / sahiplenilen QR) | Admin paneli |
 
-### Hafta 3
-- **Instagram:** Carousel (5 Senaryo)
-- **TikTok:** Video 3 (Challenge)
-- **LinkedIn:** Post 3 (Case Study)
-- **X:** Tweet 3-4 (B2B Angle)
-
-### Hafta 4
-- **Instagram:** UGC repost
-- **TikTok:** Video 4 (Tutorial)
-- **LinkedIn:** Post 4 (Insight)
-- **X:** Tweet 5-6 (Metrics & Follow-up)
+Her içeriğe UTM ekle: `qrnot.com/shop?utm_source=instagram&utm_campaign=sevgililer2027`
 
 ---
 
-## 🎯 KPI İZLENMESİ
+## 9. Görsel kuralları
 
-| Platform | Metrik | Hedef |
-|----------|--------|-------|
-| **Instagram** | Reach/Engagement | %15 haftalık artış |
-| **TikTok** | Views | 10K+ per video |
-| **LinkedIn** | Engagement/Profile visits | 500+ interaction/post |
-| **X** | Impressions | 50K+ per thread |
-
----
-
-## ⚙️ İŞ AKIŞI
-
-1. **İçerik Onayı** → Bu belgeden malzeme seç
-2. **Visual Hazırlama** → Canva/Adobe (template'ler var mı?)
-3. **Scheduled Posting** → Buffer/Later kullan
-4. **Monitoring** → Haftalık analytics review
-5. **Optimization** → En yüksek engagement'ı repete et
-
----
-
-**Hemen başla: Hangi platform/içeriğe önce başlasam dersen, o saati kur 🚀**
+- **Renkler:** krem `#fff8f3`, mürekkep `#1f2440`, mercan `#e8505b`, altın `#c9963a`, adaçayı `#3f8f6b`.
+- **Yazı tipleri:** başlık Fraunces, metin Geist.
+- **Ürün fotoğrafı:** gün ışığında, sıcak arka plan; QR her görselde okunabilir olmalı (en az 2 × 2 cm görünür).
+- **Ekran kaydı:** gerçek qrnot.com akışı; kişisel veri içeren ekranlar bulanıklaştırılır.

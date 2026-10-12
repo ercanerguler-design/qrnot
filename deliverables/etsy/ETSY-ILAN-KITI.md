@@ -1,6 +1,16 @@
 # QRNot — Etsy İlan Kiti
 
-Etsy alıcısı ödeme yapınca bir PDF indirir. PDF'te **qrnot.com/etsy** adresi yazar; alıcı burada Etsy sipariş numarasını girer ve **kendine özel QR**'ını anında alır. Aktivasyonları `qrnot.com/admin/shop → Etsy` sekmesinden Etsy siparişleriyle karşılaştırıp doğrulayabilir ya da iptal edebilirsin.
+Etsy alıcısı ödeme yapınca bir PDF indirir. PDF'te **qrnot.com/etsy** adresi yazar; alıcı burada Etsy sipariş numarasını girer ve **kendine özel QR**'ını alır. QR'ı kurarken (ses kaydı / anı defteri) **QRNot hesabıyla giriş yapar**; QR o hesaba bağlanır.
+
+### Sipariş doğrulama — her gün yapılacak
+
+Sadece listede olan Etsy siparişleri aktive edilebilir; uydurma sipariş numarasıyla QR alınamaz.
+
+1. Etsy → Shop Manager → Settings → Options → **Download Data** → Orders CSV'sini indir.
+2. `qrnot.com/admin/shop → Etsy → Etsy siparişleri` bölümüne CSV'yi yükle (ya da sipariş numaralarını satır satır yapıştır).
+3. Her sipariş, içindeki ürün adedi kadar QR alabilir. Şüpheli bir aktivasyonu "İptal" et — QR devre dışı kalır.
+
+> Alıcıya "24 saat içinde" aktivasyon sözü verildiği için listeyi **günde en az bir kez** güncelle. Etsy API entegrasyonu tamamlanınca bu adım otomatikleşecek (`deliverables/pazaryeri-entegrasyon/`).
 
 > Etsy kuralı: Dijital ürünlerde "made by me / designed by me" seçilmeli. Şablon tasarımı ve QR sayfası sana ait olduğu için uygundur.
 
@@ -22,7 +32,7 @@ Give your gift a VOICE. 🎙️
 
 Record a voice message, a video, or add photos — then print your personal QR code on a gift tag, card or sticker. When they scan it with their phone camera, they hear YOU. No app needed.
 
-✔ Your own unique QR code (activated in 1 minute)
+✔ Your own unique QR code, linked to your QRNot account
 ✔ Voice, video, photos, Spotify & YouTube links
 ✔ Change your message any time — the QR never changes
 ✔ Printable templates included: gift cards, gift tags, round stickers (A4 size)
@@ -30,8 +40,8 @@ Record a voice message, a video, or add photos — then print your personal QR c
 
 HOW IT WORKS
 1. Purchase and download the PDF
-2. Go to qrnot.com/etsy and enter your Etsy order number
-3. Record your message and print your QR — done!
+2. Go to qrnot.com/etsy and enter your Etsy order number (ready within 24 hours of your order)
+3. Sign in or create your QRNot account, record your message and print your QR — done!
 
 PERFECT FOR
 Mother's Day · Birthdays · Anniversaries · Long-distance love · Grandparents · Baby announcements · In loving memory
@@ -67,8 +77,10 @@ One QR code on your tables — guests scan it and leave a voice message, a video
 
 HOW IT WORKS
 1. Purchase and download the PDF
-2. Go to qrnot.com/etsy, enter your order number and choose "Guestbook"
-3. Name your event, print your table cards, and enjoy your day
+2. Go to qrnot.com/etsy, enter your order number and choose "Guestbook" (ready within 24 hours of your order)
+3. Sign in or create your QRNot account, name your event, print your table cards and enjoy your day
+
+Each guest can leave one memory per guestbook.
 
 Weddings · Engagements · Bridal & baby showers · Birthdays · Retirements · Farewells · Memorials
 ```
@@ -89,7 +101,7 @@ Not: Emergency (acil durum) bilgisi QR sayfasında "Ara" ve "Konumu aç" butonu 
 
 **Başlık:** Voice Message Necklace, QR Code Photo Pendant, Engraved Audio Memorial Necklace, NFC Tap Jewelry, Gift for Mom, Anniversary Gift
 
-Fiziksel üründe her kolye/anahtarlık zaten kendi QR'ı ile üretildiği için **aktivasyon gerekmez**; alıcı QR'ı okutup içeriğini ekler. Etsy'de "Production partner" / "Made by" bilgilerini doğru doldur.
+Fiziksel üründe her kolye/anahtarlık zaten kendi QR'ı ile üretildiği için **sipariş aktivasyonu gerekmez**; alıcı QR'ı okutur, **QRNot hesabıyla giriş yapar** ve içeriğini ekler — QR o hesaba kilitlenir. Pakete 3 adımlı kurulum kartı koy. Etsy'de "Production partner" / "Made by" bilgilerini doğru doldur.
 
 ---
 
@@ -101,9 +113,11 @@ Let's activate your personal QR code.
 
 1. Go to:  qrnot.com/etsy
 2. Enter your Etsy order number (Etsy → You → Purchases)
+   Your order is ready to activate within 24 hours.
 3. Choose what you bought and click "Activate"
-4. Record your message (or set up your guestbook)
-5. Download your QR and open the printable templates
+4. Sign in or create your QRNot account
+5. Record your message (or set up your guestbook)
+6. Download your QR and open the printable templates
 
 Need help? Message us on Etsy — we reply within 24 hours.
 ```
@@ -112,7 +126,7 @@ PDF'e büyük bir "qrnot.com/etsy" QR kodu da koy (bu genel bir QR'dır, herkese
 ## Etsy otomatik sipariş mesajı (Settings → Messages → "Order confirmation")
 
 ```
-Thank you for your order! To activate your personal QR code, visit qrnot.com/etsy and enter your order number. It takes less than a minute. If you have any questions, just reply to this message.
+Thank you for your order! Your personal QR code will be ready to activate within 24 hours. Visit qrnot.com/etsy, enter your order number and sign in to your QRNot account to set it up. If you have any questions, just reply to this message.
 ```
 
 ## Fotoğraf listesi (ilan başına 10 görsel)

@@ -224,8 +224,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 
         <div className="relative">
           <div className="grid grid-cols-2 gap-4">
-            <ProductArt kind="necklace" variant="gold" className="w-card aspect-square w-full -rotate-2" />
-            <ProductArt kind="keychain" nfc variant="silver" className="w-card mt-10 aspect-square w-full rotate-2" />
+            <ProductArt kind="necklace" variant="neon-pink" className="w-card aspect-square w-full -rotate-2" />
+            <ProductArt kind="keychain" nfc variant="neon-green" className="w-card mt-10 aspect-square w-full rotate-2" />
           </div>
           <div className="w-card relative -mt-10 mx-auto max-w-sm p-4">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{c.demoTitle}</p>
@@ -313,7 +313,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
       {/* NFC */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="w-card grid items-center gap-8 p-8 sm:p-12 md:grid-cols-[1fr_1.3fr]">
-          <ProductArt kind="necklace" nfc variant="rose" className="mx-auto w-full max-w-xs rounded-3xl" />
+          <ProductArt kind="necklace" nfc variant="neon-blue" className="mx-auto w-full max-w-xs rounded-3xl" />
           <div>
             <Kicker>📶 {c.nfcKicker}</Kicker>
             <h2 className="font-display mt-2 text-4xl font-semibold">{c.nfcTitle}</h2>

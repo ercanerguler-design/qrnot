@@ -7,6 +7,11 @@ const METAL: Record<string, [string, string]> = {
   silver: ['#eef0f4', '#9ea3ae'],
   rose: ['#f4c9bd', '#c07d6c'],
   black: ['#5a5d6b', '#1f2028'],
+  'neon-pink': ['#ff8fca', '#ff1f8f'],
+  'neon-green': ['#8dffa8', '#18c443'],
+  'neon-orange': ['#ffb26b', '#ff5f00'],
+  'neon-blue': ['#8ad8ff', '#0b95e6'],
+  'neon-yellow': ['#fff27a', '#e2c800'],
 }
 
 function MiniQr({ x, y, size, color = '#1f2440' }: { x: number; y: number; size: number; color?: string }) {

@@ -74,8 +74,8 @@ export default async function NfcPage({ searchParams }: { searchParams: Promise<
           <p className="mt-5 text-lg leading-relaxed text-ink-2">{t.desc}</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <ProductArt kind="necklace" nfc variant="gold" className="w-card aspect-square w-full" />
-          <ProductArt kind="keychain" nfc variant="black" className="w-card mt-8 aspect-square w-full" />
+          <ProductArt kind="necklace" nfc variant="neon-orange" className="w-card aspect-square w-full" />
+          <ProductArt kind="keychain" nfc variant="neon-pink" className="w-card mt-8 aspect-square w-full" />
         </div>
       </section>
 

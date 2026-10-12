@@ -43,16 +43,13 @@ export interface Product {
   maxQuantity: number
 }
 
-const METAL_VARIANTS: ProductVariant[] = [
-  { id: 'gold', label: { tr: 'Altın', en: 'Gold' }, swatch: '#d4a64a' },
-  { id: 'silver', label: { tr: 'Gümüş', en: 'Silver' }, swatch: '#c3c7cf' },
-  { id: 'rose', label: { tr: 'Rose Gold', en: 'Rose Gold' }, swatch: '#d79a8b' },
-]
-
-const KEYCHAIN_VARIANTS: ProductVariant[] = [
-  { id: 'silver', label: { tr: 'Çelik', en: 'Steel' }, swatch: '#c3c7cf' },
-  { id: 'black', label: { tr: 'Mat Siyah', en: 'Matte Black' }, swatch: '#2b2d36' },
-  { id: 'gold', label: { tr: 'Altın', en: 'Gold' }, swatch: '#d4a64a' },
+// Pleksi gövde + neon renkli damla (epoksi) baskı — renkleri gerçek stoğa göre düzenle.
+const NEON_VARIANTS: ProductVariant[] = [
+  { id: 'neon-pink', label: { tr: 'Neon Pembe', en: 'Neon Pink' }, swatch: '#ff3fa4' },
+  { id: 'neon-green', label: { tr: 'Neon Yeşil', en: 'Neon Green' }, swatch: '#39e75f' },
+  { id: 'neon-orange', label: { tr: 'Neon Turuncu', en: 'Neon Orange' }, swatch: '#ff7a1a' },
+  { id: 'neon-blue', label: { tr: 'Neon Mavi', en: 'Neon Blue' }, swatch: '#2fb8ff' },
+  { id: 'neon-yellow', label: { tr: 'Neon Sarı', en: 'Neon Yellow' }, swatch: '#f4e21c' },
 ]
 
 export const PRODUCTS: Product[] = [
@@ -70,14 +67,14 @@ export const PRODUCTS: Product[] = [
       en: 'Scan the QR on the back and hear your voice.',
     },
     description: {
-      tr: 'Paslanmaz çelik kolye ucunun arkasında lazerle işlenmiş QR kod bulunur. Telefonla okutan kişi senin ses kaydını, videonu ya da fotoğraflarını uygulama indirmeden açar. İçeriği istediğin zaman değiştirebilirsin.',
-      en: 'A stainless steel pendant with a laser-engraved QR code on the back. Whoever scans it hears your voice message, watches your video or sees your photos — no app needed. Change the content any time.',
+      tr: 'Pleksi kolye ucu, neon renkli damla (epoksi) baskı ile parlak ve kabarık bir yüzeye sahiptir; üzerinde sana özel QR kod bulunur. Telefonla okutan kişi senin ses kaydını, videonu ya da fotoğraflarını uygulama indirmeden açar. İçeriği istediğin zaman değiştirebilirsin.',
+      en: 'An acrylic (plexiglass) pendant with a glossy neon dome-print finish and your own QR code. Whoever scans it hears your voice message, watches your video or sees your photos — no app needed. Change the content any time.',
     },
     features: {
-      tr: ['Paslanmaz çelik, kararmaz', 'Lazer kazıma kalıcı QR', 'Ses, video, fotoğraf ve link', 'İçerik sınırsız süre saklanır', 'Hediye kutusunda gönderilir'],
-      en: ['Tarnish-free stainless steel', 'Permanent laser-engraved QR', 'Voice, video, photo & links', 'Content kept with no expiry date', 'Ships in a gift box'],
+      tr: ['Hafif pleksi gövde', 'Neon renkli parlak damla baskı', 'Sana özel QR kod', 'Ses, video, fotoğraf ve link', 'İçeriği istediğin zaman güncelle'],
+      en: ['Lightweight acrylic body', 'Glossy neon dome print', 'Your own unique QR code', 'Voice, video, photo & links', 'Update content any time'],
     },
-    variants: METAL_VARIANTS,
+    variants: NEON_VARIANTS,
     badge: { tr: 'En çok tercih edilen', en: 'Best seller' },
     maxQuantity: 10,
   },
@@ -95,14 +92,14 @@ export const PRODUCTS: Product[] = [
       en: 'Just tap a phone — with a QR as backup.',
     },
     description: {
-      tr: 'Kolye ucunda gizli bir NFC çip ve arkada QR kod bulunur. Telefonu kolyeye yaklaştırmak içeriği açar; NFC olmayan telefonlarda QR ile açılır. Çip, senin QR sayfana programlanmış ve kilitlenmiş şekilde gelir.',
-      en: 'A hidden NFC chip in the pendant plus a QR code on the back. Tapping a phone opens your content; phones without NFC can scan the QR. The chip arrives programmed and locked to your page.',
+      tr: 'Pleksi kolye ucunda gizli bir NFC çip ve QR kod bulunur. Telefonu kolyeye yaklaştırmak içeriği açar; NFC olmayan telefonlarda QR ile açılır. Çip, senin QR sayfana programlanmış ve kilitlenmiş şekilde gelir.',
+      en: 'An acrylic pendant with a hidden NFC chip plus a QR code. Tapping a phone opens your content; phones without NFC can scan the QR. The chip arrives programmed and locked to your page.',
     },
     features: {
-      tr: ['Dokun-aç NFC çip (NTAG215)', 'Arka yüzde QR yedeği', 'Pil gerektirmez, ömür boyu çalışır', 'iPhone ve Android uyumlu', 'Hediye kutusunda gönderilir'],
-      en: ['Tap-to-open NFC chip (NTAG215)', 'QR backup on the back', 'No battery, works for life', 'Works with iPhone & Android', 'Ships in a gift box'],
+      tr: ['Dokun-aç NFC çip', 'QR yedeği', 'Pil gerektirmez', 'iPhone ve Android uyumlu', 'Neon renkli damla baskı'],
+      en: ['Tap-to-open NFC chip', 'QR backup', 'No battery needed', 'Works with iPhone & Android', 'Glossy neon dome print'],
     },
-    variants: METAL_VARIANTS,
+    variants: NEON_VARIANTS,
     badge: { tr: 'Yeni · NFC', en: 'New · NFC' },
     maxQuantity: 10,
   },
@@ -120,14 +117,14 @@ export const PRODUCTS: Product[] = [
       en: 'A voice you carry every day.',
     },
     description: {
-      tr: 'Dayanıklı metal anahtarlık, üzerinde kalıcı QR kod. Sevdiğinin sesi, birlikte çekilmiş bir video ya da kaybolursa ulaşılacak acil iletişim bilgisi — hepsi tek QR\'da.',
-      en: 'A durable metal keychain with a permanent QR code. A loved one\'s voice, a shared video, or emergency contact info if it gets lost — all in one QR.',
+      tr: "Pleksi anahtarlık, neon renkli damla baskı ve üzerinde sana özel QR kod. Sevdiğinin sesi, birlikte çekilmiş bir video ya da kaybolursa ulaşılacak acil iletişim bilgisi — hepsi tek QR'da.",
+      en: "An acrylic keychain with a neon dome print and your own QR code. A loved one's voice, a shared video, or emergency contact info if it gets lost — all in one QR.",
     },
     features: {
-      tr: ['Dayanıklı metal gövde', 'Kalıcı QR baskı', 'Kayıp durumunda acil iletişim bilgisi', 'İçeriği istediğin an güncelle', 'Hediye paketinde gönderilir'],
-      en: ['Durable metal body', 'Permanent QR print', 'Emergency contact if lost', 'Update content any time', 'Ships gift-wrapped'],
+      tr: ['Hafif pleksi gövde', 'Neon renkli parlak damla baskı', 'Kayıp durumunda acil iletişim bilgisi', 'İçeriği istediğin an güncelle'],
+      en: ['Lightweight acrylic body', 'Glossy neon dome print', 'Emergency contact if lost', 'Update content any time'],
     },
-    variants: KEYCHAIN_VARIANTS,
+    variants: NEON_VARIANTS,
     maxQuantity: 20,
   },
   {
@@ -148,10 +145,10 @@ export const PRODUCTS: Product[] = [
       en: 'A keychain with an NFC chip inside and a QR code on top. Tapping a phone opens the content instantly. Ideal as a digital business card, pet tag or gift.',
     },
     features: {
-      tr: ['Dokun-aç NFC çip', 'QR yedeği', 'Su ve çizilmeye dayanıklı', 'Programlanmış ve kilitli gelir', 'Hediye paketinde gönderilir'],
-      en: ['Tap-to-open NFC chip', 'QR backup', 'Water & scratch resistant', 'Arrives programmed & locked', 'Ships gift-wrapped'],
+      tr: ['Dokun-aç NFC çip', 'QR yedeği', 'Programlanmış ve kilitli gelir', 'Neon renkli damla baskı'],
+      en: ['Tap-to-open NFC chip', 'QR backup', 'Arrives programmed & locked', 'Glossy neon dome print'],
     },
-    variants: KEYCHAIN_VARIANTS,
+    variants: NEON_VARIANTS,
     badge: { tr: 'Yeni · NFC', en: 'New · NFC' },
     maxQuantity: 20,
   },

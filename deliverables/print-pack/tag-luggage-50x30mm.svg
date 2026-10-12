@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="30mm" height="50mm" viewBox="0 0 30 50">
+  <title>QRNot Luggage Tag - 30x50mm</title>
+  <desc>Front print matching the reference style: dark body, neon frame, centered QR, brand and return text.</desc>
+
+  <defs>
+    <linearGradient id="bodyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0F1E"/>
+      <stop offset="55%" stop-color="#0D1326"/>
+      <stop offset="100%" stop-color="#080C17"/>
+    </linearGradient>
+    <linearGradient id="neonA" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#31C9FF"/>
+      <stop offset="52%" stop-color="#6C49FF"/>
+      <stop offset="100%" stop-color="#E42FFF"/>
+    </linearGradient>
+    <linearGradient id="neonB" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B95DFF"/>
+      <stop offset="100%" stop-color="#18CCFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer card -->
+  <rect x="0" y="0" width="30" height="50" rx="4.2" ry="4.2" fill="url(#bodyBg)"/>
+  <rect x="0.9" y="0.9" width="28.2" height="48.2" rx="3.6" ry="3.6" fill="none" stroke="url(#neonA)" stroke-width="0.56"/>
+  <rect x="1.7" y="1.7" width="26.6" height="46.6" rx="3.2" ry="3.2" fill="none" stroke="url(#neonB)" stroke-width="0.28" opacity="0.95"/>
+
+  <!-- Top strap slot -->
+  <rect x="12.3" y="2.5" width="5.4" height="2.0" rx="1.0" fill="#050913" stroke="#D4DDF0" stroke-width="0.2"/>
+
+  <!-- QR window -->
+  <rect x="6.3" y="8.2" width="17.4" height="17.4" rx="1.1" fill="#FFFFFF"/>
+  <rect x="7.0" y="8.9" width="16.0" height="16.0" fill="none" stroke="#C8CEDA" stroke-width="0.2"/>
+
+  <!-- Brand and copy -->
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="15" y="30.6" font-size="4.1" font-weight="700" fill="#EAF0FF">QRNot</text>
+    <line x1="7.4" y1="32.2" x2="22.6" y2="32.2" stroke="#C137FF" stroke-width="0.28"/>
+
+    <!-- simple headset icon -->
+    <path d="M12.7 35.8a2.3 2.3 0 0 1 4.6 0" fill="none" stroke="#EAF0FF" stroke-width="0.35" stroke-linecap="round"/>
+    <rect x="11.7" y="35.9" width="0.75" height="1.4" rx="0.35" fill="#EAF0FF"/>
+    <rect x="17.55" y="35.9" width="0.75" height="1.4" rx="0.35" fill="#EAF0FF"/>
+    <circle cx="15" cy="37.8" r="0.35" fill="#EAF0FF"/>
+
+    <text x="15" y="41.0" font-size="1.78" fill="#EEF3FF">Bulduysan okut,</text>
+    <text x="15" y="43.5" font-size="1.78" fill="#EEF3FF">sahibine ulaştır.</text>
+    <text x="15" y="46.2" font-size="1.7" fill="#EEF3FF">▼</text>
+  </g>
+</svg>

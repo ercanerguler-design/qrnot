@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getBlob } from '@/lib/blob'
+import { streamPrivateBlob } from '@/lib/blob'
 import { deactivateExpiredDemoQr, ensureQrSchema, QRCode, QRMedia, sql } from '@/lib/db'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ slug: string; mediaId: string }> }
 ) {
   try {
@@ -39,18 +39,12 @@ export async function GET(
       return NextResponse.json({ error: 'Medya bulunamadi' }, { status: 404 })
     }
 
-    const blobResult = await getBlob(media.blob_url, false)
-    if (!blobResult || !blobResult.stream) {
+    const response = await streamPrivateBlob(media.blob_url, req.headers.get('range'))
+    if (!response) {
       return NextResponse.json({ error: 'Medya bulunamadi' }, { status: 404 })
     }
 
-    const headers = new Headers(Array.from(blobResult.headers.entries()))
-    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    headers.set('Pragma', 'no-cache')
-    headers.set('Expires', '0')
-    headers.set('Surrogate-Control', 'no-store')
-
-    return new NextResponse(blobResult.stream as BodyInit, { headers })
+    return response
   } catch (err) {
     console.error('[qr/[slug]/media/[mediaId] GET]', err)
     return NextResponse.json({ error: 'Sunucu hatasi' }, { status: 500 })

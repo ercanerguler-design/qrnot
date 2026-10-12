@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash, randomBytes } from 'crypto'
 import { ensureQrSchema, sql } from '@/lib/db'
+import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 
 type RecoverRow = {
   id: string
@@ -22,6 +23,11 @@ export async function POST(
 
     if (!recoveryCode) {
       return NextResponse.json({ error: 'Kurtarma kodu gerekli' }, { status: 400 })
+    }
+
+    const allowed = await consumeRateLimit(`recover:${clientIp(req.headers)}`, 12, 3600)
+    if (!allowed) {
+      return NextResponse.json({ error: 'Çok fazla deneme yapıldı. Lütfen 1 saat sonra tekrar dene.' }, { status: 429 })
     }
 
     const rows = (await sql`
@@ -52,7 +58,7 @@ export async function POST(
       WHERE slug = ${slug}
     `
 
-    const baseUrl = String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
+    const baseUrl = req.nextUrl.origin || String(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').trim()
 
     return NextResponse.json({
       ownerToken,

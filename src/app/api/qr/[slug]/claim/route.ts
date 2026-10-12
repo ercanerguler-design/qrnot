@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateAudioFile } from '@/lib/audio'
-import { putBlob } from '@/lib/blob'
+import { deleteBlob, putBlob } from '@/lib/blob'
+import { resolveDirectUpload } from '@/lib/directUpload'
 import { deactivateExpiredDemoQr, ensureQrSchema, QRCode, sql } from '@/lib/db'
 import {
   detectUploadedMediaType,
@@ -63,6 +64,7 @@ export async function POST(
     const formData = await req.formData()
     const legacyAudioFile = formData.get('audio') as File | null
     const mediaFile = (formData.get('media') as File | null) || legacyAudioFile
+    const directBlobUrl = normalizeOptionalUrl(formData.get('media_blob_url') as string | null)
     const title = ((formData.get('title') as string) || '').trim().slice(0, 100) || 'Sesli Not'
     const youtubeUrl = normalizeOptionalUrl(formData.get('youtube_url') as string | null)
     const spotifyUrl = normalizeOptionalUrl(formData.get('spotify_url') as string | null)
@@ -83,7 +85,7 @@ export async function POST(
       return NextResponse.json({ error: externalError }, { status: 400 })
     }
 
-    if (!mediaFile && !youtubeUrl && !spotifyUrl && !externalUrl) {
+    if (!mediaFile && !directBlobUrl && !youtubeUrl && !spotifyUrl && !externalUrl) {
       return NextResponse.json({ error: 'En az bir içerik eklemelisin' }, { status: 400 })
     }
 
@@ -101,10 +103,26 @@ export async function POST(
     const videoRecordingLimit = isPaidOrder
       ? maxLimits.videoRecordingLimit
       : Math.min(Number(qr.video_recording_limit ?? maxLimits.videoRecordingLimit), maxLimits.videoRecordingLimit)
-    const hasAnyContentAttempt = Boolean(mediaFile || youtubeUrl || spotifyUrl || externalUrl)
+    const hasAnyContentAttempt = Boolean(mediaFile || directBlobUrl || youtubeUrl || spotifyUrl || externalUrl)
 
     if (hasAnyContentAttempt && recordingCount >= recordingLimit) {
+      if (directBlobUrl) await deleteBlob(directBlobUrl).catch(() => undefined)
       return NextResponse.json({ error: limitExceededMessage(slug, 'recording') }, { status: 429 })
+    }
+
+    if (directBlobUrl && !(mediaFile && mediaFile.size > 0)) {
+      // Tarayıcıdan doğrudan Blob'a yüklenmiş dosya (büyük video vb.)
+      const resolved = await resolveDirectUpload(directBlobUrl, 'qr', slug, qr.order_type)
+      if (!resolved.ok) {
+        await deleteBlob(directBlobUrl).catch(() => undefined)
+        return NextResponse.json({ error: resolved.error }, { status: 400 })
+      }
+      if (resolved.mediaType === 'video' && videoRecordingCount >= videoRecordingLimit) {
+        await deleteBlob(resolved.url).catch(() => undefined)
+        return NextResponse.json({ error: limitExceededMessage(slug, 'video') }, { status: 429 })
+      }
+      uploadedMediaType = resolved.mediaType
+      uploadedMediaBlobUrl = resolved.url
     }
 
     if (mediaFile && mediaFile.size > 0) {

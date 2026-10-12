@@ -1,25 +1,52 @@
 @import "tailwindcss";
 
 :root {
-  --background: #04050a;
-  --foreground: #f8fbff;
+  --background: #fff8f3;
+  --foreground: #1f2440;
   --accent-cyan: #4ffbff;
   --accent-pink: #ff52b6;
   --accent-amber: #ffd569;
+
+  /* QRNot warm consumer theme */
+  --w-cream: #fff8f3;
+  --w-cream-2: #fdeee4;
+  --w-paper: #ffffff;
+  --w-ink: #1f2440;
+  --w-ink-2: #4a4f6a;
+  --w-muted: #7b7f96;
+  --w-line: #efe1d6;
+  --w-line-2: #e4d0c2;
+  --w-coral: #e8505b;
+  --w-coral-2: #d43f4a;
+  --w-coral-soft: #fde4e3;
+  --w-gold: #c9963a;
+  --w-gold-soft: #f8ecd4;
+  --w-sage: #3f8f6b;
+  --w-sage-soft: #e1f2e9;
+  --w-danger: #c2362f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-cream: var(--w-cream);
+  --color-cream-2: var(--w-cream-2);
+  --color-paper: var(--w-paper);
+  --color-ink: var(--w-ink);
+  --color-ink-2: var(--w-ink-2);
+  --color-muted: var(--w-muted);
+  --color-line: var(--w-line);
+  --color-line-2: var(--w-line-2);
+  --color-coral: var(--w-coral);
+  --color-coral-2: var(--w-coral-2);
+  --color-coral-soft: var(--w-coral-soft);
+  --color-gold: var(--w-gold);
+  --color-gold-soft: var(--w-gold-soft);
+  --color-sage: var(--w-sage);
+  --color-sage-soft: var(--w-sage-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #04050a;
-    --foreground: #f8fbff;
-  }
+  --font-display: var(--font-display-serif), Georgia, serif;
 }
 
 body {
@@ -279,4 +306,169 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ───────────── Warm consumer UI kit ───────────── */
+
+.warm {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(232, 80, 91, 0.07), transparent 40%),
+    radial-gradient(circle at 100% 10%, rgba(201, 150, 58, 0.08), transparent 38%),
+    var(--w-cream);
+  color: var(--w-ink);
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.w-card {
+  background: var(--w-paper);
+  border: 1px solid var(--w-line);
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 2px rgba(31, 36, 64, 0.04), 0 12px 32px -16px rgba(31, 36, 64, 0.12);
+}
+
+.w-card-soft {
+  background: var(--w-cream-2);
+  border: 1px solid var(--w-line);
+  border-radius: 1.25rem;
+}
+
+.w-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.9rem;
+  padding: 0.8rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  transition: background-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.w-btn:active { transform: scale(0.98); }
+.w-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.w-btn:focus-visible { outline: 3px solid rgba(232, 80, 91, 0.35); outline-offset: 2px; }
+
+.w-btn-primary {
+  background: var(--w-coral);
+  color: #fff;
+  box-shadow: 0 8px 20px -8px rgba(232, 80, 91, 0.6);
+}
+.w-btn-primary:hover:not(:disabled) { background: var(--w-coral-2); }
+
+.w-btn-dark {
+  background: var(--w-ink);
+  color: #fff;
+}
+.w-btn-dark:hover:not(:disabled) { background: #2c3256; }
+
+.w-btn-ghost {
+  background: var(--w-paper);
+  color: var(--w-ink);
+  border: 1px solid var(--w-line-2);
+}
+.w-btn-ghost:hover:not(:disabled) { border-color: var(--w-ink-2); }
+
+.w-btn-whatsapp {
+  background: #1fa855;
+  color: #fff;
+}
+.w-btn-whatsapp:hover:not(:disabled) { background: #178a45; }
+
+.w-btn-sm { padding: 0.5rem 0.85rem; font-size: 0.85rem; border-radius: 0.7rem; }
+.w-btn-block { width: 100%; }
+
+.w-input {
+  width: 100%;
+  background: var(--w-paper);
+  border: 1px solid var(--w-line-2);
+  color: var(--w-ink);
+  border-radius: 0.85rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.w-input::placeholder { color: #a5a8ba; }
+.w-input:focus {
+  border-color: var(--w-coral);
+  box-shadow: 0 0 0 3px rgba(232, 80, 91, 0.14);
+}
+
+.w-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--w-ink-2);
+  margin-bottom: 0.4rem;
+}
+
+.w-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--w-coral-soft);
+  color: var(--w-coral-2);
+}
+.w-chip-gold { background: var(--w-gold-soft); color: #8a6420; }
+.w-chip-sage { background: var(--w-sage-soft); color: var(--w-sage); }
+.w-chip-ink { background: #e9eaf2; color: var(--w-ink); }
+
+.w-seg {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  background: var(--w-cream-2);
+  border: 1px solid var(--w-line);
+  border-radius: 0.9rem;
+}
+.w-seg button {
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--w-ink-2);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.w-seg button[aria-pressed="true"] {
+  background: var(--w-paper);
+  color: var(--w-ink);
+  box-shadow: 0 1px 3px rgba(31, 36, 64, 0.12);
+}
+
+.w-alert { border-radius: 0.9rem; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid; }
+.w-alert-error { background: #fdecea; border-color: #f5c6c2; color: #8f2a24; }
+.w-alert-success { background: var(--w-sage-soft); border-color: #bfe3cf; color: #25654a; }
+.w-alert-warn { background: var(--w-gold-soft); border-color: #ecd6a8; color: #7a5618; }
+.w-alert-info { background: #eef0fa; border-color: #d6daf0; color: #2f365e; }
+
+.w-link { color: var(--w-coral-2); font-weight: 600; text-underline-offset: 3px; }
+.w-link:hover { text-decoration: underline; }
+
+.w-divider { height: 1px; background: var(--w-line); }
+
+.w-progress { height: 0.5rem; border-radius: 999px; background: var(--w-cream-2); overflow: hidden; }
+.w-progress > span { display: block; height: 100%; background: var(--w-coral); transition: width 0.2s ease; }
+
+.w-prose h2 { font-family: var(--font-display); font-size: 1.35rem; margin: 1.6rem 0 0.6rem; color: var(--w-ink); }
+.w-prose h3 { font-weight: 700; margin: 1.2rem 0 0.4rem; color: var(--w-ink); }
+.w-prose p, .w-prose li { color: var(--w-ink-2); line-height: 1.7; font-size: 0.95rem; }
+.w-prose ul { list-style: disc; padding-left: 1.25rem; margin: 0.4rem 0 0.8rem; }
+.w-prose ol { list-style: decimal; padding-left: 1.25rem; margin: 0.4rem 0 0.8rem; }
+.w-prose p { margin: 0.4rem 0; }
+.w-prose strong { color: var(--w-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .w-btn, .w-input { transition: none; }
 }

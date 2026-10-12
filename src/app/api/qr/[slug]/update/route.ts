@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateAudioFile } from '@/lib/audio'
 import { deleteBlob, putBlob } from '@/lib/blob'
+import { resolveDirectUpload } from '@/lib/directUpload'
 import { deactivateExpiredDemoQr, ensureQrSchema, sql, QRCode, QRMedia } from '@/lib/db'
 import {
   detectUploadedMediaType,
@@ -45,6 +46,7 @@ export async function PUT(
     const token = (formData.get('token') as string | null) || ''
     const legacyAudioFile = formData.get('audio') as File | null
     const mediaFile = (formData.get('media') as File | null) || legacyAudioFile
+    const directBlobUrl = normalizeOptionalUrl(formData.get('media_blob_url') as string | null)
     const titleRaw = formData.get('title') as string | null
     const youtubeRaw = formData.get('youtube_url') as string | null
     const spotifyRaw = formData.get('spotify_url') as string | null
@@ -119,12 +121,28 @@ export async function PUT(
       ? maxLimits.videoRecordingLimit
       : Math.min(Number(qr.video_recording_limit ?? maxLimits.videoRecordingLimit), maxLimits.videoRecordingLimit)
 
-    const hasBlobChange = Boolean(mediaFile && mediaFile.size > 0)
+    const hasBlobChange = Boolean((mediaFile && mediaFile.size > 0) || directBlobUrl)
     const hasLinkChange = youtubeChanged || spotifyChanged || externalChanged
     const shouldIncreaseRecordingCount = hasBlobChange || hasLinkChange
 
     if (shouldIncreaseRecordingCount && recordingCount >= recordingLimit) {
+      if (directBlobUrl) await deleteBlob(directBlobUrl).catch(() => undefined)
       return NextResponse.json({ error: limitExceededMessage(slug, 'recording') }, { status: 429 })
+    }
+
+    if (directBlobUrl && !(mediaFile && mediaFile.size > 0)) {
+      // Tarayıcıdan doğrudan Blob'a yüklenmiş dosya (büyük video vb.)
+      const resolved = await resolveDirectUpload(directBlobUrl, 'qr', slug, qr.order_type)
+      if (!resolved.ok) {
+        await deleteBlob(directBlobUrl).catch(() => undefined)
+        return NextResponse.json({ error: resolved.error }, { status: 400 })
+      }
+      if (resolved.mediaType === 'video' && videoRecordingCount >= videoRecordingLimit) {
+        await deleteBlob(resolved.url).catch(() => undefined)
+        return NextResponse.json({ error: limitExceededMessage(slug, 'video') }, { status: 429 })
+      }
+      uploadedMediaType = resolved.mediaType
+      uploadedMediaBlobUrl = resolved.url
     }
 
     if (mediaFile && mediaFile.size > 0) {

@@ -1,0 +1,127 @@
+import { ensureQrSchema, sql } from '@/lib/db'
+
+// Mağaza, Etsy, anı defteri ve NFC için EK şema.
+// Sadece yeni tablo / varsayılan değerli yeni kolon ekler; mevcut kayıtlara dokunmaz.
+let growthSchemaPromise: Promise<void> | null = null
+
+export function ensureGrowthSchema() {
+  if (!growthSchemaPromise) {
+    growthSchemaPromise = (async () => {
+      await ensureQrSchema()
+
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS qr_mode VARCHAR(16) NOT NULL DEFAULT 'standard'`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS guestbook_settings JSONB`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS nfc_scan_count INTEGER NOT NULL DEFAULT 0`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS nfc_encoded_at TIMESTAMP WITH TIME ZONE`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS nfc_locked BOOLEAN NOT NULL DEFAULT FALSE`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS source_channel VARCHAR(24)`
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS shop_orders (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          order_no VARCHAR(24) UNIQUE NOT NULL,
+          access_key VARCHAR(48) NOT NULL,
+          status VARCHAR(24) NOT NULL DEFAULT 'pending',
+          provider VARCHAR(16) NOT NULL,
+          provider_ref TEXT,
+          currency VARCHAR(4) NOT NULL,
+          subtotal INTEGER NOT NULL,
+          shipping INTEGER NOT NULL DEFAULT 0,
+          total INTEGER NOT NULL,
+          lang VARCHAR(4) NOT NULL DEFAULT 'tr',
+          user_id UUID,
+          email VARCHAR(255) NOT NULL,
+          full_name VARCHAR(160) NOT NULL,
+          phone VARCHAR(40) NOT NULL DEFAULT '',
+          address JSONB,
+          items JSONB NOT NULL,
+          consents JSONB,
+          fulfillment JSONB,
+          customer_note TEXT NOT NULL DEFAULT '',
+          admin_note TEXT NOT NULL DEFAULT '',
+          tracking_no VARCHAR(80) NOT NULL DEFAULT '',
+          client_ip VARCHAR(64) NOT NULL DEFAULT '',
+          paid_at TIMESTAMP WITH TIME ZONE,
+          fulfilled_at TIMESTAMP WITH TIME ZONE,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_shop_orders_status ON shop_orders(status)`
+      await sql`CREATE INDEX IF NOT EXISTS idx_shop_orders_email ON shop_orders(email)`
+      await sql`CREATE INDEX IF NOT EXISTS idx_shop_orders_created ON shop_orders(created_at DESC)`
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS etsy_activations (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          order_number VARCHAR(24) NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          qr_id UUID NOT NULL REFERENCES qr_codes(id) ON DELETE CASCADE,
+          product VARCHAR(24) NOT NULL DEFAULT 'standard',
+          status VARCHAR(16) NOT NULL DEFAULT 'pending',
+          client_ip VARCHAR(64) NOT NULL DEFAULT '',
+          admin_note TEXT NOT NULL DEFAULT '',
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_etsy_activations_order ON etsy_activations(order_number)`
+      await sql`CREATE INDEX IF NOT EXISTS idx_etsy_activations_status ON etsy_activations(status)`
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS guestbook_entries (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          qr_id UUID NOT NULL REFERENCES qr_codes(id) ON DELETE CASCADE,
+          author_name VARCHAR(80) NOT NULL,
+          message TEXT NOT NULL DEFAULT '',
+          media_type VARCHAR(16),
+          blob_url TEXT,
+          status VARCHAR(16) NOT NULL DEFAULT 'pending',
+          ip_hash VARCHAR(64) NOT NULL DEFAULT '',
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_guestbook_entries_qr ON guestbook_entries(qr_id, created_at DESC)`
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS rate_limits (
+          bucket VARCHAR(160) PRIMARY KEY,
+          hits INTEGER NOT NULL DEFAULT 0,
+          window_start TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+    })().catch((error) => {
+      growthSchemaPromise = null
+      throw error
+    })
+  }
+
+  return growthSchemaPromise
+}
+
+/** Basit sabit pencereli hız sınırı. true dönerse istek kabul edilir. */
+export async function consumeRateLimit(bucket: string, limit: number, windowSeconds: number) {
+  await ensureGrowthSchema()
+  const rows = (await sql`
+    INSERT INTO rate_limits (bucket, hits, window_start)
+    VALUES (${bucket}, 1, NOW())
+    ON CONFLICT (bucket) DO UPDATE
+      SET hits = CASE
+            WHEN rate_limits.window_start < NOW() - make_interval(secs => ${windowSeconds}) THEN 1
+            ELSE rate_limits.hits + 1
+          END,
+          window_start = CASE
+            WHEN rate_limits.window_start < NOW() - make_interval(secs => ${windowSeconds}) THEN NOW()
+            ELSE rate_limits.window_start
+          END
+    RETURNING hits
+  `) as Array<{ hits: number }>
+
+  return Number(rows[0]?.hits || 0) <= limit
+}
+
+export function clientIp(headers: Headers) {
+  const forwarded = headers.get('x-forwarded-for') || ''
+  return (forwarded.split(',')[0] || headers.get('x-real-ip') || '').trim().slice(0, 64) || 'unknown'
+}

@@ -1,53 +1,67 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { deactivateExpiredDemoQr, ensureQrSchema, sql } from '@/lib/db'
+import { deactivateExpiredDemoQr, sql } from '@/lib/db'
 import type { QRCode, QRMedia } from '@/lib/db'
+import { ensureGrowthSchema } from '@/lib/growthSchema'
+import { publicGuestbookSettings, readGuestbookSettings } from '@/lib/guestbook'
+import { getRequestLang } from '@/lib/i18n.server'
 import QRClient from './QRClient'
 
 interface Props {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ lang?: string; src?: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  await ensureQrSchema()
+type QrRow = QRCode & { qr_mode?: string | null; guestbook_settings?: unknown }
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  await ensureGrowthSchema()
   const { slug } = await params
+  const lang = await getRequestLang((await searchParams).lang)
+  const en = lang === 'en'
   const rows = (await sql`
-    SELECT slug, title, is_demo, is_active, is_claimed, demo_expires_at FROM qr_codes WHERE slug = ${slug}
-  `) as Pick<QRCode, 'title' | 'is_claimed'>[]
-  if (rows.length === 0) return { title: 'QRNote' }
-  const row = await deactivateExpiredDemoQr(rows[0] as QRCode) as QRCode
+    SELECT slug, title, is_demo, is_active, is_claimed, demo_expires_at, qr_mode, guestbook_settings FROM qr_codes WHERE slug = ${slug}
+  `) as unknown as QrRow[]
+  const base: Metadata = { robots: { index: false, follow: false } }
+  if (rows.length === 0) return { ...base, title: 'QRNot' }
+  const row = (await deactivateExpiredDemoQr(rows[0])) as QrRow
   if (row.is_demo && row.is_active === false) {
+    return { ...base, title: en ? 'Demo expired' : 'Demo süresi doldu' }
+  }
+  if (row.qr_mode === 'guestbook') {
+    const settings = readGuestbookSettings(row.guestbook_settings)
     return {
-      title: 'Demo QR Süresi Doldu — QRNote',
-      description: 'Bu demo QR artık aktif değil. Yeni demo oluşturabilir veya paket satın alabilirsin.',
+      ...base,
+      title: settings.eventName || (en ? 'Guestbook' : 'Anı Defteri'),
+      description: en ? 'Leave a voice message, video or note.' : 'Sesli mesaj, video ya da not bırak.',
     }
   }
   if (!row.is_claimed) {
-    return {
-      title: 'QR Kodu Sahiplen — QRNote',
-      description: 'Bu QR kodu henüz sahiplenilmedi. İlk sesini kaydet!',
-    }
+    return { ...base, title: en ? 'Set up your QR' : 'QR kodunu hazırla' }
   }
+  const cleanTitle = String(row.title || '').replace(/\[(TEL|LOC):[^\]]+\]/g, '').trim()
   return {
-    title: row.title ? `${row.title} — QRNote` : 'Sesli Not — QRNote',
-    description: 'QR kod ile bırakılmış sesli bir mesaj seni bekliyor.',
+    ...base,
+    title: cleanTitle || (en ? 'A voice message for you' : 'Sana bir sesli mesaj var'),
+    description: en ? 'Someone left you a message on QRNot.' : 'QRNot üzerinden sana bırakılmış bir mesaj var.',
   }
 }
 
-export default async function QRPage({ params }: Props) {
-  await ensureQrSchema()
+export default async function QRPage({ params, searchParams }: Props) {
+  await ensureGrowthSchema()
   const { slug } = await params
+  const query = await searchParams
+  const lang = await getRequestLang(query.lang)
 
   const rows = (await sql`
-    SELECT id, slug, is_demo, order_type, is_active, is_claimed, audio_url, title, play_count, demo_expires_at, created_at, updated_at
+    SELECT id, slug, is_demo, order_type, is_active, is_claimed, audio_url, title, play_count, demo_expires_at, created_at, updated_at, qr_mode, guestbook_settings
     FROM qr_codes WHERE slug = ${slug}
-  `) as unknown as QRCode[]
+  `) as unknown as QrRow[]
 
   if (rows.length === 0) notFound()
 
-  const qr = await deactivateExpiredDemoQr(rows[0]) as QRCode
+  const qr = (await deactivateExpiredDemoQr(rows[0])) as QrRow
 
-  // play_count artır (claimed ise)
   if (qr.is_claimed && qr.is_active !== false) {
     await sql`UPDATE qr_codes SET play_count = play_count + 1 WHERE slug = ${slug}`
     qr.play_count += 1
@@ -59,8 +73,26 @@ export default async function QRPage({ params }: Props) {
     WHERE qr_id = ${qr.id}
     ORDER BY sort_order ASC, created_at ASC
   `) as unknown as QRMedia[]
-  qr.media_items = mediaRows
 
-  return <QRClient qr={qr} />
+  const mode = qr.qr_mode === 'guestbook' ? 'guestbook' : 'standard'
+  const guestbook = mode === 'guestbook' ? publicGuestbookSettings(readGuestbookSettings(qr.guestbook_settings)) : null
+
+  const safeQr: QRCode = {
+    id: qr.id,
+    slug: qr.slug,
+    is_demo: qr.is_demo,
+    order_type: qr.order_type,
+    is_active: qr.is_active,
+    is_claimed: qr.is_claimed,
+    admin_token: null,
+    audio_url: qr.audio_url,
+    title: qr.title,
+    play_count: qr.play_count,
+    demo_expires_at: qr.demo_expires_at,
+    created_at: new Date(qr.created_at).toISOString(),
+    updated_at: new Date(qr.updated_at).toISOString(),
+    media_items: mediaRows,
+  }
+
+  return <QRClient qr={safeQr} lang={lang} mode={mode} guestbook={guestbook} viaNfc={query.src === 'nfc'} />
 }
-

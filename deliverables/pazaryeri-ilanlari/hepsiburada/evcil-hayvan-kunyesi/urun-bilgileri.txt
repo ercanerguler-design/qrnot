@@ -1,0 +1,18 @@
+Platform: Hepsiburada
+Başlık: QRNot NFC ve QR Kodlu Evcil Hayvan Künyesi Kedi Köpek Tasma Kimlik Etiketi Kayıp Durumunda Ara
+Kategori (önerilen): Pet Shop > Köpek Ürünleri > Tasma & Künye
+Marka: QRNot  (pazaryerinde marka kaydı / marka yetki belgesi gerekebilir)
+Satış fiyatı (önerilen): 699 TL  (bkz. README fiyat hesabı)
+KDV: %20  (muhasebecine teyit ettir)
+Materyal: Pleksi (akrilik), epoksi damla baskı, NFC çip (NTAG21x)
+Desi: [DOLDUR]
+Garanti: Yok (2 yıl yasal ayıp sorumluluğu geçerli)
+
+Varyantlar (Renk):
+  • Neon Pembe  —  Stok kodu: QRN-PET-NFC-PEMBE  —  Barkod: [DOLDUR]
+  • Neon Turuncu  —  Stok kodu: QRN-PET-NFC-TURUNCU  —  Barkod: [DOLDUR]
+  • Neon Mavi  —  Stok kodu: QRN-PET-NFC-MAVI  —  Barkod: [DOLDUR]
+  • Neon Yeşil  —  Stok kodu: QRN-PET-NFC-YESIL  —  Barkod: [DOLDUR]
+  • Neon Sarı  —  Stok kodu: QRN-PET-NFC-SARI  —  Barkod: [DOLDUR]
+
+Barkod: Her renk için ayrı barkod gerekir (GS1 Türkiye barkodu ya da pazaryerinin önerdiği barkod).

@@ -1,11 +1,11 @@
-NFC + QR Anı Kolyesi — Hediyene bir ses ver.
+NFC + QR Anı Kolyesi — QRNot
 
 Telefonu kolyeye dokundurmak yeter: sesli mesajın, videon ve fotoğrafların anında açılır. NFC olmayan telefonlar için QR yedekte.
 
 NASIL ÇALIŞIR?
-1. Ürün elinize ulaşınca qrnot.com üzerinden ücretsiz QRNot hesabı açın.
-2. Ürünün üzerindeki QR kodu okutun ya da telefonu ürüne dokundurun; sesinizi kaydedin, video ya da fotoğraf yükleyin.
-3. QR kod hesabınıza bağlanır. Hediyeyi alan kişi okuttuğunda içeriğiniz uygulama gerektirmeden açılır.
+1. QRNot hesabı aç: Ürün elinize ulaşınca qrnot.com'da ücretsiz hesap açın.
+2. Okut ya da dokundur: Sesini kaydet, video ya da fotoğraf yükle. QR artık senin hesabına bağlı.
+3. Hediye et: Alan kişi okutur, sesin uygulama indirmeden çalar.
 
 ÖZELLİKLER
 • Gizli NFC çip + QR kod yedeği
@@ -13,7 +13,6 @@ NASIL ÇALIŞIR?
 • Sesli mesaj, video, fotoğraf ve link
 • Pil gerekmez, uygulama gerekmez
 • iPhone ve Android uyumlu, telefonun tarayıcısında açılır
-• Ürün üzerindeki QR kod ve NFC çip hiç değişmez
 
 NFC UYUMLULUK
 • iPhone XS, XR ve sonrası: ekran açıkken telefonun üst kısmını ürüne yaklaştır.
@@ -26,7 +25,7 @@ NFC UYUMLULUK
 • Ses kaydı en fazla 2 dakika, video en fazla 2 dakikadır.
 • 3 içerik kaydı dahildir (ilk kayıt + 2 güncelleme). İsim, telefon ve adres bilgileri sınırsız güncellenir. Ek güncelleme hakkı için bize ulaşabilirsiniz.
 • Ürün çizimleri temsilidir; neon renk tonu ekran ayarlarına göre farklı görünebilir.
-• Ölçü: [DOLDUR — örn. 3 × 3 cm kolye ucu, 45 cm zincir]
+• Ölçü: [DOLDUR — örn. 3 × 3 cm]
 • Paket içeriği: [DOLDUR — örn. ürün + kurulum kartı]
 
 KULLANIM ALANLARI

@@ -1,0 +1,32 @@
+Çocuk Acil Durum Etiketi — QRNot
+
+Okul çantasına, mont fermuarına ya da anahtarlığa takılan QR etiket. Çocuk kaybolursa ya da çanta unutulursa, bulan kişi QR kodu okutup veliyi tek dokunuşla arar.
+
+NASIL ÇALIŞIR?
+1. QRNot hesabı aç: Ürün elinize ulaşınca qrnot.com'da ücretsiz hesap açın.
+2. Veli bilgisini ekle: QR'ı okut; veli telefonunu ve isterseniz kısa bir not ekleyin.
+3. Çantaya tak: Bulan kişi okutur, "Ara" butonuyla veliye ulaşır.
+
+ÖZELLİKLER
+• Sana özel QR kod
+• Bulan kişi için "Ara" ve "Konumu aç" butonları
+• Veli bilgisi sınırsız güncellenir
+• Hafif pleksi gövde, neon damla baskı
+• Uygulama gerekmez, pil gerekmez
+• iPhone ve Android uyumlu, telefonun tarayıcısında açılır
+
+GÜVENLİK VE GİZLİLİK
+• Etikette GPS yoktur, çocuğun konumunu takip etmez.
+• QR sayfasını okutan herkes girdiğiniz bilgiyi görebilir. Çocuğunuzun tam adını, okulunu veya ev adresini yazmamanızı öneririz; veli telefonu yeterlidir.
+• Küçük parça içerir; 3 yaş altı çocukların ağzına alabileceği yerlere takmayın.
+
+ÖNEMLİ BİLGİLER
+• İçerik eklemek ve yönetmek için ücretsiz QRNot hesabı gerekir. QR kod, ilk kurulan hesaba kilitlenir; başkası değiştiremez.
+• Ses kaydı en fazla 2 dakika, video en fazla 2 dakikadır.
+• 3 içerik kaydı dahildir (ilk kayıt + 2 güncelleme). İsim, telefon ve adres bilgileri sınırsız güncellenir. Ek güncelleme hakkı için bize ulaşabilirsiniz.
+• Ürün çizimleri temsilidir; neon renk tonu ekran ayarlarına göre farklı görünebilir.
+• Ölçü: [DOLDUR — örn. 3 × 3 cm]
+• Paket içeriği: [DOLDUR — örn. ürün + kurulum kartı]
+
+KULLANIM ALANLARI
+Okul çantası · Mont / ceket · Kamp ve gezi · Park ve AVM · Anahtar · Tatil bavulu

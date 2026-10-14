@@ -1,11 +1,11 @@
-Sesli Anahtarlık — Hediyene bir ses ver.
+Sesli Anahtarlık — QRNot
 
 Her gün yanında taşınan bir ses. Kaybolursa, bulan kişi QR'ı okutup seni tek dokunuşla arayabilir.
 
 NASIL ÇALIŞIR?
-1. Ürün elinize ulaşınca qrnot.com üzerinden ücretsiz QRNot hesabı açın.
-2. Ürünün üzerindeki QR kodu telefon kamerasıyla okutun; sesinizi kaydedin, video ya da fotoğraf yükleyin.
-3. QR kod hesabınıza bağlanır. Hediyeyi alan kişi okuttuğunda içeriğiniz uygulama gerektirmeden açılır.
+1. QRNot hesabı aç: Ürün elinize ulaşınca qrnot.com'da ücretsiz hesap açın.
+2. QR kodu okut: Sesini kaydet, video ya da fotoğraf yükle. QR artık senin hesabına bağlı.
+3. Hediye et: Alan kişi okutur, sesin uygulama indirmeden çalar.
 
 ÖZELLİKLER
 • Sana özel QR kod
@@ -13,14 +13,13 @@ NASIL ÇALIŞIR?
 • Kayıp durumunda "Ara" ve "Konumu aç" butonları
 • Hafif pleksi gövde, neon damla baskı
 • iPhone ve Android uyumlu, telefonun tarayıcısında açılır
-• Ürün üzerindeki QR kod ve NFC çip hiç değişmez
 
 ÖNEMLİ BİLGİLER
 • İçerik eklemek ve yönetmek için ücretsiz QRNot hesabı gerekir. QR kod, ilk kurulan hesaba kilitlenir; başkası değiştiremez.
 • Ses kaydı en fazla 2 dakika, video en fazla 2 dakikadır.
 • 3 içerik kaydı dahildir (ilk kayıt + 2 güncelleme). İsim, telefon ve adres bilgileri sınırsız güncellenir. Ek güncelleme hakkı için bize ulaşabilirsiniz.
 • Ürün çizimleri temsilidir; neon renk tonu ekran ayarlarına göre farklı görünebilir.
-• Ölçü: [DOLDUR — örn. 3 × 3 cm kolye ucu, 45 cm zincir]
+• Ölçü: [DOLDUR — örn. 3 × 3 cm]
 • Paket içeriği: [DOLDUR — örn. ürün + kurulum kartı]
 
 KULLANIM ALANLARI

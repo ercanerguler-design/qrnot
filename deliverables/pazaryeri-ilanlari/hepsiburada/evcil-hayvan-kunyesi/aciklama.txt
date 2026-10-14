@@ -1,0 +1,37 @@
+NFC + QR Evcil Hayvan Künyesi — QRNot
+
+Kedin ya da köpeğin kaybolursa, bulan kişi künyedeki QR kodu okutur ya da telefonunu dokundurur ve seni tek dokunuşla arar. Telefon numaran değişirse künyeyi değiştirmene gerek yok; bilgini online güncellersin.
+
+NASIL ÇALIŞIR?
+1. QRNot hesabı aç: Ürün elinize ulaşınca qrnot.com'da ücretsiz hesap açın.
+2. Bilgilerini ekle: Künyeyi okut; telefon numaranı, adresini ve dostunun fotoğrafını ekle.
+3. Tasmaya tak: Bulan kişi okutur ya da dokundurur, "Ara" butonuyla sana ulaşır.
+
+ÖZELLİKLER
+• Gizli NFC çip + QR kod yedeği
+• Bulan kişi için "Ara" ve "Konumu aç" butonları
+• Fotoğraf ve aileden sesli not ekleyebilme
+• Telefon ve adres bilgisi sınırsız güncellenir
+• Pil gerekmez, uygulama gerekmez
+• iPhone ve Android uyumlu, telefonun tarayıcısında açılır
+
+NFC UYUMLULUK
+• iPhone XS, XR ve sonrası: ekran açıkken telefonun üst kısmını ürüne yaklaştır.
+• iPhone 7 – X: Denetim Merkezi → NFC Etiket Okuyucu.
+• Android: NFC açık olmalı; telefonun arka ortasını ürüne yaklaştır.
+• NFC olmayan telefonlar ürünün üzerindeki QR kodu kamerayla okutur.
+
+GÜVENLİK NOTU
+• Künyede GPS yoktur, hayvanınızın konumunu takip etmez. Bulan kişi sizin girdiğiniz telefon ve adres bilgisini görür.
+• Gizlilik için tam adres yerine semt / ilçe yazmayı tercih edebilirsiniz.
+
+ÖNEMLİ BİLGİLER
+• İçerik eklemek ve yönetmek için ücretsiz QRNot hesabı gerekir. QR kod, ilk kurulan hesaba kilitlenir; başkası değiştiremez.
+• Ses kaydı en fazla 2 dakika, video en fazla 2 dakikadır.
+• 3 içerik kaydı dahildir (ilk kayıt + 2 güncelleme). İsim, telefon ve adres bilgileri sınırsız güncellenir. Ek güncelleme hakkı için bize ulaşabilirsiniz.
+• Ürün çizimleri temsilidir; neon renk tonu ekran ayarlarına göre farklı görünebilir.
+• Ölçü: [DOLDUR — örn. 3 × 3 cm]
+• Paket içeriği: [DOLDUR — örn. ürün + kurulum kartı]
+
+KULLANIM ALANLARI
+Köpek tasması · Kedi tasması · Küçük dostlar · Bahçede gezenler · Yolculuk · Hayvan severe hediye

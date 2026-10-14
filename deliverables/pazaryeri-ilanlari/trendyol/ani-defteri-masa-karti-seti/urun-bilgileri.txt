@@ -1,0 +1,13 @@
+Platform: Trendyol
+Başlık: QRNot Dijital Anı Defteri QR Masa Kartı Seti Düğün Nişan Sesli Video Mesajlı Hatıra Defteri
+Kategori (önerilen): Ev & Yaşam > Parti Malzemeleri > Düğün & Nişan
+Marka: QRNot  (pazaryerinde marka kaydı / marka yetki belgesi gerekebilir)
+Satış fiyatı (önerilen): 749 TL  (bkz. README fiyat hesabı)
+KDV: %20  (muhasebecine teyit ettir)
+Materyal: Kuşe / kraft kart baskı [DOLDUR]
+Desi: [DOLDUR]
+Garanti: Yok (2 yıl yasal ayıp sorumluluğu geçerli)
+
+Stok kodu: QRN-ANI-SET  —  Barkod: [DOLDUR]
+
+Üretim: Admin → Mağaza → Üretim & NFC → "Anı defteri" modunda 1 QR üret; setteki tüm kartlara aynı QR basılır (kanal: trendyol / hepsiburada).

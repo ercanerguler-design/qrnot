@@ -4,8 +4,9 @@
 pazaryeri-ilanlari/
 ├── trendyol/      → görseller 1200 × 1800 (dikey 2:3)
 │   ├── kolye-qr/  kolye-nfc/  anahtarlik-qr/  anahtarlik-nfc/
+│   ├── evcil-hayvan-kunyesi/  cocuk-acil-durum-etiketi/  ani-defteri-masa-karti-seti/
 └── hepsiburada/   → görseller 1500 × 1500 (kare)
-    ├── kolye-qr/  kolye-nfc/  anahtarlik-qr/  anahtarlik-nfc/
+    ├── (aynı 7 ürün)
 ```
 
 Her ürün klasöründe:
@@ -36,6 +37,9 @@ Varsayım: komisyon **%20**, anlaşmalı kargo **60 TL**. Bu varsayımla eline s
 | NFC + QR Anı Kolyesi | 599 TL | 829 TL | 829 TL |
 | Sesli Anahtarlık | 349 TL | 519 TL | 519 TL |
 | NFC + QR Anahtarlık | 499 TL | 699 TL | 699 TL |
+| NFC + QR Evcil Hayvan Künyesi | 499 TL | 699 TL | 699 TL |
+| Çocuk Acil Durum Etiketi | 349 TL | 519 TL | 519 TL |
+| Anı Defteri Masa Kartı Seti | 499 TL + 40 TL baskı | 749 TL | 749 TL |
 
 **Yüklemeden önce:** Satıcı panelinden ilgili kategorinin gerçek komisyon oranını ve kargo anlaşma ücretini kontrol et; farklıysa `build-ilanlar.mjs` içindeki `PRICING` değerlerini değiştirip yeniden üret.
 
@@ -71,6 +75,19 @@ Ayrıca:
 - **Kategori:** önerilen kategoriler `urun-bilgileri.txt` içinde; panelde en yakın kategoriyi seç.
 
 ---
+
+## Kullanım odaklı ilanlar
+
+Evcil hayvan künyesi ve çocuk etiketi, mevcut NFC / QR anahtarlık altyapısıyla aynı üründür; pazaryerinde farklı arama kitlesine ("kedi künyesi", "okul çantası etiketi") ayrı ilan olarak sunulur. Stok kodları ayrıdır (`QRN-PET-NFC-*`, `QRN-COCUK-QR-*`). Künye için yuvarlak gövde kullanacaksan ana fotoğrafı ona göre çek.
+
+**Anı Defteri Masa Kartı Seti** fiziksel üründür: pazaryerinde dijital kod satılamadığı için anı defteri basılı kart seti olarak gönderilir.
+
+1. Admin → Mağaza → Üretim & NFC → **Mod: Anı defteri**, adet: 1, kanal: `trendyol` / `hepsiburada` → 1 QR üret.
+2. Setteki **tüm kartlara aynı QR'ı** bas (hepsi tek anı defterine bağlanır).
+3. Alıcı kartı okutup hesabıyla anı defterini kurar; misafirler aynı QR ile anı bırakır.
+4. Set içeriği ve kart ölçüsü açıklamada `[DOLDUR]` olarak bırakıldı; baskı maliyeti fiyatta 40 TL varsayıldı.
+
+Çocuk etiketi açıklamasında gizlilik uyarısı bilerek var: QR'ı okutan herkes girilen bilgiyi görebildiği için çocuğun tam adı, okulu ve ev adresi yerine sadece veli telefonu önerilir.
 
 ## Paketleme ve kurulum
 

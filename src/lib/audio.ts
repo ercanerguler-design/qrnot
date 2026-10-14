@@ -1,18 +1,9 @@
 import { parseBuffer } from 'music-metadata'
 
-const DEFAULT_MAX_AUDIO_SECONDS = 120
+import { getMaxAudioSeconds } from '@/lib/media'
+
+export { getMaxAudioSeconds }
 export const MAX_AUDIO_FILE_SIZE_BYTES = 25 * 1024 * 1024
-
-export function getMaxAudioSeconds() {
-  const raw = process.env.MAX_AUDIO_SECONDS || process.env.NEXT_PUBLIC_MAX_AUDIO_SECONDS || String(DEFAULT_MAX_AUDIO_SECONDS)
-  const parsed = Number(raw)
-
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return DEFAULT_MAX_AUDIO_SECONDS
-  }
-
-  return Math.floor(parsed)
-}
 
 export function formatAudioDuration(seconds: number) {
   const minutes = Math.floor(seconds / 60)
@@ -29,7 +20,7 @@ export function formatAudioDuration(seconds: number) {
   return `${remainingSeconds} saniye`
 }
 
-export async function validateAudioFile(file: File) {
+export async function validateAudioFile(file: File, orderType?: string | null) {
   if (!file || file.size === 0) {
     return 'Ses dosyası gerekli'
   }
@@ -38,7 +29,7 @@ export async function validateAudioFile(file: File) {
     return 'Ses dosyası 25MB\'dan büyük olamaz'
   }
 
-  const maxAudioSeconds = getMaxAudioSeconds()
+  const maxAudioSeconds = getMaxAudioSeconds(orderType)
 
   try {
     const arrayBuffer = await file.arrayBuffer()

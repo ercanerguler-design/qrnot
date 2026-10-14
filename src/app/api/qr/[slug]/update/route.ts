@@ -159,7 +159,7 @@ export async function PUT(
       }
 
       if (uploadedMediaType === 'audio') {
-        const audioValidationError = await validateAudioFile(mediaFile)
+        const audioValidationError = await validateAudioFile(mediaFile, qr.order_type)
         if (audioValidationError) {
           return NextResponse.json({ error: audioValidationError }, { status: 400 })
         }

@@ -2,6 +2,8 @@ import { parseBuffer } from 'music-metadata'
 
 const DEFAULT_MAX_VIDEO_SECONDS = 120
 const DEFAULT_MAX_VIDEO_SECONDS_CORPORATE = 600
+const DEFAULT_MAX_AUDIO_SECONDS = 120
+const DEFAULT_MAX_AUDIO_SECONDS_CORPORATE = 600
 const DEFAULT_MAX_VIDEO_FILE_SIZE_MB = 80
 const DEFAULT_MAX_VIDEO_FILE_SIZE_MB_CORPORATE = 250
 const DEFAULT_MAX_IMAGE_FILE_SIZE_MB = 15
@@ -25,6 +27,14 @@ export function getMaxVideoSeconds(orderType?: string | null, overrideSeconds?: 
   const envKey = isCorporate ? process.env.MAX_VIDEO_SECONDS_CORPORATE : process.env.MAX_VIDEO_SECONDS
 
   return parsePositiveInteger(envKey || process.env.NEXT_PUBLIC_MAX_VIDEO_SECONDS, fallback)
+}
+
+/** Ses kaydı süresi: bireysel 2 dk, kurumsal (order_type = corporate) 10 dk. Ortam değişkeniyle değiştirilebilir. */
+export function getMaxAudioSeconds(orderType?: string | null) {
+  const isCorporate = orderType === 'corporate'
+  const fallback = isCorporate ? DEFAULT_MAX_AUDIO_SECONDS_CORPORATE : DEFAULT_MAX_AUDIO_SECONDS
+  const envKey = isCorporate ? process.env.NEXT_PUBLIC_MAX_AUDIO_SECONDS_CORPORATE : process.env.NEXT_PUBLIC_MAX_AUDIO_SECONDS
+  return parsePositiveInteger(envKey, fallback)
 }
 
 export function getMaxVideoFileSizeBytes(orderType?: string | null) {

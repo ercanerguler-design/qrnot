@@ -7,9 +7,9 @@ import VoicePlayer from '@/components/warm/VoicePlayer'
 import type { QRCode, QRMedia } from '@/lib/db'
 import type { PublicGuestbookSettings } from '@/lib/guestbook'
 import { withLang, type Lang } from '@/lib/i18n'
-import { getMaxVideoSeconds, spotifyEmbedUrl, youtubeEmbedUrl } from '@/lib/media'
+import { getMaxAudioSeconds, getMaxVideoSeconds, spotifyEmbedUrl, youtubeEmbedUrl } from '@/lib/media'
 import { GuestbookSetupView, GuestbookView } from './GuestbookClient'
-import { attachMedia, composeProfileTitle, ErrorBox, MAX_AUDIO_SECONDS, OwnerSecrets, parseProfileTitle, QR_T, ScanShell, SignInGate } from './ScanShared'
+import { attachMedia, composeProfileTitle, ErrorBox, OwnerSecrets, parseProfileTitle, QR_T, ScanShell, SignInGate } from './ScanShared'
 
 interface Props {
   qr: QRCode
@@ -63,6 +63,7 @@ function ClaimView({ qr, lang }: { qr: QRCode; lang: Lang }) {
   const [result, setResult] = useState<{ manageUrl: string; recoveryCode: string } | null>(null)
 
   const maxVideoSeconds = getMaxVideoSeconds(qr.order_type)
+  const maxAudioSeconds = getMaxAudioSeconds(qr.order_type)
   const canSubmit = Boolean(mediaFile || youtubeUrl.trim() || spotifyUrl.trim() || externalUrl.trim())
 
   const handleClaim = async () => {
@@ -140,7 +141,7 @@ function ClaimView({ qr, lang }: { qr: QRCode; lang: Lang }) {
               setMediaFile(null)
             }}
           />
-          <MediaCapture key={mediaMode} mode={mediaMode} lang={lang} maxSeconds={mediaMode === 'video' ? maxVideoSeconds : MAX_AUDIO_SECONDS} onChange={setMediaFile} />
+          <MediaCapture key={mediaMode} mode={mediaMode} lang={lang} maxSeconds={mediaMode === 'video' ? maxVideoSeconds : maxAudioSeconds} onChange={setMediaFile} />
         </div>
 
         <div className="w-divider" />

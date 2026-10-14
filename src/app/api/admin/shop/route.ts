@@ -63,6 +63,53 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
+    if (action === 'orders.delete') {
+      // İptal / iade / ödenmemiş sipariş: siparişin ürettiği dijital ürünlerle birlikte kalıcı olarak silinir.
+      const order = await getOrder(String(body.orderNo || ''))
+      if (!order) return NextResponse.json({ error: 'Sipariş bulunamadı' }, { status: 404 })
+      const deletable: OrderStatus[] = ['cancelled', 'refunded', 'failed', 'pending', 'awaiting_transfer']
+      if (!deletable.includes(order.status)) {
+        return NextResponse.json({ error: 'Ödenmiş siparişi silmeden önce İptal ya da İade olarak işaretle.' }, { status: 400 })
+      }
+      // Müşteri hâlâ ödeme sayfasında olabilir: ödenmemiş sipariş ancak 24 saat sonra silinebilir.
+      const unpaid = order.status === 'pending' || order.status === 'awaiting_transfer'
+      if (unpaid && Date.now() - new Date(order.created_at).getTime() < 24 * 60 * 60 * 1000) {
+        return NextResponse.json({ error: 'Ödeme bekleyen sipariş 24 saat dolmadan silinemez. Önce İptal olarak işaretle.' }, { status: 400 })
+      }
+
+      const fulfillment = order.fulfillment || {}
+
+      // 1) Siparişle oluşturulan anı defteri QR'ları (medya ve misafir anılarıyla)
+      let deletedQrs = 0
+      for (const slug of fulfillment.guestbookSlugs || []) {
+        const rows = (await sql`SELECT id FROM qr_codes WHERE slug = ${slug}`) as Array<{ id: string }>
+        if (rows.length === 0) continue
+        const result = await deleteQrWithMedia(rows[0].id)
+        if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 })
+        deletedQrs += 1
+      }
+
+      // 2) Hesaba eklenen dijital QR hakları: sadece kullanılmamış olanlar geri alınabilir
+      let creditsRemoved = 0
+      const credits = Number(fulfillment.credits || 0)
+      if (order.user_id && credits > 0) {
+        const before = (await sql`SELECT paid_slots FROM users WHERE id = ${order.user_id}`) as Array<{ paid_slots: number }>
+        const after = (await sql`
+          UPDATE users
+          SET paid_slots = GREATEST(paid_slots - ${credits}, used_slots - LEAST(free_slots, 1), 0),
+              updated_at = NOW()
+          WHERE id = ${order.user_id}
+          RETURNING paid_slots
+        `) as Array<{ paid_slots: number }>
+        if (before.length && after.length) creditsRemoved = Number(before[0].paid_slots) - Number(after[0].paid_slots)
+      }
+
+      // 3) Sipariş kaydı
+      await sql`DELETE FROM shop_orders WHERE order_no = ${order.order_no}`
+
+      return NextResponse.json({ ok: true, deletedQrs, credits, creditsRemoved, creditsAlreadyUsed: Math.max(0, credits - creditsRemoved) })
+    }
+
     if (action === 'orders.markPaid') {
       const order = await getOrder(String(body.orderNo || ''))
       if (!order) return NextResponse.json({ error: 'Sipariş bulunamadı' }, { status: 404 })

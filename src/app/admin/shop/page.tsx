@@ -228,6 +228,24 @@ function OrdersTab({ call }: { call: Caller }) {
                     if (await call('orders.markPaid', { orderNo: order.order_no })) await load()
                   }
                 }}
+                onDelete={async () => {
+                  const ok = window.confirm(
+                    `${order.order_no} KALICI olarak silinsin mi?\n\nSiparişle oluşturulan anı defteri QR'ları (misafir anılarıyla) silinir ve kullanılmamış dijital QR hakları hesaptan geri alınır. Bu işlem geri alınamaz.`
+                  )
+                  if (!ok) return
+                  const result = await call<{ deletedQrs: number; credits: number; creditsRemoved: number; creditsAlreadyUsed: number }>('orders.delete', {
+                    orderNo: order.order_no,
+                  })
+                  if (!result) return
+                  const parts = [`Sipariş silindi.`]
+                  if (result.deletedQrs) parts.push(`${result.deletedQrs} anı defteri QR'ı silindi.`)
+                  if (result.credits) parts.push(`${result.creditsRemoved} / ${result.credits} QR hakkı geri alındı.`)
+                  if (result.creditsAlreadyUsed)
+                    parts.push(`${result.creditsAlreadyUsed} hak müşteri tarafından zaten kullanılmış; o QR'lar müşterinin hesabında duruyor.`)
+                  window.alert(parts.join('\n'))
+                  setOpen(null)
+                  await load()
+                }}
               />
             )}
           </div>
@@ -237,7 +255,18 @@ function OrdersTab({ call }: { call: Caller }) {
   )
 }
 
-function OrderDetail({ order, onUpdate, onMarkPaid }: { order: AdminOrder; onUpdate: (p: Record<string, unknown>) => void; onMarkPaid: () => void }) {
+function OrderDetail({
+  order,
+  onUpdate,
+  onMarkPaid,
+  onDelete,
+}: {
+  order: AdminOrder
+  onUpdate: (p: Record<string, unknown>) => void
+  onMarkPaid: () => void
+  onDelete: () => void
+}) {
+  const deletable = ['cancelled', 'refunded', 'failed', 'pending', 'awaiting_transfer'].includes(order.status)
   const [tracking, setTracking] = useState(order.tracking_no)
   const [note, setNote] = useState(order.admin_note)
   return (
@@ -298,6 +327,13 @@ function OrderDetail({ order, onUpdate, onMarkPaid }: { order: AdminOrder; onUpd
             İade
           </button>
         </div>
+        {deletable ? (
+          <button className={`${btn} w-full bg-red-700`} onClick={onDelete}>
+            🗑 Siparişi ve QR&apos;larını sil
+          </button>
+        ) : (
+          <p className="text-xs text-neutral-500">Silmek için önce İptal ya da İade olarak işaretle.</p>
+        )}
       </div>
     </div>
   )

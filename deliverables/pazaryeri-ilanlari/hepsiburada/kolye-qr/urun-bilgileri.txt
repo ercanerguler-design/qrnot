@@ -1,0 +1,18 @@
+Platform: Hepsiburada
+Başlık: QRNot Sesli Anı Kolyesi QR Kodlu Kişiye Özel Hediye Kolye Ses Video Fotoğraf Mesajlı
+Kategori (önerilen): Moda > Takı & Mücevher > Kolye
+Marka: QRNot  (pazaryerinde marka kaydı / marka yetki belgesi gerekebilir)
+Satış fiyatı (önerilen): 639 TL  (bkz. README fiyat hesabı)
+KDV: %20  (muhasebecine teyit ettir)
+Materyal: Pleksi (akrilik), epoksi damla baskı
+Desi: [DOLDUR]
+Garanti: Yok (2 yıl yasal ayıp sorumluluğu geçerli)
+
+Varyantlar (Renk):
+  • Neon Pembe  —  Stok kodu: QRN-KLY-QR-PEMBE  —  Barkod: [DOLDUR]
+  • Neon Turuncu  —  Stok kodu: QRN-KLY-QR-TURUNCU  —  Barkod: [DOLDUR]
+  • Neon Mavi  —  Stok kodu: QRN-KLY-QR-MAVI  —  Barkod: [DOLDUR]
+  • Neon Yeşil  —  Stok kodu: QRN-KLY-QR-YESIL  —  Barkod: [DOLDUR]
+  • Neon Sarı  —  Stok kodu: QRN-KLY-QR-SARI  —  Barkod: [DOLDUR]
+
+Barkod: Her renk için ayrı barkod gerekir (GS1 Türkiye barkodu ya da pazaryerinin önerdiği barkod).

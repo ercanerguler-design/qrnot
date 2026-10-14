@@ -1,0 +1,18 @@
+Platform: Trendyol
+Başlık: QRNot Sesli Anahtarlık QR Kodlu Kişiye Özel Hediye Ses Video Mesajlı Acil Durum Bilgili
+Kategori (önerilen): Aksesuar > Anahtarlık
+Marka: QRNot  (pazaryerinde marka kaydı / marka yetki belgesi gerekebilir)
+Satış fiyatı (önerilen): 519 TL  (bkz. README fiyat hesabı)
+KDV: %20  (muhasebecine teyit ettir)
+Materyal: Pleksi (akrilik), epoksi damla baskı
+Desi: [DOLDUR]
+Garanti: Yok (2 yıl yasal ayıp sorumluluğu geçerli)
+
+Varyantlar (Renk):
+  • Neon Pembe  —  Stok kodu: QRN-ANH-QR-PEMBE  —  Barkod: [DOLDUR]
+  • Neon Turuncu  —  Stok kodu: QRN-ANH-QR-TURUNCU  —  Barkod: [DOLDUR]
+  • Neon Mavi  —  Stok kodu: QRN-ANH-QR-MAVI  —  Barkod: [DOLDUR]
+  • Neon Yeşil  —  Stok kodu: QRN-ANH-QR-YESIL  —  Barkod: [DOLDUR]
+  • Neon Sarı  —  Stok kodu: QRN-ANH-QR-SARI  —  Barkod: [DOLDUR]
+
+Barkod: Her renk için ayrı barkod gerekir (GS1 Türkiye barkodu ya da pazaryerinin önerdiği barkod).

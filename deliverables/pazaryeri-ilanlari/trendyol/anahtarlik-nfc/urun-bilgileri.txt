@@ -1,0 +1,18 @@
+Platform: Trendyol
+Başlık: QRNot NFC ve QR Kodlu Anahtarlık Dijital Kartvizit Evcil Hayvan Künyesi Kişiye Özel Hediye
+Kategori (önerilen): Aksesuar > Anahtarlık
+Marka: QRNot  (pazaryerinde marka kaydı / marka yetki belgesi gerekebilir)
+Satış fiyatı (önerilen): 699 TL  (bkz. README fiyat hesabı)
+KDV: %20  (muhasebecine teyit ettir)
+Materyal: Pleksi (akrilik), epoksi damla baskı, NFC çip (NTAG21x)
+Desi: [DOLDUR]
+Garanti: Yok (2 yıl yasal ayıp sorumluluğu geçerli)
+
+Varyantlar (Renk):
+  • Neon Pembe  —  Stok kodu: QRN-ANH-NFC-PEMBE  —  Barkod: [DOLDUR]
+  • Neon Turuncu  —  Stok kodu: QRN-ANH-NFC-TURUNCU  —  Barkod: [DOLDUR]
+  • Neon Mavi  —  Stok kodu: QRN-ANH-NFC-MAVI  —  Barkod: [DOLDUR]
+  • Neon Yeşil  —  Stok kodu: QRN-ANH-NFC-YESIL  —  Barkod: [DOLDUR]
+  • Neon Sarı  —  Stok kodu: QRN-ANH-NFC-SARI  —  Barkod: [DOLDUR]
+
+Barkod: Her renk için ayrı barkod gerekir (GS1 Türkiye barkodu ya da pazaryerinin önerdiği barkod).

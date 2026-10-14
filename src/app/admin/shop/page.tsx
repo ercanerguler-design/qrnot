@@ -7,7 +7,7 @@ import { describeNfcError, isWebNfcSupported, writeUrlToTag } from '@/lib/webNfc
 
 // Mağaza siparişleri, Etsy aktivasyonları, toplu üretim ve NFC yazma istasyonu.
 
-type Tab = 'orders' | 'etsy' | 'production'
+type Tab = 'orders' | 'revenue' | 'etsy' | 'production'
 
 interface AdminOrder {
   order_no: string
@@ -146,6 +146,7 @@ export default function AdminShopPage() {
         {(
           [
             ['orders', '🛒 Siparişler'],
+            ['revenue', '💰 Gelir'],
             ['etsy', '🧡 Etsy'],
             ['production', '🏭 Üretim & NFC'],
           ] as const
@@ -159,11 +160,257 @@ export default function AdminShopPage() {
       {tab === 'orders' && <OrdersTab call={call} />}
       {tab === 'etsy' && <EtsyTab call={call} />}
       {tab === 'production' && <ProductionTab call={call} />}
+      {tab === 'revenue' && <RevenueTab call={call} />}
     </div>
   )
 }
 
 type Caller = <T>(action: string, payload?: Record<string, unknown>) => Promise<T | null>
+
+const CHANNEL_LABEL: Record<string, string> = {
+  site: 'Site (qrnot.com)',
+  etsy: 'Etsy',
+  trendyol: 'Trendyol',
+  hepsiburada: 'Hepsiburada',
+  kurumsal: 'Kurumsal',
+  diger: 'Diğer',
+}
+const CHANNEL_ORDER = ['site', 'etsy', 'trendyol', 'hepsiburada', 'kurumsal', 'diger']
+
+interface RevenueRow {
+  channel: string
+  currency: Currency
+  orders: number
+  gross: number
+  refunds: number
+  net: number
+}
+interface ManualSale {
+  id: string
+  sale_date: string
+  channel: string
+  kind: 'sale' | 'refund'
+  amount: number
+  currency: Currency
+  quantity: number
+  note: string
+}
+
+function isoDay(d: Date) {
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 10)
+}
+
+function periodRange(period: string, custom: { from: string; to: string }) {
+  const now = new Date()
+  if (period === 'this-month') return { from: isoDay(new Date(now.getFullYear(), now.getMonth(), 1)), to: isoDay(now) }
+  if (period === 'last-month')
+    return { from: isoDay(new Date(now.getFullYear(), now.getMonth() - 1, 1)), to: isoDay(new Date(now.getFullYear(), now.getMonth(), 0)) }
+  if (period === 'this-year') return { from: isoDay(new Date(now.getFullYear(), 0, 1)), to: isoDay(now) }
+  if (period === 'custom') return { from: custom.from || null, to: custom.to || null }
+  return { from: null, to: null }
+}
+
+function RevenueTab({ call }: { call: Caller }) {
+  const [period, setPeriod] = useState('this-month')
+  const [custom, setCustom] = useState({ from: '', to: '' })
+  const [summary, setSummary] = useState<{ startDate: string | null; from: string; to: string | null; rows: RevenueRow[] } | null>(null)
+  const [startInput, setStartInput] = useState('')
+  const [manual, setManual] = useState<ManualSale[]>([])
+  const [form, setForm] = useState({ saleDate: isoDay(new Date()), channel: 'etsy', kind: 'sale', amount: '', currency: 'TRY', quantity: '1', note: '' })
+
+  const load = useCallback(async () => {
+    const range = periodRange(period, custom)
+    const data = await call<{ startDate: string | null; from: string; to: string | null; rows: RevenueRow[] }>('revenue.summary', range)
+    if (data) {
+      setSummary(data)
+      setStartInput((prev) => prev || data.startDate || '')
+    }
+    const list = await call<{ items: ManualSale[] }>('revenue.manual.list')
+    if (list) setManual(list.items)
+  }, [call, period, custom])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
+  }, [load])
+
+  const rows = (summary?.rows || []).slice().sort((a, b) => CHANNEL_ORDER.indexOf(a.channel) - CHANNEL_ORDER.indexOf(b.channel) || a.currency.localeCompare(b.currency))
+  const totals = (['TRY', 'USD'] as Currency[])
+    .map((currency) => {
+      const list = rows.filter((r) => r.currency === currency)
+      return {
+        currency,
+        orders: list.reduce((sum, r) => sum + r.orders, 0),
+        gross: list.reduce((sum, r) => sum + r.gross, 0),
+        refunds: list.reduce((sum, r) => sum + r.refunds, 0),
+        net: list.reduce((sum, r) => sum + r.net, 0),
+      }
+    })
+    .filter((t) => t.orders > 0 || t.gross > 0)
+
+  return (
+    <div className="space-y-6">
+      <section className="space-y-3 rounded-3xl border border-neutral-800 bg-neutral-950/70 p-5">
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <p className="mb-1 text-xs text-neutral-400">Dönem</p>
+            <select className={`${input} w-auto`} value={period} onChange={(e) => setPeriod(e.target.value)}>
+              <option value="this-month">Bu ay</option>
+              <option value="last-month">Geçen ay</option>
+              <option value="this-year">Bu yıl</option>
+              <option value="all">Sayım başlangıcından beri</option>
+              <option value="custom">Özel aralık</option>
+            </select>
+          </div>
+          {period === 'custom' && (
+            <>
+              <input type="date" className={`${input} w-auto`} value={custom.from} onChange={(e) => setCustom({ ...custom, from: e.target.value })} />
+              <input type="date" className={`${input} w-auto`} value={custom.to} onChange={(e) => setCustom({ ...custom, to: e.target.value })} />
+            </>
+          )}
+          <button className={`${btn} bg-neutral-800`} onClick={() => void load()}>
+            ↻ Yenile
+          </button>
+        </div>
+        <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3">
+          <div>
+            <p className="mb-1 text-xs text-amber-300">Sayım başlangıcı — bu tarihten önceki her şey (testler, denemeler) tabloya girmez</p>
+            <input type="date" className={`${input} w-auto`} value={startInput} onChange={(e) => setStartInput(e.target.value)} />
+          </div>
+          <button
+            className={`${btn} bg-amber-500 text-neutral-950`}
+            disabled={!startInput}
+            onClick={async () => {
+              if (await call('revenue.setStart', { startDate: startInput })) await load()
+            }}
+          >
+            Kaydet
+          </button>
+          <p className="text-xs text-neutral-400">
+            {summary?.startDate ? `Şu an: ${new Date(summary.startDate).toLocaleDateString('tr-TR')}` : 'Henüz ayarlanmadı — tüm kayıtlar sayılıyor'}
+          </p>
+        </div>
+      </section>
+
+      <div className="overflow-x-auto rounded-2xl border border-neutral-800">
+        <table className="w-full text-sm">
+          <thead className="bg-neutral-900 text-left text-neutral-400">
+            <tr>
+              <th className="px-4 py-3">Kanal</th>
+              <th className="px-4 py-3 text-right">Satış adedi</th>
+              <th className="px-4 py-3 text-right">Brüt satış</th>
+              <th className="px-4 py-3 text-right">İade / iptal</th>
+              <th className="px-4 py-3 text-right">Net satış</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={`${r.channel}-${r.currency}`} className="border-t border-neutral-800">
+                <td className="px-4 py-3">
+                  {CHANNEL_LABEL[r.channel] || r.channel}
+                  {r.currency === 'USD' ? <span className="ml-2 text-xs text-neutral-500">USD</span> : null}
+                </td>
+                <td className="px-4 py-3 text-right">{r.orders}</td>
+                <td className="px-4 py-3 text-right">{formatMoney(r.gross, r.currency)}</td>
+                <td className="px-4 py-3 text-right text-red-300">{r.refunds ? `-${formatMoney(r.refunds, r.currency)}` : '—'}</td>
+                <td className="px-4 py-3 text-right font-semibold">{formatMoney(r.net, r.currency)}</td>
+              </tr>
+            ))}
+            {totals.map((t) => (
+              <tr key={`total-${t.currency}`} className="border-t-2 border-neutral-700 bg-neutral-900 font-bold">
+                <td className="px-4 py-3">TOPLAM {t.currency === 'USD' ? '(USD)' : '(TL)'}</td>
+                <td className="px-4 py-3 text-right">{t.orders}</td>
+                <td className="px-4 py-3 text-right">{formatMoney(t.gross, t.currency)}</td>
+                <td className="px-4 py-3 text-right text-red-300">{t.refunds ? `-${formatMoney(t.refunds, t.currency)}` : '—'}</td>
+                <td className="px-4 py-3 text-right text-emerald-300">{formatMoney(t.net, t.currency)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {rows.length === 0 && <p className="p-6 text-center text-neutral-500">Bu dönemde satış yok</p>}
+      </div>
+      <p className="text-xs text-neutral-500">
+        Site satışları ödendiği andaki tutarla, ödeme tarihine göre sayılır; iade edilen ya da ödemeden sonra iptal edilen siparişler &quot;İade / iptal&quot; sütununa düşer.
+        Etsy, pazaryeri ve kurumsal satışlar aşağıdan elle girilir.
+      </p>
+
+      <section className="space-y-3 rounded-3xl border border-neutral-800 bg-neutral-950/70 p-5">
+        <h2 className="text-lg font-semibold">Elle satış / iade ekle</h2>
+        <p className="text-sm text-neutral-400">Etsy, Trendyol, Hepsiburada hakediş raporlarından ya da kurumsal faturadan gir. Tutar, alıcının ödediği toplam (brüt) tutardır.</p>
+        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-7">
+          <input type="date" className={input} value={form.saleDate} onChange={(e) => setForm({ ...form, saleDate: e.target.value })} />
+          <select className={input} value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
+            {CHANNEL_ORDER.filter((c) => c !== 'site').map((c) => (
+              <option key={c} value={c}>
+                {CHANNEL_LABEL[c]}
+              </option>
+            ))}
+          </select>
+          <select className={input} value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
+            <option value="sale">Satış</option>
+            <option value="refund">İade</option>
+          </select>
+          <input className={input} type="number" min="0" step="0.01" placeholder="Tutar" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+          <select className={input} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
+            <option value="TRY">TL</option>
+            <option value="USD">USD</option>
+          </select>
+          <input className={input} type="number" min="1" placeholder="Adet" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+          <input className={input} placeholder="Not (sipariş no, fatura no…)" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+        </div>
+        <button
+          className={`${btn} bg-cyan-500 text-neutral-950`}
+          disabled={!form.amount}
+          onClick={async () => {
+            if (await call('revenue.manual.add', form)) {
+              setForm({ ...form, amount: '', quantity: '1', note: '' })
+              await load()
+            }
+          }}
+        >
+          Ekle
+        </button>
+        <div className="max-h-80 overflow-auto rounded-2xl border border-neutral-800">
+          <table className="w-full text-sm">
+            <thead className="bg-neutral-900 text-left text-neutral-400">
+              <tr>
+                <th className="px-3 py-2">Tarih</th>
+                <th className="px-3 py-2">Kanal</th>
+                <th className="px-3 py-2">Tür</th>
+                <th className="px-3 py-2 text-right">Tutar</th>
+                <th className="px-3 py-2 text-right">Adet</th>
+                <th className="px-3 py-2">Not</th>
+                <th className="px-3 py-2" />
+              </tr>
+            </thead>
+            <tbody>
+              {manual.map((m) => (
+                <tr key={m.id} className="border-t border-neutral-800">
+                  <td className="px-3 py-2 text-neutral-400">{new Date(m.sale_date).toLocaleDateString('tr-TR')}</td>
+                  <td className="px-3 py-2">{CHANNEL_LABEL[m.channel] || m.channel}</td>
+                  <td className="px-3 py-2">{m.kind === 'refund' ? <span className="text-red-300">İade</span> : 'Satış'}</td>
+                  <td className="px-3 py-2 text-right">{formatMoney(m.amount, m.currency)}</td>
+                  <td className="px-3 py-2 text-right">{m.quantity}</td>
+                  <td className="px-3 py-2 text-neutral-400">{m.note}</td>
+                  <td className="px-3 py-2">
+                    <button
+                      className="text-red-400 hover:underline"
+                      onClick={async () => window.confirm('Kayıt silinsin mi?') && (await call('revenue.manual.delete', { id: m.id })) && load()}
+                    >
+                      Sil
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {manual.length === 0 && <p className="p-6 text-center text-neutral-500">Henüz elle girilmiş kayıt yok</p>}
+        </div>
+      </section>
+    </div>
+  )
+}
 
 function OrdersTab({ call }: { call: Caller }) {
   const [orders, setOrders] = useState<AdminOrder[]>([])

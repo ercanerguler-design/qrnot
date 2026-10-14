@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
 import { deactivateAllExpiredDemoQrs, ensureQrSchema, QRCode, sql } from '@/lib/db'
 
-const INDIVIDUAL_PRICE = 249
-const CORPORATE_UNIT_PRICE = 25.99
 
 export async function POST(req: NextRequest) {
   try {
@@ -71,22 +69,13 @@ export async function POST(req: NextRequest) {
       .filter((user) => String(user.account_type || 'individual') === 'corporate')
       .reduce((sum, user) => sum + Number(user.paid_slots || 0), 0)
 
-    const individualRevenue = individualSoldSlots * INDIVIDUAL_PRICE
-    const corporateRevenue = Number((corporateSoldSlots * CORPORATE_UNIT_PRICE).toFixed(2))
 
     return NextResponse.json({
       items: filteredRows,
       stats: {
         ...statsBase,
-        individualPrice: INDIVIDUAL_PRICE,
-        corporateUnitPrice: CORPORATE_UNIT_PRICE,
-        corporatePackagePrice: 2599,
-        corporatePackageSize: 100,
         individualSoldSlots,
         corporateSoldSlots,
-        individualRevenue,
-        corporateRevenue,
-        totalRevenue: Number((individualRevenue + corporateRevenue).toFixed(2)),
       },
       users: users.map((user) => ({
         id: user.id,

@@ -89,15 +89,8 @@ interface AdminStats {
   demoSessions: number
   demoCreatedCount: number
   registeredUsers: number
-  individualPrice: number
-  corporateUnitPrice: number
-  corporatePackagePrice: number
-  corporatePackageSize: number
   individualSoldSlots: number
   corporateSoldSlots: number
-  individualRevenue: number
-  corporateRevenue: number
-  totalRevenue: number
 }
 
 interface AdminUser {
@@ -643,12 +636,10 @@ export default function AdminPage() {
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Toplam QR', value: stats.totalQrs.toString(), tone: 'text-white' },
-              { label: 'Ücretsiz Deneme', value: `${stats.trialQrs} aktif slot / ${stats.demoCreatedCount} üretim`, tone: 'text-amber-300' },
-              { label: 'Bireysel Satılan Hak', value: `${stats.individualSoldSlots} adet`, tone: 'text-violet-300' },
-              { label: 'Kurumsal Satılan Hak', value: `${stats.corporateSoldSlots} adet`, tone: 'text-emerald-300' },
-              { label: 'Bireysel Gelir', value: currency.format(stats.individualRevenue), tone: 'text-violet-300' },
-              { label: 'Kurumsal Gelir', value: currency.format(stats.corporateRevenue), tone: 'text-emerald-300' },
-              { label: 'Toplam Gelir', value: currency.format(stats.totalRevenue), tone: 'text-white' },
+              { label: 'Gerçek gelir', value: 'Mağaza → 💰 Gelir', tone: 'text-cyan-300' },
+              { label: 'Eski deneme QR', value: `${stats.trialQrs} adet`, tone: 'text-amber-300' },
+              { label: 'Bireysel hesaplardaki QR hakkı', value: `${stats.individualSoldSlots} adet`, tone: 'text-violet-300' },
+              { label: 'Kurumsal hesaplardaki QR hakkı', value: `${stats.corporateSoldSlots} adet`, tone: 'text-emerald-300' },
               { label: 'Kurumsal QR', value: `${stats.corporateQrs} adet`, tone: 'text-emerald-300' },
               { label: 'Bireysel QR', value: `${stats.individualQrs} adet`, tone: 'text-violet-300' },
               { label: 'Kayıtlı Kullanıcı', value: `${stats.registeredUsers} hesap`, tone: 'text-sky-300' },

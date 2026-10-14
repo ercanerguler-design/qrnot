@@ -100,6 +100,29 @@ export function ensureGrowthSchema() {
       // Aynı misafirin (cihazın) aynı anı defterine tekrar yazmasını engellemek için
       await sql`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS device_hash VARCHAR(64) NOT NULL DEFAULT ''`
 
+      // Gelir tablosu: genel ayarlar (ör. sayım başlangıç tarihi) ve elle girilen satışlar (Etsy, pazaryeri, kurumsal)
+      await sql`
+        CREATE TABLE IF NOT EXISTS app_settings (
+          key VARCHAR(64) PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`
+        CREATE TABLE IF NOT EXISTS manual_sales (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          sale_date DATE NOT NULL,
+          channel VARCHAR(24) NOT NULL,
+          kind VARCHAR(8) NOT NULL DEFAULT 'sale',
+          amount INTEGER NOT NULL,
+          currency VARCHAR(4) NOT NULL DEFAULT 'TRY',
+          quantity INTEGER NOT NULL DEFAULT 1,
+          note TEXT NOT NULL DEFAULT '',
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_manual_sales_date ON manual_sales(sale_date)`
+
       await sql`
         CREATE TABLE IF NOT EXISTS rate_limits (
           bucket VARCHAR(160) PRIMARY KEY,

@@ -110,6 +110,90 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, deletedQrs, credits, creditsRemoved, creditsAlreadyUsed: Math.max(0, credits - creditsRemoved) })
     }
 
+    // --- Gelir tablosu ---------------------------------------------------------------------
+    // Sadece gerçekleşen satışlar sayılır: site siparişleri ödendiği andaki tutarla, diğer kanallar elle girilen kayıtlarla.
+    // "Sayım başlangıcı" öncesindeki her şey (testler, denemeler) tabloya girmez.
+    if (action === 'revenue.summary') {
+      const isDate = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
+      const settingRows = (await sql`SELECT value FROM app_settings WHERE key = 'revenue_start_date'`) as Array<{ value: string }>
+      const startDate = settingRows[0]?.value || null
+      const from = [startDate, isDate(body.from) ? body.from : null].filter(Boolean).sort().pop() || '1970-01-01'
+      const to = isDate(body.to) ? String(body.to) : '9999-12-31'
+
+      // Site: ödenmiş siparişler; iade / ödeme sonrası iptal edilenler "iade" sütununa düşer
+      const site = (await sql`
+        SELECT currency,
+               COUNT(*)::int AS orders,
+               COALESCE(SUM(total), 0)::bigint AS gross,
+               COALESCE(SUM(total) FILTER (WHERE status IN ('refunded', 'cancelled')), 0)::bigint AS refunds
+        FROM shop_orders
+        WHERE paid_at IS NOT NULL
+          AND (paid_at AT TIME ZONE 'Europe/Istanbul')::date >= ${from}::date
+          AND (paid_at AT TIME ZONE 'Europe/Istanbul')::date <= ${to}::date
+        GROUP BY currency
+      `) as Array<{ currency: string; orders: number; gross: number; refunds: number }>
+
+      const manual = (await sql`
+        SELECT channel, currency,
+               COALESCE(SUM(quantity) FILTER (WHERE kind = 'sale'), 0)::int AS orders,
+               COALESCE(SUM(amount) FILTER (WHERE kind = 'sale'), 0)::bigint AS gross,
+               COALESCE(SUM(amount) FILTER (WHERE kind = 'refund'), 0)::bigint AS refunds
+        FROM manual_sales
+        WHERE sale_date >= ${from}::date AND sale_date <= ${to}::date
+        GROUP BY channel, currency
+      `) as Array<{ channel: string; currency: string; orders: number; gross: number; refunds: number }>
+
+      const rows = [
+        ...site.map((r) => ({ channel: 'site', currency: r.currency, orders: Number(r.orders), gross: Number(r.gross), refunds: Number(r.refunds) })),
+        ...manual.map((r) => ({ channel: r.channel, currency: r.currency, orders: Number(r.orders), gross: Number(r.gross), refunds: Number(r.refunds) })),
+      ].map((r) => ({ ...r, net: r.gross - r.refunds }))
+
+      return NextResponse.json({ startDate, from, to: to === '9999-12-31' ? null : to, rows })
+    }
+
+    if (action === 'revenue.setStart') {
+      const value = String(body.startDate || '')
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NextResponse.json({ error: 'Geçerli bir tarih seç' }, { status: 400 })
+      await sql`
+        INSERT INTO app_settings (key, value, updated_at) VALUES ('revenue_start_date', ${value}, NOW())
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+      `
+      return NextResponse.json({ ok: true, startDate: value })
+    }
+
+    if (action === 'revenue.manual.list') {
+      const rows = await sql`
+        SELECT id, sale_date::text AS sale_date, channel, kind, amount, currency, quantity, note, created_at
+        FROM manual_sales ORDER BY sale_date DESC, created_at DESC LIMIT 300
+      `
+      return NextResponse.json({ items: rows })
+    }
+
+    if (action === 'revenue.manual.add') {
+      const channels = ['etsy', 'trendyol', 'hepsiburada', 'kurumsal', 'diger']
+      const channel = channels.includes(body.channel) ? String(body.channel) : null
+      const kind = body.kind === 'refund' ? 'refund' : 'sale'
+      const currency = body.currency === 'USD' ? 'USD' : 'TRY'
+      const saleDate = String(body.saleDate || '')
+      const amount = Math.round(Number(body.amount) * 100)
+      const quantity = Math.min(Math.max(1, Math.floor(Number(body.quantity) || 1)), 100000)
+      if (!channel) return NextResponse.json({ error: 'Kanal seç' }, { status: 400 })
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(saleDate)) return NextResponse.json({ error: 'Tarih seç' }, { status: 400 })
+      if (!Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: 'Tutar 0\'dan büyük olmalı' }, { status: 400 })
+      await sql`
+        INSERT INTO manual_sales (sale_date, channel, kind, amount, currency, quantity, note)
+        VALUES (${saleDate}::date, ${channel}, ${kind}, ${amount}, ${currency}, ${quantity}, ${String(body.note || '').slice(0, 300)})
+      `
+      return NextResponse.json({ ok: true })
+    }
+
+    if (action === 'revenue.manual.delete') {
+      const id = String(body.id || '')
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Kayıt bulunamadı' }, { status: 404 })
+      await sql`DELETE FROM manual_sales WHERE id = ${id}`
+      return NextResponse.json({ ok: true })
+    }
+
     if (action === 'orders.markPaid') {
       const order = await getOrder(String(body.orderNo || ''))
       if (!order) return NextResponse.json({ error: 'Sipariş bulunamadı' }, { status: 404 })

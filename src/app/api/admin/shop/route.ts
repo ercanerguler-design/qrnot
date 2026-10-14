@@ -7,6 +7,7 @@ import { DEFAULT_GUESTBOOK_LIMIT } from '@/lib/guestbook'
 import { createBlankQRCodes } from '@/lib/qr'
 import { SITE_URL } from '@/lib/site'
 import { deleteQrWithMedia } from '@/lib/qrDelete'
+import { resolveRevenueRange, revenueSummary } from '@/lib/revenue'
 
 // Mağaza / Etsy / NFC üretim yönetimi — tek uç nokta, ADMIN_PASSWORD ile korunur.
 
@@ -114,40 +115,8 @@ export async function POST(req: NextRequest) {
     // Sadece gerçekleşen satışlar sayılır: site siparişleri ödendiği andaki tutarla, diğer kanallar elle girilen kayıtlarla.
     // "Sayım başlangıcı" öncesindeki her şey (testler, denemeler) tabloya girmez.
     if (action === 'revenue.summary') {
-      const isDate = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
-      const settingRows = (await sql`SELECT value FROM app_settings WHERE key = 'revenue_start_date'`) as Array<{ value: string }>
-      const startDate = settingRows[0]?.value || null
-      const from = [startDate, isDate(body.from) ? body.from : null].filter(Boolean).sort().pop() || '1970-01-01'
-      const to = isDate(body.to) ? String(body.to) : '9999-12-31'
-
-      // Site: ödenmiş siparişler; iade / ödeme sonrası iptal edilenler "iade" sütununa düşer
-      const site = (await sql`
-        SELECT currency,
-               COUNT(*)::int AS orders,
-               COALESCE(SUM(total), 0)::bigint AS gross,
-               COALESCE(SUM(total) FILTER (WHERE status IN ('refunded', 'cancelled')), 0)::bigint AS refunds
-        FROM shop_orders
-        WHERE paid_at IS NOT NULL
-          AND (paid_at AT TIME ZONE 'Europe/Istanbul')::date >= ${from}::date
-          AND (paid_at AT TIME ZONE 'Europe/Istanbul')::date <= ${to}::date
-        GROUP BY currency
-      `) as Array<{ currency: string; orders: number; gross: number; refunds: number }>
-
-      const manual = (await sql`
-        SELECT channel, currency,
-               COALESCE(SUM(quantity) FILTER (WHERE kind = 'sale'), 0)::int AS orders,
-               COALESCE(SUM(amount) FILTER (WHERE kind = 'sale'), 0)::bigint AS gross,
-               COALESCE(SUM(amount) FILTER (WHERE kind = 'refund'), 0)::bigint AS refunds
-        FROM manual_sales
-        WHERE sale_date >= ${from}::date AND sale_date <= ${to}::date
-        GROUP BY channel, currency
-      `) as Array<{ channel: string; currency: string; orders: number; gross: number; refunds: number }>
-
-      const rows = [
-        ...site.map((r) => ({ channel: 'site', currency: r.currency, orders: Number(r.orders), gross: Number(r.gross), refunds: Number(r.refunds) })),
-        ...manual.map((r) => ({ channel: r.channel, currency: r.currency, orders: Number(r.orders), gross: Number(r.gross), refunds: Number(r.refunds) })),
-      ].map((r) => ({ ...r, net: r.gross - r.refunds }))
-
+      const { startDate, from, to } = await resolveRevenueRange(body.from, body.to)
+      const rows = await revenueSummary(from, to)
       return NextResponse.json({ startDate, from, to: to === '9999-12-31' ? null : to, rows })
     }
 

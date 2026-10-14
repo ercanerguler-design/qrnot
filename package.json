@@ -12,6 +12,7 @@
     "@neondatabase/serverless": "^1.1.0",
     "@vercel/blob": "^2.3.3",
     "autoprefixer": "^10.5.0",
+    "exceljs": "^4.4.0",
     "music-metadata": "^11.12.3",
     "next": "^16.2.9",
     "postcss": "^8.5.15",

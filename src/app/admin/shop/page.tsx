@@ -160,7 +160,7 @@ export default function AdminShopPage() {
       {tab === 'orders' && <OrdersTab call={call} />}
       {tab === 'etsy' && <EtsyTab call={call} />}
       {tab === 'production' && <ProductionTab call={call} />}
-      {tab === 'revenue' && <RevenueTab call={call} />}
+      {tab === 'revenue' && <RevenueTab call={call} password={password} />}
     </div>
   )
 }
@@ -211,7 +211,9 @@ function periodRange(period: string, custom: { from: string; to: string }) {
   return { from: null, to: null }
 }
 
-function RevenueTab({ call }: { call: Caller }) {
+function RevenueTab({ call, password }: { call: Caller; password: string }) {
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
   const [period, setPeriod] = useState('this-month')
   const [custom, setCustom] = useState({ from: '', to: '' })
   const [summary, setSummary] = useState<{ startDate: string | null; from: string; to: string | null; rows: RevenueRow[] } | null>(null)
@@ -272,6 +274,37 @@ function RevenueTab({ call }: { call: Caller }) {
           <button className={`${btn} bg-neutral-800`} onClick={() => void load()}>
             ↻ Yenile
           </button>
+          <button
+            className={`${btn} bg-emerald-500 text-neutral-950`}
+            disabled={exporting}
+            onClick={async () => {
+              setExporting(true)
+              setExportError(null)
+              try {
+                const res = await fetch('/api/admin/revenue/export', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ password, ...periodRange(period, custom) }),
+                })
+                if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'İndirilemedi')
+                const blob = await res.blob()
+                const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'qrnot-satislar.xlsx'
+                const href = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = href
+                link.download = name
+                link.click()
+                setTimeout(() => URL.revokeObjectURL(href), 3000)
+              } catch (err) {
+                setExportError(err instanceof Error ? err.message : 'İndirilemedi')
+              } finally {
+                setExporting(false)
+              }
+            }}
+          >
+            {exporting ? 'Hazırlanıyor…' : '⬇ Excel indir'}
+          </button>
+          {exportError && <span className="text-sm text-red-400">{exportError}</span>}
         </div>
         <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3">
           <div>

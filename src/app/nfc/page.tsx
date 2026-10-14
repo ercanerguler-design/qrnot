@@ -21,7 +21,7 @@ const T = {
       ['Pil yok, şarj yok', 'NFC çipi enerjisini telefondan alır; ömür boyu çalışır.'],
       ['Dokunmak yeterli', "iPhone XS ve sonrası ile NFC'si açık Android telefonlar etiketi otomatik okur."],
       ['Kilitli ve güvenli', 'Çip senin sayfana programlanmış ve kilitli gelir; başkası değiştiremez.'],
-      ['İçerik hep güncel', 'Çip hep aynı adresi açar; içeriği sen istediğin zaman değiştirirsin.'],
+      ['Çip değişmez, içerik güncellenir', 'Çip hep aynı adresi açar; mesajını sonradan güncelleyebilirsin (3 kayıt dahil).'],
     ],
     compat: 'Uyumluluk',
     compatRows: [
@@ -44,7 +44,7 @@ const T = {
       ['No battery, no charging', 'The chip is powered by the phone — it works for life.'],
       ['Just tap', 'iPhone XS and newer, and Android phones with NFC on, read the tag automatically.'],
       ['Locked & secure', 'The chip arrives programmed and locked to your page; nobody else can change it.'],
-      ['Always up to date', 'The chip always opens the same address; you change the content whenever you like.'],
+      ['Same chip, updatable content', 'The chip always opens the same address; you can update your message later (3 recordings included).'],
     ],
     compat: 'Compatibility',
     compatRows: [

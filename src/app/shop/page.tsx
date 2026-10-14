@@ -14,7 +14,7 @@ const T = {
   tr: {
     kicker: 'Mağaza',
     title: 'Sesini taşıyan hediyeler',
-    desc: 'Her ürün kendine ait kalıcı bir QR (ve NFC modellerde çip) ile gelir. İçeriği sen eklersin, istediğin zaman değiştirirsin.',
+    desc: 'Her ürün kendine ait kalıcı bir QR (ve NFC modellerde çip) ile gelir. İçeriği sen eklersin, sonradan güncelleyebilirsin (3 kayıt dahil).',
     physical: 'Takı ve aksesuar',
     digital: 'Dijital ürünler',
     trust: ['🚚 1-3 iş gününde kargoda', '🎁 Hediye kutusunda', '🔒 iyzico güvenli ödeme', '↩️ 14 gün iade'],
@@ -22,7 +22,7 @@ const T = {
   en: {
     kicker: 'Shop',
     title: 'Gifts that carry your voice',
-    desc: 'Every product comes with its own permanent QR (and an NFC chip on NFC models). You add the content and can change it any time.',
+    desc: 'Every product comes with its own permanent QR (and an NFC chip on NFC models). You add the content and can update it later (3 recordings included).',
     physical: 'Jewelry & accessories',
     digital: 'Digital products',
     trust: ['🌍 Worldwide delivery', '🎁 Gift-ready packaging', '🔒 Secure Stripe checkout', '↩️ 14-day returns'],

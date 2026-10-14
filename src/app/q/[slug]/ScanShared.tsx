@@ -15,7 +15,7 @@ export const QR_T = {
   tr: {
     setupBadge: 'Yeni QR',
     setupTitle: 'Bu QR artık senin',
-    setupDesc: 'Ses kaydı, video ya da fotoğraf ekle. QR\'ı okutan herkes bunu görecek. İstediğin zaman değiştirebilirsin.',
+    setupDesc: 'Ses kaydı, video ya da fotoğraf ekle. QR\'ı okutan herkes bunu görecek. Sonradan değiştirebilirsin (3 kayıt dahil).',
     titleLabel: 'Başlık',
     titlePh: 'Örn: Doğum günün kutlu olsun anne ❤️',
     optional: 'isteğe bağlı',
@@ -72,7 +72,7 @@ export const QR_T = {
   en: {
     setupBadge: 'New QR',
     setupTitle: 'This QR is yours now',
-    setupDesc: 'Add a voice message, video or photo. Anyone who scans this QR will see it. You can change it any time.',
+    setupDesc: 'Add a voice message, video or photo. Anyone who scans this QR will see it. You can change it later (3 recordings included).',
     titleLabel: 'Title',
     titlePh: 'e.g. Happy birthday mom ❤️',
     optional: 'optional',

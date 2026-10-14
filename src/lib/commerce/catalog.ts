@@ -67,12 +67,12 @@ export const PRODUCTS: Product[] = [
       en: 'Scan the QR on the back and hear your voice.',
     },
     description: {
-      tr: 'Pleksi kolye ucu, neon renkli damla (epoksi) baskı ile parlak ve kabarık bir yüzeye sahiptir; üzerinde sana özel QR kod bulunur. Telefonla okutan kişi senin ses kaydını, videonu ya da fotoğraflarını uygulama indirmeden açar. İçeriği istediğin zaman değiştirebilirsin.',
-      en: 'An acrylic (plexiglass) pendant with a glossy neon dome-print finish and your own QR code. Whoever scans it hears your voice message, watches your video or sees your photos — no app needed. Change the content any time.',
+      tr: 'Pleksi kolye ucu, neon renkli damla (epoksi) baskı ile parlak ve kabarık bir yüzeye sahiptir; üzerinde sana özel QR kod bulunur. Telefonla okutan kişi senin ses kaydını, videonu ya da fotoğraflarını uygulama indirmeden açar. Mesajını sonradan güncelleyebilirsin (3 kayıt dahil).',
+      en: 'An acrylic (plexiglass) pendant with a glossy neon dome-print finish and your own QR code. Whoever scans it hears your voice message, watches your video or sees your photos — no app needed. Update your message later (3 recordings included).',
     },
     features: {
-      tr: ['Hafif pleksi gövde', 'Neon renkli parlak damla baskı', 'Sana özel QR kod', 'Ses, video, fotoğraf ve link', 'İçeriği istediğin zaman güncelle'],
-      en: ['Lightweight acrylic body', 'Glossy neon dome print', 'Your own unique QR code', 'Voice, video, photo & links', 'Update content any time'],
+      tr: ['Hafif pleksi gövde', 'Neon renkli parlak damla baskı', 'Sana özel QR kod', 'Ses, video, fotoğraf ve link', 'Güncellenebilir içerik (3 kayıt dahil)'],
+      en: ['Lightweight acrylic body', 'Glossy neon dome print', 'Your own unique QR code', 'Voice, video, photo & links', 'Updatable content (3 recordings included)'],
     },
     variants: NEON_VARIANTS,
     badge: { tr: 'En çok tercih edilen', en: 'Best seller' },
@@ -121,8 +121,8 @@ export const PRODUCTS: Product[] = [
       en: "An acrylic keychain with a neon dome print and your own QR code. A loved one's voice, a shared video, or emergency contact info if it gets lost — all in one QR.",
     },
     features: {
-      tr: ['Hafif pleksi gövde', 'Neon renkli parlak damla baskı', 'Kayıp durumunda acil iletişim bilgisi', 'İçeriği istediğin an güncelle'],
-      en: ['Lightweight acrylic body', 'Glossy neon dome print', 'Emergency contact if lost', 'Update content any time'],
+      tr: ['Hafif pleksi gövde', 'Neon renkli parlak damla baskı', 'Kayıp durumunda acil iletişim bilgisi', 'Güncellenebilir içerik (3 kayıt dahil)'],
+      en: ['Lightweight acrylic body', 'Glossy neon dome print', 'Emergency contact if lost', 'Updatable content (3 recordings included)'],
     },
     variants: NEON_VARIANTS,
     maxQuantity: 20,
@@ -193,8 +193,8 @@ export const PRODUCTS: Product[] = [
       en: 'A QR credit added to your account instantly. Download the QR and print it on your own greeting card, gift wrap or product.',
     },
     features: {
-      tr: ['Hesaba anında tanımlanır', 'PNG/SVG yüksek çözünürlük indirme', 'Ses, video, fotoğraf ve link', 'İstediğin zaman güncelle'],
-      en: ['Added to your account instantly', 'High-res PNG/SVG download', 'Voice, video, photo & links', 'Update any time'],
+      tr: ['Hesaba anında tanımlanır', 'PNG/SVG yüksek çözünürlük indirme', 'Ses, video, fotoğraf ve link', 'Güncellenebilir (3 kayıt dahil)'],
+      en: ['Added to your account instantly', 'High-res PNG/SVG download', 'Voice, video, photo & links', 'Updatable (3 recordings included)'],
     },
     maxQuantity: 50,
   },

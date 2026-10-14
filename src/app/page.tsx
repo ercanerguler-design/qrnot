@@ -19,10 +19,10 @@ const C = {
     heroTitle: 'Hediyene',
     heroAccent: 'bir ses ver.',
     heroDesc:
-      "Kolyenin ya da anahtarlığın arkasındaki QR'ı okutan, senin sesini duyar, videonu izler, fotoğraflarını görür. Uygulama gerekmez; içeriği istediğin zaman değiştirirsin.",
+      "Kolyenin ya da anahtarlığın arkasındaki QR'ı okutan, senin sesini duyar, videonu izler, fotoğraflarını görür. Uygulama gerekmez; mesajını sonradan güncelleyebilirsin (3 kayıt dahil).",
     ctaShop: 'Ürünleri gör',
     ctaFree: 'Dijital QR al',
-    trust: ['Uygulama gerekmez', 'iPhone & Android', 'İçerik her zaman güncellenebilir', 'Hediye kutusunda gönderim'],
+    trust: ['Uygulama gerekmez', 'iPhone & Android', 'Sonradan güncellenebilir içerik', 'Hediye kutusunda gönderim'],
     demoTitle: 'Bir örnek dinle',
     demoLabel: 'Annemin sesi ❤️',
     productsKicker: 'Ürünler',
@@ -62,7 +62,7 @@ const C = {
       ['Uygulama indirmek gerekiyor mu?', "Hayır. Telefonun kamerasıyla QR'ı okutmak (ya da NFC modellerde dokundurmak) yeterli. İçerik tarayıcıda açılır."],
       [
         'İçeriği sonradan değiştirebilir miyim?',
-        "Evet. QR'ı ilk hazırladığında sana özel bir sahip linki verilir. Bu linkle sesini, videonu ve fotoğraflarını istediğin zaman değiştirebilirsin.",
+        "Evet. QR'ı ilk hazırladığında sana özel bir sahip linki verilir. Bu linkle sesini, videonu ve fotoğraflarını değiştirebilirsin: ilk kayıt dahil 3 içerik kaydı hakkın var, başlık ve iletişim bilgileri ise sınırsız güncellenir. Daha fazlası için bize yazabilirsin.",
       ],
       ['Ses ve video ne kadar süre saklanıyor?', 'İçeriğin sen silmediğin sürece saklanır; QR kodun ve sayfan için yenileme ücreti alınmaz.'],
       [
@@ -144,10 +144,10 @@ const C = {
     heroTitle: 'Give your gift',
     heroAccent: 'a voice.',
     heroDesc:
-      'Whoever scans the QR on the back of the necklace or keychain hears your voice, watches your video, sees your photos. No app needed — and you can change the content any time.',
+      'Whoever scans the QR on the back of the necklace or keychain hears your voice, watches your video, sees your photos. No app needed — and you can update your message later (3 recordings included).',
     ctaShop: 'Shop now',
     ctaFree: 'Get a digital QR',
-    trust: ['No app needed', 'iPhone & Android', 'Update content any time', 'Gift-ready packaging'],
+    trust: ['No app needed', 'iPhone & Android', 'Updatable content', 'Gift-ready packaging'],
     demoTitle: 'Listen to an example',
     demoLabel: "Mom's voice ❤️",
     productsKicker: 'Products',
@@ -187,7 +187,7 @@ const C = {
       ['Do I need an app?', 'No. Scanning the QR with the phone camera (or tapping NFC models) is enough. Content opens in the browser.'],
       [
         'Can I change the content later?',
-        'Yes. When you first set up the QR you get a private owner link. Use it to change your voice, video and photos any time.',
+        'Yes. When you first set up the QR you get a private owner link. Use it to change your voice, video and photos: 3 recordings are included (your first plus 2 updates), and the title and contact details can be edited without limit. Need more? Message us.',
       ],
       ['How long is my content kept?', 'Your content stays until you delete it; there is no renewal fee for your QR code and page.'],
       ['What if I lose my owner link?', 'Use the 8-character recovery code from setup to get a new owner link. Lost that too? Message us on WhatsApp.'],

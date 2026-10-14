@@ -12,7 +12,7 @@
 
 **Üç vaat (her içerikte en az biri geçmeli):**
 1. **Sesin hediyede kalır.** Ses, video, fotoğraf, şarkı linki.
-2. **İçerik hep güncel.** QR ve NFC çip değişmez; sen istediğin zaman yeni mesaj eklersin.
+2. **İçerik güncellenebilir.** QR ve NFC çip değişmez; mesajını sonradan güncellersin (ilk kayıt dahil 3 içerik kaydı, isim ve iletişim bilgisi sınırsız).
 3. **Sadece senin.** QR, hesabına bağlanır; başkası değiştiremez.
 
 **Ton:** Sıcak, samimi, abartısız. Duyguyu ürün anlatır; "viral", "inanılmaz", "%X dönüşüm" gibi iddialar kullanılmaz.
@@ -47,7 +47,7 @@ Hediye veriyorsun. Peki sesini de veriyor musun? 🎙️
 Sesli Anı Kolyesi'nin arkasındaki QR'ı okutan kişi
 senin sesini duyar, videonu izler, fotoğraflarınıza bakar.
 
-Uygulama yok. Pil yok. İçeriği istediğin zaman değiştirirsin.
+Uygulama yok. Pil yok. Mesajını sonradan güncelleyebilirsin (3 kayıt dahil).
 
 🔗 qrnot.com
 ```
@@ -133,7 +133,7 @@ Kendi hikâyeni paylaşmak istersen @qrnotcom'u etiketle 💛
 [0–3]  "Sesli hediye nasıl hazırlanır?"
 [3–7]  Hesaba giriş
 [7–11] QR okut → kaydet
-[11–15] "Hazır. İçeriği istediğin zaman değiştir."
+[11–15] "Hazır. Mesajını sonradan da güncelleyebilirsin."
 ```
 
 ### Video 4 — NFC dokunma (10 sn)
@@ -221,7 +221,7 @@ qrnot.com
 ```
 QR değişmiyor.
 NFC çip değişmiyor.
-içindeki mesaj, istediğin zaman değişiyor.
+içindeki mesajı sonradan güncelleyebiliyorsun (3 kayıt dahil).
 
 yıl dönümünde yeni bir ses kaydı eklemek için hediyeyi geri istemene gerek yok.
 ```

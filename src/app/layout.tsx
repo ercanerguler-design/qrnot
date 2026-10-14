@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | QRNot",
   },
   description:
-    "QR ve NFC'li kolye ve anahtarlıklara sesli mesaj, video ve fotoğraf ekle. Uygulama gerekmez, içeriği istediğin zaman güncelle. Düğünler için dijital anı defteri.",
+    "QR ve NFC'li kolye ve anahtarlıklara sesli mesaj, video ve fotoğraf ekle. Uygulama gerekmez, mesajını sonradan güncelle. Düğünler için dijital anı defteri.",
   keywords: [
     "sesli kolye",
     "qr kodlu kolye",

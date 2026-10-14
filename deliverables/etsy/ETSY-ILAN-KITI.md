@@ -34,7 +34,7 @@ Record a voice message, a video, or add photos — then print your personal QR c
 
 ✔ Your own unique QR code, linked to your QRNot account
 ✔ Voice, video, photos, Spotify & YouTube links
-✔ Change your message any time — the QR never changes
+✔ Update your message later — 3 recordings included (your first + 2 updates). The QR never changes.
 ✔ Printable templates included: gift cards, gift tags, round stickers (A4 size)
 ✔ Works on iPhone & Android
 

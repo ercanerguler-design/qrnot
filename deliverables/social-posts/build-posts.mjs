@@ -44,7 +44,7 @@ const CSS = `
   h1, h2, .serif { font-family: Fraunces, Georgia, serif; font-weight: 600; letter-spacing: -0.02em; line-height: 1.02; }
   .kicker { font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--coral); }
   .muted { color: var(--ink2); }
-  .brand { display: flex; align-items: center; gap: 14px; font-weight: 600; }
+  .brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; font-weight: 600; }
   .brand .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 6px var(--coral-soft); }
   .art { width: 100%; height: 100%; display: block; }
   .card { background: #fff; border: 2px solid var(--line); border-radius: 36px; }
@@ -83,6 +83,44 @@ function page({ w, h, pad, body }) {
 }
 
 const brand = (size = 30) => `<div class="brand" style="font-size:${size}px"><span class="dot"></span>QRNot</div>`
+
+
+// --- Anı defteri yardımcıları ---
+const tableCardTR = (names, width = 460) => `
+  <div style="width:${width}px;background:#fff;border-radius:18px;box-shadow:0 26px 54px rgba(31,36,64,.16);padding:${width * 0.1}px ${width * 0.08}px;text-align:center">
+    <div style="font-size:${width * 0.042}px;letter-spacing:.18em;color:var(--gold);font-weight:600">BİZE BİR ANI BIRAKIN</div>
+    <div class="serif" style="font-size:${width * 0.1}px;margin-top:${width * 0.04}px">${names}</div>
+    <div class="qrbox" style="width:${width * 0.52}px;margin:${width * 0.06}px auto;padding:0;box-shadow:none">${qr(link('instagram', 'ani-defteri'))}</div>
+    <div style="font-size:${width * 0.048}px;color:var(--ink2);line-height:1.4">Telefon kameranla okut<br>🎙️ ses · 🎬 video · 📷 fotoğraf</div>
+  </div>`
+
+const guestFormScreen = () => `<div class="phone"><div class="screen">
+    <div style="font-size:26px;font-weight:600;color:var(--gold);letter-spacing:.12em">ANI DEFTERİ</div>
+    <div class="serif" style="font-size:44px;text-align:center">Ayşe & Mehmet</div>
+    <div class="muted" style="font-size:24px">Bize bir anı bırakın 💛</div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:14px;margin-top:6px">
+      <div style="background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px 20px;font-size:24px;color:var(--ink2)">Adın</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${['🎙️ Ses', '🎬 Video', '🖼️ Fotoğraf', '✍️ Not'].map((t) => `<div style="background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px;font-size:24px;font-weight:600;text-align:center">${t}</div>`).join('')}</div>
+      <div style="background:var(--coral);color:#fff;border-radius:999px;padding:20px;font-size:28px;font-weight:700;text-align:center">Anıyı gönder</div>
+    </div>
+  </div></div>`
+
+const approvalScreen = () => `<div class="phone"><div class="screen" style="padding-top:56px;gap:16px">
+    <div style="font-size:26px;font-weight:600;color:var(--gold);letter-spacing:.12em">YÖNETİM</div>
+    <div class="serif" style="font-size:40px;text-align:center">Gelen anılar</div>
+    ${[
+      ['Zeynep', '🎙️ Sesli mesaj · 0:42', 'Onay bekliyor'],
+      ['Can', '🎬 Video · 0:31', 'Onaylandı'],
+      ['Elif teyze', '✍️ Not', 'Onaylandı'],
+    ]
+      .map(
+        ([n, t, st]) => `<div style="width:100%;background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px 18px;text-align:left">
+          <div style="font-size:26px;font-weight:700">${n}</div><div class="muted" style="font-size:22px;margin-top:4px">${t}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:20px;font-weight:600;color:${st === 'Onaylandı' ? 'var(--sage)' : 'var(--gold)'}">${st}</span><span style="font-size:20px;font-weight:600">⬇ İndir</span></div>
+        </div>`
+      )
+      .join('')}
+  </div></div>`
 
 // --- Postlar ---------------------------------------------------------------------------------
 const IG = { w: 1080, h: 1350, pad: 80 }
@@ -184,8 +222,8 @@ const posts = [
       <div class="glow" style="width:700px;height:700px;background:#e1f2e9;right:-200px;bottom:-200px"></div>
       ${brand()}
       <div style="display:flex;gap:26px;align-items:center;margin-top:60px"><div class="step-num">4</div></div>
-      <h2 style="font-size:84px;margin-top:30px;position:relative">İstediğin zaman<br>güncelle</h2>
-      <p class="muted" style="font-size:34px;margin-top:30px;line-height:1.4;position:relative;max-width:820px">QR ve NFC çip hiç değişmez. Yıl dönümünde yeni bir mesaj eklemek için hediyeyi geri istemene gerek yok.</p>
+      <h2 style="font-size:84px;margin-top:30px;position:relative">Sonradan<br>güncelle</h2>
+      <p class="muted" style="font-size:34px;margin-top:30px;line-height:1.4;position:relative;max-width:820px">QR ve NFC çip hiç değişmez. Yıl dönümünde yeni bir mesaj eklemek için hediyeyi geri istemene gerek yok. 3 içerik kaydı dahil.</p>
       <div class="footer" style="position:relative">
         <div style="display:flex;flex-direction:column;gap:14px"><span class="pill dark" style="font-size:30px">qrnot.com</span><span class="muted" style="font-size:26px">Linkte: tüm ürünler</span></div>
         <div class="qrbox" style="width:210px">${qr(link('instagram', 'nasil-calisir'))}</div>
@@ -242,6 +280,86 @@ const posts = [
       <div class="footer"><span class="muted" style="font-size:26px">Kargo alıcı ödemeli · 1–3 iş gününde kargoda</span><span style="font-size:28px;font-weight:600">qrnot.com/shop</span></div>`,
   },
 
+
+  // --- Anı defteri carousel (Instagram) ---
+  {
+    file: 'ig-10-ani-defteri-kapak',
+    ...IG,
+    body: `
+      <div class="glow" style="width:900px;height:900px;background:#f8ecd4;opacity:.95;right:-250px;top:-200px"></div>
+      ${brand()}
+      <div style="position:relative;margin-top:60px">
+        <div class="kicker" style="font-size:26px;color:var(--gold)">Dijital Anı Defteri</div>
+        <h1 style="font-size:104px;margin-top:20px">İmza değil,<br>ses toplayın.</h1>
+        <p class="muted" style="font-size:32px;margin-top:26px;line-height:1.4;max-width:560px">Düğününüzde misafirler telefonlarından sesli mesaj, video ve fotoğraf bıraksın.</p>
+      </div>
+      <div style="position:absolute;right:70px;bottom:150px;transform:rotate(4deg)">${tableCardTR('Ayşe & Mehmet', 420)}</div>
+      <div class="footer" style="position:relative"><span class="pill dark" style="font-size:30px">Nasıl çalışır? Kaydır →</span></div>`,
+  },
+  {
+    file: 'ig-11-ani-defteri-1-kur',
+    ...IG,
+    body: `
+      ${brand()}
+      <div style="display:flex;gap:26px;align-items:center;margin-top:60px"><div class="step-num" style="background:var(--gold)">1</div><h2 style="font-size:80px">Dakikalar içinde kur</h2></div>
+      <p class="muted" style="font-size:34px;margin-top:30px;line-height:1.4">Hesabınla giriş yap, etkinliğinin adını ve hoş geldin mesajını yaz.</p>
+      <div style="display:flex;flex-direction:column;gap:22px;margin-top:50px">
+        ${[
+          ['Etkinlik adı', 'Ayşe & Mehmet · 14 Haziran'],
+          ['Onay (moderasyon)', 'Anılar sen onaylayınca görünür'],
+          ['PIN (isteğe bağlı)', 'Sadece davetliler anı bırakabilir'],
+        ]
+          .map(([t, d]) => `<div class="card" style="padding:28px 32px"><div class="muted" style="font-size:24px">${t}</div><div style="font-size:34px;font-weight:600;margin-top:6px">${d}</div></div>`)
+          .join('')}
+      </div>
+      <div class="footer"><span class="muted" style="font-size:28px">qrnot.com</span><span class="muted" style="font-size:28px">1 / 4</span></div>`,
+  },
+  {
+    file: 'ig-12-ani-defteri-2-masa-karti',
+    ...IG,
+    body: `
+      ${brand()}
+      <div style="display:flex;gap:26px;align-items:center;margin-top:60px"><div class="step-num" style="background:var(--gold)">2</div><h2 style="font-size:80px">Masa kartlarını bas</h2></div>
+      <p class="muted" style="font-size:34px;margin-top:30px;line-height:1.4">İsimlerinizle hazır şablon. Masa sayısı kadar yazdır.</p>
+      <div style="display:flex;justify-content:center;gap:30px;margin-top:70px">
+        <div style="transform:rotate(-4deg)">${tableCardTR('Ayşe & Mehmet', 400)}</div>
+        <div style="transform:rotate(4deg);margin-top:40px">${tableCardTR('Ayşe & Mehmet', 400)}</div>
+      </div>
+      <div class="footer"><span class="muted" style="font-size:28px">qrnot.com</span><span class="muted" style="font-size:28px">2 / 4</span></div>`,
+  },
+  {
+    file: 'ig-13-ani-defteri-3-misafir',
+    ...IG,
+    body: `
+      ${brand()}
+      <div style="display:flex;gap:56px;margin-top:60px;flex:1">
+        <div style="flex:1">
+          <div class="step-num" style="background:var(--gold)">3</div>
+          <h2 style="font-size:80px;margin-top:30px">Misafirler<br>okutup<br>anı bırakır</h2>
+          <p class="muted" style="font-size:32px;margin-top:30px;line-height:1.4">Uygulama yok, sıra yok. Herkes kendi telefonundan aynı anda kaydeder.</p>
+          <p style="font-size:30px;margin-top:26px;line-height:1.4;font-weight:600">Her misafir bir kez yazar.</p>
+        </div>
+        <div style="width:400px;padding-top:20px">${guestFormScreen()}</div>
+      </div>
+      <div class="footer"><span class="muted" style="font-size:28px">qrnot.com</span><span class="muted" style="font-size:28px">3 / 4</span></div>`,
+  },
+  {
+    file: 'ig-14-ani-defteri-4-sakla',
+    ...IG,
+    body: `
+      ${brand()}
+      <div style="display:flex;gap:56px;margin-top:60px;flex:1">
+        <div style="flex:1">
+          <div class="step-num" style="background:var(--gold)">4</div>
+          <h2 style="font-size:80px;margin-top:30px">Onayla,<br>sakla,<br>indir</h2>
+          <p class="muted" style="font-size:32px;margin-top:30px;line-height:1.4">Gelen her anıyı sen onaylarsın. İstediğin zaman dinler, dilediğini indirirsin.</p>
+          <p style="font-size:30px;margin-top:26px;line-height:1.4;font-weight:600">300 anıya kadar · 499 TL</p>
+        </div>
+        <div style="width:400px;padding-top:20px">${approvalScreen()}</div>
+      </div>
+      <div class="footer"><span class="pill dark" style="font-size:28px">qrnot.com/guestbook</span><span class="muted" style="font-size:28px">4 / 4</span></div>`,
+  },
+
   // --- Story / TikTok 9:16 ---
   {
     file: 'st-01-tiktok-kapak-pov',
@@ -278,6 +396,36 @@ const posts = [
         <div><div style="font-size:36px;font-weight:700">qrnot.com/shop</div><div class="muted" style="font-size:26px;margin-top:8px">Kargo alıcı ödemeli</div></div>
         <div class="qrbox" style="width:220px">${qr(link('instagram_story', 'urunler'))}</div>
       </div>`,
+  },
+
+
+  {
+    file: 'st-04-story-ani-defteri',
+    ...ST,
+    body: `
+      <div class="glow" style="width:1000px;height:1000px;background:#f8ecd4;opacity:.95;left:-300px;top:-200px"></div>
+      ${brand(34)}
+      <div style="position:relative;margin-top:80px">
+        <div class="kicker" style="font-size:30px;color:var(--gold)">Dijital Anı Defteri</div>
+        <h1 style="font-size:112px;margin-top:20px">Düğününüzün<br>sesi hep<br>sizinle.</h1>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:70px;position:relative">${tableCardTR('Ayşe & Mehmet', 560)}</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:60px;font-size:34px;position:relative">
+        <div><span class="check">✓</span> Sesli mesaj, video, fotoğraf</div>
+        <div><span class="check">✓</span> Siz onaylarsınız · 300 anıya kadar</div>
+      </div>
+      <div class="footer" style="font-size:34px;position:relative"><span style="font-weight:700">qrnot.com/guestbook</span><span class="pill dark">499 TL</span></div>`,
+  },
+  {
+    file: 'st-05-tiktok-kapak-ani-defteri',
+    ...ST,
+    body: `
+      <div style="position:absolute;inset:0;background:#1f2440"></div>
+      <div class="glow" style="width:1000px;height:1000px;background:#c9963a;opacity:.35;right:-300px;top:700px"></div>
+      <div class="brand" style="font-size:34px;color:#fff;position:relative"><span class="dot"></span>QRNot</div>
+      <h1 style="position:relative;color:#fff;font-size:116px;margin-top:120px">POV:<br>düğünden sonra<br>misafirlerin<br><span style="color:#f3d48a">sesini</span> dinliyorsunuz.</h1>
+      <div style="position:relative;display:flex;justify-content:center;margin-top:90px">${tableCardTR('Ayşe & Mehmet', 520)}</div>
+      <div class="footer" style="position:relative;color:#c9cbe0;font-size:32px"><span>qrnot.com</span><span>🔊 sesi aç</span></div>`,
   },
 
   // --- LinkedIn ---
@@ -339,6 +487,26 @@ const posts = [
           .join('')}
       </div>
       <div class="footer"><span class="muted" style="font-size:26px">qrnot.com</span></div>`,
+  },
+
+  {
+    file: 'li-04-organizatorler',
+    ...LI_SQ,
+    body: `
+      ${brand()}
+      <div class="kicker" style="font-size:24px;margin-top:50px;color:var(--gold)">Düğün & etkinlik organizatörleri için</div>
+      <h1 style="font-size:76px;margin-top:16px">Paketinize<br>dijital anı defteri ekleyin.</h1>
+      <div style="display:flex;gap:50px;align-items:center;margin-top:50px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:20px;font-size:28px;line-height:1.35">
+          <div><span class="check">✓</span> Kiralık telefon, kurulum ekibi, iade yok</div>
+          <div><span class="check">✓</span> Misafirler aynı anda, kendi telefonundan kaydeder</div>
+          <div><span class="check">✓</span> Çiftin onayı, PIN koruması, indirilebilir anılar</div>
+          <div><span class="check">✓</span> İsimli masa kartları hazır şablon</div>
+          <div><span class="check">✓</span> Toplu alımda kurumsal fiyat</div>
+        </div>
+        <div style="transform:rotate(3deg)">${tableCardTR('Ayşe & Mehmet', 360)}</div>
+      </div>
+      <div class="footer"><span class="muted" style="font-size:26px">qrnot.com/guestbook</span><span class="pill dark" style="font-size:26px">Teklif al →</span></div>`,
   },
 ]
 

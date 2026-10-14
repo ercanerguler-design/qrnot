@@ -7,9 +7,9 @@ Görsellerdeki QR kodlar gerçektir ve `qrnot.com/shop`'a gider. Her biri platfo
 
 | Dosya | Ölçü | Nerede |
 |---|---|---|
-| `ig-01` … `ig-09` | 1080 × 1350 (4:5) | Instagram post / carousel, Facebook |
-| `st-01` … `st-03` | 1080 × 1920 (9:16) | Instagram Story / Reels kapağı, TikTok |
-| `li-01`, `li-03` | 1200 × 1200 | LinkedIn kare post |
+| `ig-01` … `ig-14` | 1080 × 1350 (4:5) | Instagram post / carousel, Facebook |
+| `st-01` … `st-05` | 1080 × 1920 (9:16) | Instagram Story / Reels kapağı, TikTok |
+| `li-01`, `li-03`, `li-04` | 1200 × 1200 | LinkedIn kare post |
 | `li-02` | 1200 × 627 | LinkedIn yatay post / link görseli |
 
 ---
@@ -23,7 +23,7 @@ Hediye veriyorsun. Peki sesini de veriyor musun? 🎙️
 Sesli Anı Kolyesi'nin arkasındaki QR'ı okutan kişi
 senin sesini duyar, videonu izler, fotoğraflarınıza bakar.
 
-Uygulama yok. Pil yok. İçeriği istediğin zaman değiştirirsin.
+Uygulama yok. Pil yok. Mesajını sonradan güncelleyebilirsin (3 kayıt dahil).
 
 🔗 Profildeki linkten: qrnot.com
 ```
@@ -42,7 +42,7 @@ Uygulama yok. Pil yok. İçeriği istediğin zaman değiştirirsin.
 1️⃣ Satın al — kolye, anahtarlık ya da anı defteri
 2️⃣ Hesabınla kur — QR'ı okut, sesini kaydet. QR artık senin.
 3️⃣ Hediye et — kutuyu açar, okutur, dinler
-4️⃣ İstediğin zaman güncelle — yıl dönümünde yeni bir mesaj ekle
+4️⃣ Sonradan güncelle — yıl dönümünde yeni bir mesaj ekle (3 kayıt dahil)
 
 Kaydır, nasıl çalıştığını gör →
 qrnot.com
@@ -99,6 +99,33 @@ qrnot.com/shop
 
 ---
 
+### 7) Anı defteri carousel'i — tek post, bu sırayla yükle
+1. `ig-10-ani-defteri-kapak.png`
+2. `ig-11-ani-defteri-1-kur.png`
+3. `ig-12-ani-defteri-2-masa-karti.png`
+4. `ig-13-ani-defteri-3-misafir.png`
+5. `ig-14-ani-defteri-4-sakla.png`
+
+```
+İmza değil, ses toplayın. 💒
+
+Dijital Anı Defteri nasıl çalışır? 👇
+1️⃣ Dakikalar içinde kur — etkinlik adı, onay ve isteğe bağlı PIN
+2️⃣ Masa kartlarını bas — isimlerinizle hazır şablon
+3️⃣ Misafirler okutup anı bırakır — ses, video, fotoğraf ya da not
+4️⃣ Onayla, sakla, indir — her anı önce senin onayından geçer
+
+Uygulama yok, kiralık telefon yok, sıra yok.
+Her misafir kendi telefonundan, aynı anda kaydeder.
+
+300 anıya kadar · 499 TL · qrnot.com/guestbook
+```
+`#QRNot #DijitalAnıDefteri #DüğünAnıDefteri #Düğün #Nişan #KınaGecesi #DüğünHazırlığı #Gelin #DüğünFikirleri`
+
+### 8) Anı defteri Story — `st-04-story-ani-defteri.png`
+- Link çıkartması: `qrnot.com/guestbook`
+- İsteğe bağlı soru kutusu: "Düğününüz ne zaman? 💍"
+
 ## TikTok
 
 TikTok'ta bu görseller iki şekilde kullanılır:
@@ -121,13 +148,24 @@ qrnot.com
 1. hesabına gir
 2. QR'ı okut
 3. sesini kaydet
-bitti. içeriği istediğin zaman değiştir.
+bitti. mesajını sonradan da güncelleyebilirsin.
 
 qrnot.com
 ```
 `#QRNot #NasılYapılır #HediyeFikri #SesliHediye #DIY`
 
 ---
+
+### `st-05-tiktok-kapak-ani-defteri.png` — anı defteri videosu için
+Video fikri: masadaki QR kart → misafir okutup sesli mesaj bırakıyor → çift düğünden sonra kanepede mesajları dinliyor.
+```
+POV: düğünden sonra misafirlerin sesini dinliyorsunuz 💛
+masalara tek bir QR kart, misafirler sesli mesaj ve video bırakıyor.
+uygulama yok, kiralık telefon yok.
+
+qrnot.com/guestbook
+```
+`#QRNot #DüğünAnıDefteri #Düğün #POV #Gelin #DüğünHazırlığı`
 
 ## LinkedIn
 
@@ -185,6 +223,23 @@ Hediyelik satıcıları ve pazaryerleriyle pilot görüşmelerine açığız.
 
 ---
 
+### 4) Düğün ve etkinlik organizatörleri — `li-04-organizatorler.png`
+```
+Düğün ve etkinlik organizatörleri: paketinize dijital anı defteri ekleyin.
+
+Masalara konan tek bir QR kart ile misafirler kendi telefonlarından
+sesli mesaj, video ve fotoğraf bırakıyor.
+
+✔ Kiralık telefon, kurulum ekibi, iade süreci yok
+✔ Misafirler sırada beklemeden, aynı anda kaydediyor
+✔ Çiftin onayı, PIN koruması, indirilebilir anılar
+✔ İsimli masa kartları hazır şablon
+
+Toplu alım ve iş birliği için: qrnot.com/guestbook · sce@scegrup.com
+
+#DüğünOrganizasyonu #EtkinlikYönetimi #Wedding #EventPlanning #QRKod
+```
+
 ## Paylaşım takvimi (ilk 2 hafta, önerilen)
 
 | Gün | Instagram | TikTok | LinkedIn |
@@ -192,7 +247,7 @@ Hediyelik satıcıları ve pazaryerleriyle pilot görüşmelerine açığız.
 | Pzt | ig-01 Tanıtım | st-01 POV videosu | li-01 Kurumsal |
 | Çar | Carousel (ig-02…06) | — | — |
 | Cum | ig-07 NFC + Story st-03 | st-02 Kurulum videosu | li-02 Fabrika |
-| Pzt | ig-08 Anı defteri | Fotoğraf modu (ig-09) | — |
+| Pzt | Anı defteri carousel (ig-10…14) + Story st-04 | st-05 Anı defteri videosu | li-04 Organizatörler |
 | Per | ig-09 Ürünler + Story st-03 | — | li-03 Güven |
 
 **Hatırlatma:** "Ücretsiz dene", "ücretsiz kargo" ya da uydurma müşteri yorumu kullanma (bkz. `MARKETING_CONTENT.md`).

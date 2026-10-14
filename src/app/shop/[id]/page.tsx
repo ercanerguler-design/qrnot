@@ -30,7 +30,7 @@ const T = {
     steps: [
       'Siparişin hediye kutusunda kapına gelir.',
       "QR'ı okut (ya da NFC'ye dokun), sesini, videonu ya da fotoğraflarını ekle.",
-      'Hediyeni ver. Okutan herkes içeriğini görür; sen istediğin zaman değiştirirsin.',
+      'Hediyeni ver. Okutan herkes içeriğini görür; sen sonradan güncelleyebilirsin.',
     ],
     digitalSteps: ['Ödeme sonrası hesabına anında tanımlanır.', "Hesabından QR'ını oluştur ve indir.", 'İçeriğini ekle, paylaş ya da bas.'],
     shipping: '1-3 iş gününde kargoda. Kargo alıcı ödemelidir (teslimatta ödenir).',
@@ -44,7 +44,7 @@ const T = {
     steps: [
       'Your order arrives gift-boxed at your door.',
       'Scan the QR (or tap NFC) and add your voice, video or photos.',
-      'Give your gift. Anyone who scans sees your content; you can change it any time.',
+      'Give your gift. Anyone who scans sees your content; you can update it later.',
     ],
     digitalSteps: ['Added to your account right after payment.', 'Create and download your QR from your account.', 'Add your content, share it or print it.'],
     shipping: 'Ships in 1-3 business days. Shipping is paid by the recipient on delivery.',

@@ -8,7 +8,9 @@ export const COMPANY = {
   shortName: 'SCE Innovation',
   address: 'Çetin Emeç Bulvarı 25/3, Çankaya / Ankara',
   email: 'sce@scegrup.com',
-  phone: '+90 0850 888 1 889',
+  /** Sadece müşteri desteği için */
+  phone: '0850 888 1 889',
+  phoneHref: 'tel:+908508881889',
   whatsapp: '905433929230',
   whatsappDisplay: '+90 543 392 92 30',
   bankName: 'Türkiye Garanti Bankası — Etlik Şubesi',

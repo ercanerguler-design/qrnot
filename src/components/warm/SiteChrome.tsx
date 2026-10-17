@@ -7,6 +7,7 @@ import { COMPANY, MARKETPLACES, whatsappHref } from '@/lib/site'
 const NAV = {
   tr: [
     { href: '/shop', label: 'Ürünler' },
+    { href: '/katalog', label: 'Katalog' },
     { href: '/#nasil-calisir', label: 'Nasıl çalışır?' },
     { href: '/guestbook', label: 'Anı Defteri' },
     { href: '/nfc', label: 'NFC' },
@@ -14,6 +15,7 @@ const NAV = {
   ],
   en: [
     { href: '/shop', label: 'Shop' },
+    { href: '/katalog', label: 'Catalog' },
     { href: '/#nasil-calisir', label: 'How it works' },
     { href: '/guestbook', label: 'Guestbook' },
     { href: '/nfc', label: 'NFC' },
@@ -82,6 +84,7 @@ const FOOTER = {
     links: {
       shop: [
         ['/shop', 'Tüm ürünler'],
+        ['/katalog', 'Ürün kataloğu'],
         ['/shop/kolye-qr', 'Sesli kolye'],
         ['/shop/anahtarlik-qr', 'Sesli anahtarlık'],
         ['/guestbook', 'Dijital anı defteri'],
@@ -106,6 +109,7 @@ const FOOTER = {
     rights: 'Tüm hakları saklıdır.',
     pay: 'Güvenli ödeme: iyzico · Stripe · Havale/EFT',
     stores: 'Bizi ayrıca bulabileceğin yerler',
+    support: 'Destek hattı',
   },
   en: {
     shop: 'Shop',
@@ -116,6 +120,7 @@ const FOOTER = {
     links: {
       shop: [
         ['/shop', 'All products'],
+        ['/katalog', 'Product catalog'],
         ['/shop/kolye-qr', 'Voice necklace'],
         ['/shop/anahtarlik-qr', 'Voice keychain'],
         ['/guestbook', 'Audio guestbook'],
@@ -136,6 +141,7 @@ const FOOTER = {
     rights: 'All rights reserved.',
     pay: 'Secure payment: Stripe · iyzico',
     stores: 'ALSO FIND US ON',
+    support: 'Support line (Turkey)',
   },
 }
 
@@ -155,6 +161,12 @@ export function SiteFooter({ lang }: { lang: Lang }) {
             className="w-btn w-btn-whatsapp w-btn-sm mt-5"
           >
             WhatsApp {COMPANY.whatsappDisplay}
+          </a>
+          <a href={COMPANY.phoneHref} className="mt-3 flex items-center gap-2 text-sm text-ink-2 hover:text-ink">
+            <span aria-hidden="true">📞</span>
+            <span>
+              {t.support}: <strong className="font-semibold text-ink">{COMPANY.phone}</strong>
+            </span>
           </a>
           <p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-muted">{t.stores}</p>
           <div className="mt-3 flex flex-wrap gap-2">

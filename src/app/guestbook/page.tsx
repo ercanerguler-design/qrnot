@@ -18,6 +18,7 @@ const T = {
     title: 'Misafirlerinin sesi, yıllar sonra bile seninle.',
     desc: 'Düğün, nişan, kına, doğum günü, emeklilik ya da veda… Masalara koyduğun tek bir QR ile misafirlerin sesli mesaj, video, fotoğraf ve yazılı anı bırakır. Uygulama yok, kurulum yok.',
     cta: 'Anı defteri al',
+    catalog: 'Kataloğu incele →',
     how: 'Nasıl çalışır?',
     steps: [
       ['Satın al', "Ödeme sonrası anı defteri QR'ın hesabında hazır olur."],
@@ -41,6 +42,7 @@ const T = {
     title: "Your guests' voices — still with you years from now.",
     desc: 'Weddings, engagements, birthdays, retirements or farewells… One QR on your tables lets guests leave voice messages, videos, photos and written notes. No app, no setup.',
     cta: 'Get the guestbook',
+    catalog: 'View the catalog →',
     how: 'How it works',
     steps: [
       ['Buy', 'Your guestbook QR is ready in your account right after payment.'],
@@ -79,6 +81,9 @@ export default async function GuestbookLanding({ searchParams }: { searchParams:
               {t.cta} · {formatMoney(product.price[currency], currency)}
             </Link>
             <span className="text-sm text-muted">{t.price}</span>
+            <Link href={withLang('/katalog#ani-defteri', lang)} className="w-link text-sm">
+              {t.catalog}
+            </Link>
           </div>
         </div>
         <ProductArt kind="guestbook" className="w-card mx-auto w-full max-w-sm" />

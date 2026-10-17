@@ -24,6 +24,24 @@ const IMAGES: Record<string, CatalogImage> = {
 }
 const ORDER = ['anahtarlik', 'bag', 'sticker', 'koleksiyon', 'dijitalProfil', 'dijitalOzellik'] as const
 
+// Anı defteri katalog sayfaları (deliverables/ani-defteri-katalog/build-ani-defteri.mjs ile üretilir)
+const GUESTBOOK_PAGES = [
+  ['01-kapak', 'Kapak', 'Cover'],
+  ['02-nasil-calisir', 'Nasıl çalışır', 'How it works'],
+  ['03-misafir', 'Misafir deneyimi', 'Guest experience'],
+  ['04-ev-sahibi', 'Ev sahibi paneli', 'Host panel'],
+  ['05-masa-kartlari', 'Masa kartları', 'Table cards'],
+  ['06-etkinlikler', 'Etkinlikler', 'Events'],
+  ['07-satin-al', 'Nereden alınır', 'Where to buy'],
+] as const
+const guestbookImages = (lang: Lang): CatalogImage[] =>
+  GUESTBOOK_PAGES.map(([file, tr, en]) => ({
+    src: `/katalog/ani-defteri/${lang}/${file}.webp`,
+    width: 1240,
+    height: 1754,
+    alt: lang === 'en' ? `QRNot guestbook catalog — ${en}` : `QRNot anı defteri kataloğu — ${tr}`,
+  }))
+
 // Kurumsal katalog sayfaları (deliverables/kurumsal-katalog/build-kurumsal.mjs ile üretilir)
 const BUSINESS_PAGES = [
   ['01-kapak', 'Kapak', 'Cover'],
@@ -78,6 +96,11 @@ const T = {
     s3Title: 'Dijital ürünler — Etsy',
     s3Desc: 'Yurt dışındaki müşteriler için İngilizce dijital ürünler. Fiziksel gönderim yoktur: alıcı QR’ını kendi kartına, etiketine ya da ürününe basar.',
     etsyCta: 'Etsy mağazasına git',
+    gbKicker: 'Düğün ve etkinlik',
+    gbTitle: 'Dijital Anı Defteri kataloğu',
+    gbDesc: 'Masalara konan tek bir QR kart ile misafirler sesli mesaj, video, fotoğraf ve not bırakır. 7 sayfalık kataloğu inceleyin ya da PDF olarak indirip paylaşın.',
+    gbPdf: 'Kataloğu indir (PDF)',
+    gbBuy: 'Anı defteri al',
     bizKicker: 'Kurumsal',
     bizTitle: 'Kurumsal katalog',
     bizDesc: 'Otel, eğitim, sağlık, fabrika, perakende ve lojistik için sektöre özel QR çözümleri. 9 sayfalık kataloğu inceleyin ya da PDF olarak indirip ekibinizle paylaşın.',
@@ -126,6 +149,11 @@ const T = {
     s3Title: 'Digital products — Etsy',
     s3Desc: 'Digital products in English for customers worldwide. Nothing is shipped: buyers print their QR on their own card, tag or product.',
     etsyCta: 'Visit our Etsy shop',
+    gbKicker: 'Weddings & events',
+    gbTitle: 'Audio & Video Guestbook catalog',
+    gbDesc: 'One QR card on your tables lets guests leave voice messages, videos, photos and notes. Browse the 7-page catalog or download the PDF to share.',
+    gbPdf: 'Download catalog (PDF)',
+    gbBuy: 'Get the guestbook',
     bizKicker: 'Business',
     bizTitle: 'Business catalog',
     bizDesc: 'Industry-specific QR solutions for hotels, education, healthcare, manufacturing, retail and logistics. Browse the 9-page catalog or download the PDF to share with your team.',
@@ -278,6 +306,37 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               </div>
             </div>
           </Section>
+
+          {/* ANI DEFTERİ KATALOĞU */}
+          <section id="ani-defteri" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f3c66b]">{t.gbKicker}</p>
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <h2 className="font-display text-3xl font-semibold text-white sm:text-4xl">{t.gbTitle}</h2>
+                <p className="mt-3 max-w-3xl text-base leading-relaxed text-white/70">{t.gbDesc}</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`/katalog/ani-defteri/QRNot-Ani-Defteri-Katalog-${lang === 'en' ? 'EN' : 'TR'}.pdf`}
+                  download
+                  className="rounded-full bg-gradient-to-r from-[#f3c66b] to-[#ff5fa8] px-6 py-3 text-sm font-semibold text-[#1a1020] shadow-[0_10px_40px_-12px_rgba(243,198,107,0.8)] transition hover:brightness-110"
+                >
+                  ⬇ {t.gbPdf}
+                </a>
+                <Link href={withLang('/guestbook', lang)} className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60">
+                  {t.gbBuy} →
+                </Link>
+              </div>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
+              {guestbookImages(lang).map((img, i) => (
+                <div key={img.src}>
+                  <CatalogImageButton images={guestbookImages(lang)} index={i} sizes="(min-width: 1024px) 160px, (min-width: 640px) 25vw, 50vw" />
+                  <p className="mt-2 text-center text-xs font-semibold text-white/60">{lang === 'en' ? GUESTBOOK_PAGES[i][2] : GUESTBOOK_PAGES[i][1]}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* KURUMSAL KATALOG */}
           <section id="kurumsal" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">

@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { CartButton, LangSwitch } from '@/components/warm/HeaderClient'
 import { withLang, type Lang } from '@/lib/i18n'
-import { COMPANY, whatsappHref } from '@/lib/site'
+import { COMPANY, MARKETPLACES, whatsappHref } from '@/lib/site'
 
 const NAV = {
   tr: [
@@ -105,6 +105,7 @@ const FOOTER = {
     },
     rights: 'Tüm hakları saklıdır.',
     pay: 'Güvenli ödeme: iyzico · Stripe · Havale/EFT',
+    stores: 'Bizi ayrıca bulabileceğin yerler',
   },
   en: {
     shop: 'Shop',
@@ -134,6 +135,7 @@ const FOOTER = {
     },
     rights: 'All rights reserved.',
     pay: 'Secure payment: Stripe · iyzico',
+    stores: 'ALSO FIND US ON',
   },
 }
 
@@ -154,6 +156,21 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           >
             WhatsApp {COMPANY.whatsappDisplay}
           </a>
+          <p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-muted">{t.stores}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {MARKETPLACES.map((store) => (
+              <a
+                key={store.id}
+                href={store.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-line px-3 py-1.5 text-xs font-bold hover:border-ink-2"
+                style={{ color: store.color }}
+              >
+                {store.name} ↗
+              </a>
+            ))}
+          </div>
         </div>
         {(['shop', 'help', 'legal'] as const).map((group) => (
           <div key={group}>

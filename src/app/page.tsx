@@ -7,7 +7,7 @@ import VoicePlayer from '@/components/warm/VoicePlayer'
 import { PRODUCTS } from '@/lib/commerce/catalog'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
-import { SITE_URL, whatsappHref } from '@/lib/site'
+import { MARKETPLACES, SITE_URL, whatsappHref } from '@/lib/site'
 
 export const metadata: Metadata = {
   alternates: { canonical: '/', languages: { 'tr-TR': '/', 'en-US': '/?lang=en' } },
@@ -78,6 +78,10 @@ const C = {
         'Siparişler 1-3 iş gününde kargoya verilir. Kargo alıcı ödemelidir; kargo ücreti teslimatta kargo firmasına ödenir. Kullanılmamış ürünlerde 14 gün içinde iade hakkın var.',
       ],
     ],
+    storesKicker: 'Mağazalarımız',
+    storesTitle: 'QRNot pazaryerlerinde de',
+    storesDesc: 'Alışveriş alışkanlığın hangisiyse oradan sipariş et. Tüm ürünler aynı QRNot hesabınla çalışır.',
+    storesCta: 'Mağazaya git:',
     b2bKicker: 'Kurumsal',
     b2bTitle: 'İşletmeler için QR çözümleri',
     b2bDesc:
@@ -197,6 +201,10 @@ const C = {
       ],
       ['Shipping & returns?', 'Orders ship within 1-3 business days. Shipping is paid by the recipient on delivery. Unused items can be returned within 14 days.'],
     ],
+    storesKicker: 'Our stores',
+    storesTitle: 'Find QRNot on marketplaces too',
+    storesDesc: 'Shop wherever you prefer. Every product works with the same QRNot account.',
+    storesCta: 'Visit',
     b2bKicker: 'Business',
     b2bTitle: 'QR solutions for businesses',
     b2bDesc:
@@ -279,7 +287,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
     name: 'QRNot',
     url: SITE_URL,
     logo: `${SITE_URL}/icon.svg`,
-    sameAs: ['https://www.instagram.com/qrnotcom'],
+    sameAs: ['https://www.instagram.com/qrnotcom', ...MARKETPLACES.map((m) => m.url)],
   }
 
   return (
@@ -339,6 +347,38 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
           {featured.map((product) => (
             <ProductCard key={product.id} product={product} lang={lang} />
           ))}
+        </div>
+      </section>
+
+      {/* MARKETPLACES */}
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="w-card-soft p-6 sm:p-8">
+          <Kicker>{c.storesKicker}</Kicker>
+          <h2 className="font-display mt-2 text-2xl font-semibold sm:text-3xl">{c.storesTitle}</h2>
+          <p className="mt-2 max-w-2xl text-ink-2">{c.storesDesc}</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {(lang === 'en' ? [...MARKETPLACES.filter((m) => m.id === 'etsy'), ...MARKETPLACES.filter((m) => m.id !== 'etsy')] : MARKETPLACES).map((store) => (
+              <a
+                key={store.id}
+                href={store.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col rounded-2xl border border-line bg-paper p-5 transition hover:border-ink-2"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xl font-extrabold tracking-tight" style={{ color: store.color }}>
+                    {store.name}
+                  </span>
+                  <span className="w-chip">{store.region[lang]}</span>
+                </div>
+                <p className="mt-1 text-xs font-semibold text-muted">{store.store[lang]}</p>
+                <p className="mt-3 text-sm leading-relaxed text-ink-2">{store.desc[lang]}</p>
+                <span className="mt-auto pt-4 text-sm font-semibold text-ink group-hover:underline">
+                  {c.storesCta} {store.name} ↗
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 

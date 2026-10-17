@@ -16,6 +16,46 @@ export const COMPANY = {
   iyzicoMerchant: 'SCE Innovation Ltd. Şti.',
 }
 
+/** QRNot'un pazaryeri mağazaları (anasayfa, footer ve yapılandırılmış veri bu listeden beslenir). */
+export const MARKETPLACES = [
+  {
+    id: 'trendyol',
+    name: 'Trendyol',
+    url: 'https://www.trendyol.com/magaza/sce-innovation-m-1128695',
+    color: '#f27a1a',
+    store: { tr: 'SCE Innovation mağazası', en: 'SCE Innovation store' },
+    desc: {
+      tr: "Sesli anı kolyesi, NFC'li anahtarlık, evcil hayvan künyesi ve anı defteri masa kartı seti — Trendyol güvencesiyle sipariş et.",
+      en: 'Voice memory necklaces, NFC keychains, pet ID tags and guestbook table-card sets — order with Trendyol in Turkey.',
+    },
+    region: { tr: 'Türkiye', en: 'Turkey' },
+  },
+  {
+    id: 'hepsiburada',
+    name: 'Hepsiburada',
+    url: 'https://www.hepsiburada.com/magaza/sce-innovation',
+    color: '#ff6000',
+    store: { tr: 'SCE Innovation mağazası', en: 'SCE Innovation store' },
+    desc: {
+      tr: 'QR ve NFC kodlu kişiye özel hediyelerimiz Hepsiburada mağazamızda: kolye, anahtarlık, çocuk acil durum etiketi ve daha fazlası.',
+      en: 'Our personalised QR and NFC gifts on Hepsiburada: necklaces, keychains, child emergency tags and more — shipping within Turkey.',
+    },
+    region: { tr: 'Türkiye', en: 'Turkey' },
+  },
+  {
+    id: 'etsy',
+    name: 'Etsy',
+    url: 'https://www.etsy.com/shop/QRNot',
+    color: '#f1641e',
+    store: { tr: 'QRNot mağazası', en: 'QRNot shop' },
+    desc: {
+      tr: "Yurt dışındaki sevdiklerin için İngilizce dijital ürünler: sesli mesaj QR'lı hediye etiketi, düğün anı defteri ve evcil hayvan QR künyesi.",
+      en: 'Digital products shipped instantly worldwide: voice message QR gift tags, audio & video wedding guestbook and pet ID QR tags.',
+    },
+    region: { tr: 'Dünya geneli', en: 'Worldwide' },
+  },
+] as const
+
 export function whatsappHref(text: string) {
   return `https://wa.me/${COMPANY.whatsapp}?text=${encodeURIComponent(text)}`
 }

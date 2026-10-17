@@ -213,7 +213,8 @@ export function SiteFooter({ lang }: { lang: Lang }) {
 
 export function WarmPage({ lang, children, chrome = true }: { lang: Lang; children: React.ReactNode; chrome?: boolean }) {
   return (
-    <div className="warm flex min-h-screen flex-col">
+    // lang: büyük harfe çevirmede (text-transform) doğru kural için — Türkçe kökte "i" → "İ" olmasın
+    <div className="warm flex min-h-screen flex-col" lang={lang}>
       {chrome && <SiteHeader lang={lang} />}
       <main className="flex-1">{children}</main>
       {chrome && <SiteFooter lang={lang} />}

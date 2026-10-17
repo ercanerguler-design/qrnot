@@ -139,6 +139,7 @@ const C = {
       },
     ],
     b2bCta: 'Kurumsal teklif al',
+    bizCatalog: 'Kurumsal katalog',
     partner: 'Pazaryeri ortaklığı',
     finalTitle: 'Sevdiğin birine sesini hediye et.',
     finalCta: 'Hemen sipariş ver',
@@ -262,6 +263,7 @@ const C = {
       },
     ],
     b2bCta: 'Get a business quote',
+    bizCatalog: 'Business catalog',
     partner: 'Marketplace partnership',
     finalTitle: 'Give someone you love the gift of your voice.',
     finalCta: 'Order now',
@@ -529,6 +531,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             >
               {c.b2bCta}
             </a>
+            <Link href={withLang('/katalog#kurumsal', lang)} className="w-btn w-btn-ghost">
+              {c.bizCatalog}
+            </Link>
             <Link href={withLang('/partnerlik', lang)} className="w-btn w-btn-ghost">
               {c.partner}
             </Link>

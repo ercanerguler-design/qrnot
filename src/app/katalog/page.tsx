@@ -23,6 +23,26 @@ const IMAGES: Record<string, CatalogImage> = {
   dijitalOzellik: { src: '/katalog/dijital-ozellikler-en.webp', width: 1254, height: 1254, alt: 'QRNot dijital ürün özellikleri ve kurumsal çözümler' },
 }
 const ORDER = ['anahtarlik', 'bag', 'sticker', 'koleksiyon', 'dijitalProfil', 'dijitalOzellik'] as const
+
+// Kurumsal katalog sayfaları (deliverables/kurumsal-katalog/build-kurumsal.mjs ile üretilir)
+const BUSINESS_PAGES = [
+  ['01-kapak', 'Kapak', 'Cover'],
+  ['02-platform', 'Platform', 'Platform'],
+  ['03-otel', 'Otel', 'Hotels'],
+  ['04-egitim', 'Eğitim', 'Education'],
+  ['05-saglik', 'Sağlık', 'Healthcare'],
+  ['06-fabrika', 'Fabrika & üretim', 'Manufacturing'],
+  ['07-perakende', 'Perakende', 'Retail'],
+  ['08-lojistik', 'Lojistik', 'Logistics'],
+  ['09-baslarken', 'Başlarken', 'Getting started'],
+] as const
+const businessImages = (lang: Lang): CatalogImage[] =>
+  BUSINESS_PAGES.map(([file, tr, en]) => ({
+    src: `/katalog/kurumsal/${lang}/${file}.webp`,
+    width: 1240,
+    height: 1754,
+    alt: lang === 'en' ? `QRNot business catalog — ${en}` : `QRNot kurumsal katalog — ${tr}`,
+  }))
 const ALL = ORDER.map((key) => IMAGES[key])
 const idx = (key: (typeof ORDER)[number]) => ORDER.indexOf(key)
 
@@ -58,6 +78,12 @@ const T = {
     s3Title: 'Dijital ürünler — Etsy',
     s3Desc: 'Yurt dışındaki müşteriler için İngilizce dijital ürünler. Fiziksel gönderim yoktur: alıcı QR’ını kendi kartına, etiketine ya da ürününe basar.',
     etsyCta: 'Etsy mağazasına git',
+    bizKicker: 'Kurumsal',
+    bizTitle: 'Kurumsal katalog',
+    bizDesc: 'Otel, eğitim, sağlık, fabrika, perakende ve lojistik için sektöre özel QR çözümleri. 9 sayfalık kataloğu inceleyin ya da PDF olarak indirip ekibinizle paylaşın.',
+    bizPdf: 'Kataloğu indir (PDF)',
+    bizQuote: 'Kurumsal teklif al',
+    bizQuoteMsg: 'Merhaba QRNot, kurumsal katalogdaki çözümler için teklif almak istiyorum.',
     factsTitle: 'Bilmen gerekenler',
     facts: [
       'Uygulama gerekmez — iPhone ve Android kamerasıyla açılır',
@@ -100,6 +126,12 @@ const T = {
     s3Title: 'Digital products — Etsy',
     s3Desc: 'Digital products in English for customers worldwide. Nothing is shipped: buyers print their QR on their own card, tag or product.',
     etsyCta: 'Visit our Etsy shop',
+    bizKicker: 'Business',
+    bizTitle: 'Business catalog',
+    bizDesc: 'Industry-specific QR solutions for hotels, education, healthcare, manufacturing, retail and logistics. Browse the 9-page catalog or download the PDF to share with your team.',
+    bizPdf: 'Download catalog (PDF)',
+    bizQuote: 'Get a business quote',
+    bizQuoteMsg: 'Hello QRNot, I would like a quote for the solutions in your business catalog.',
     factsTitle: 'Good to know',
     facts: [
       'No app needed — opens with any iPhone or Android camera',
@@ -246,6 +278,42 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
               </div>
             </div>
           </Section>
+
+          {/* KURUMSAL KATALOG */}
+          <section id="kurumsal" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#5fb8ff]">{t.bizKicker}</p>
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <h2 className="font-display text-3xl font-semibold text-white sm:text-4xl">{t.bizTitle}</h2>
+                <p className="mt-3 max-w-3xl text-base leading-relaxed text-white/70">{t.bizDesc}</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`/katalog/kurumsal/QRNot-Kurumsal-Katalog-${lang === 'en' ? 'EN' : 'TR'}.pdf`}
+                  download
+                  className="rounded-full bg-gradient-to-r from-[#4fb8ff] to-[#7b3bff] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_40px_-12px_rgba(79,184,255,0.8)] transition hover:brightness-110"
+                >
+                  ⬇ {t.bizPdf}
+                </a>
+                <a
+                  href={whatsappHref(t.bizQuoteMsg)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60"
+                >
+                  {t.bizQuote}
+                </a>
+              </div>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {businessImages(lang).map((img, i) => (
+                <div key={img.src}>
+                  <CatalogImageButton images={businessImages(lang)} index={i} sizes="(min-width: 1024px) 220px, (min-width: 640px) 33vw, 50vw" />
+                  <p className="mt-2 text-center text-xs font-semibold text-white/60">{lang === 'en' ? BUSINESS_PAGES[i][2] : BUSINESS_PAGES[i][1]}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* NEREDEN ALIRIM */}
           <section className="mx-auto max-w-6xl px-4 pb-20 pt-6">

@@ -47,8 +47,13 @@ export async function transcribeBlob(blobUrl: string): Promise<{ text: string; l
     body: form,
   })
   if (!res.ok) {
-    console.error('[whisper]', res.status, (await res.text()).slice(0, 300))
-    throw new Error('Ses yazıya dökülemedi, lütfen tekrar dene')
+    const detail = (await res.text()).slice(0, 300)
+    console.error('[whisper]', res.status, detail)
+    // Sebebi ayırt et: anahtar / kredi sorunu müşterinin değil bizim tarafımızdadır
+    if (res.status === 401) throw new Error('Altyazı servisi yapılandırma hatası (OpenAI anahtarı geçersiz)')
+    if (res.status === 429 && detail.includes('insufficient_quota')) throw new Error('Altyazı servisi geçici olarak kullanılamıyor (OpenAI kredisi yetersiz)')
+    if (res.status === 429) throw new Error('Altyazı servisi şu an yoğun, biraz sonra tekrar dene')
+    throw new Error(`Ses yazıya dökülemedi, lütfen tekrar dene (${res.status})`)
   }
   const data = (await res.json()) as { text?: string; language?: string }
   const languageMap: Record<string, string> = { turkish: 'tr', english: 'en', german: 'de', french: 'fr', dutch: 'nl', arabic: 'ar', russian: 'ru', spanish: 'es' }

@@ -1,8 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import type { MsgKey } from '@/lib/dpp/i18n'
+import { useT } from './i18n'
 import type { Me } from './PanelApp'
-import { Alert, api, Button, Card, Field, fmtDate, inputCls } from './ui'
+import { Alert, api, authApi, Button, Card, Field, inputCls } from './ui'
 
 // Firma bilgileri, yetkili erişim anahtarı, ekip yönetimi ve hesap şifresi.
 
@@ -15,7 +17,7 @@ interface Company {
   email: string
   phone: string
   tax_id: string
-  planLabel: string
+  plan: string
   product_limit: number
   used: number
   restricted_key: string | null
@@ -32,11 +34,7 @@ interface TeamUser {
   last_login_at: string | null
 }
 
-const ROLE_HELP = {
-  owner: 'Yönetici — her şey + ekip ve firma ayarları',
-  editor: 'Editör — ürün, belge, seri no, yayın',
-  viewer: 'İzleyici — sadece görüntüleme',
-}
+const ROLE_HELP: Record<TeamUser['role'], MsgKey> = { owner: 'rh_owner', editor: 'rh_editor', viewer: 'rh_viewer' }
 
 export default function Settings({ section, me }: { section: 'company' | 'users' | 'account'; me: Me }) {
   if (section === 'company') return <CompanySettings me={me} />
@@ -45,6 +43,7 @@ export default function Settings({ section, me }: { section: 'company' | 'users'
 }
 
 function CompanySettings({ me }: { me: Me }) {
+  const { t, number } = useT()
   const [c, setC] = useState<Company | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -55,49 +54,49 @@ function CompanySettings({ me }: { me: Me }) {
     try {
       setC((await api<{ company: Company }>('company.get')).company)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Yüklenemedi')
+      setError(err instanceof Error ? err.message : t('err_load'))
     }
-  }, [])
+  }, [t])
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
   }, [load])
 
-  if (!c) return error ? <Alert>{error}</Alert> : <p className="text-slate-500">Yükleniyor…</p>
+  if (!c) return error ? <Alert>{error}</Alert> : <p className="text-slate-500">{t('loading')}</p>
   const set = (k: keyof Company, v: string) => {
     setC({ ...c, [k]: v })
     setSaved(false)
   }
-  const accessLink = c.restricted_key ? `${window.location.origin}/p/PASAPORT-KODU?k=${c.restricted_key}` : ''
+  const accessLink = c.restricted_key ? `${window.location.origin}/p/${t('ra_placeholder')}?k=${c.restricted_key}` : ''
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Firma bilgileri</h1>
+      <h1 className="text-2xl font-bold">{t('nav_company')}</h1>
       {error && <Alert>{error}</Alert>}
-      {saved && <Alert tone="success">Kaydedildi. Yeni bilgiler pasaportlarda “Pasaportu yayınlayan” alanında görünür.</Alert>}
+      {saved && <Alert tone="success">{t('co_saved')}</Alert>}
       <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
-        <Card title="Firma profili" subtitle={isOwner ? undefined : 'Sadece firma yöneticisi değiştirebilir'}>
+        <Card title={t('co_profile')} subtitle={isOwner ? undefined : t('co_owner_only')}>
           <fieldset disabled={!isOwner} className="grid gap-4 sm:grid-cols-2">
-            <Field label="Firma adı" className="sm:col-span-2">
+            <Field label={t('f_company_name')} className="sm:col-span-2">
               <input className={inputCls} value={c.name} onChange={(e) => set('name', e.target.value)} />
             </Field>
-            <Field label="Ülke (ISO kodu)">
-              <input className={`${inputCls} uppercase`} maxLength={2} value={c.country} onChange={(e) => set('country', e.target.value.toUpperCase())} />
+            <Field label={t('f_country')}>
+              <input className={`${inputCls} uppercase`} dir="ltr" maxLength={2} value={c.country} onChange={(e) => set('country', e.target.value.toUpperCase())} />
             </Field>
-            <Field label="Vergi / EORI no">
+            <Field label={t('f_tax')}>
               <input className={inputCls} value={c.tax_id} onChange={(e) => set('tax_id', e.target.value)} />
             </Field>
-            <Field label="Adres" className="sm:col-span-2">
+            <Field label={t('f_address')} className="sm:col-span-2">
               <textarea className={`${inputCls} min-h-16`} value={c.address} onChange={(e) => set('address', e.target.value)} />
             </Field>
-            <Field label="Web sitesi">
-              <input className={inputCls} placeholder="https://" value={c.website} onChange={(e) => set('website', e.target.value)} />
+            <Field label={t('f_website')}>
+              <input className={inputCls} dir="ltr" placeholder="https://" value={c.website} onChange={(e) => set('website', e.target.value)} />
             </Field>
-            <Field label="E-posta">
-              <input className={inputCls} type="email" value={c.email} onChange={(e) => set('email', e.target.value)} />
+            <Field label={t('f_email')}>
+              <input className={inputCls} dir="ltr" type="email" value={c.email} onChange={(e) => set('email', e.target.value)} />
             </Field>
-            <Field label="Telefon">
-              <input className={inputCls} value={c.phone} onChange={(e) => set('phone', e.target.value)} />
+            <Field label={t('f_phone')}>
+              <input className={inputCls} dir="ltr" value={c.phone} onChange={(e) => set('phone', e.target.value)} />
             </Field>
           </fieldset>
           {isOwner && (
@@ -112,45 +111,45 @@ function CompanySettings({ me }: { me: Me }) {
                   await api('company.save', c as unknown as Record<string, unknown>)
                   setSaved(true)
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : 'Kaydedilemedi')
+                  setError(err instanceof Error ? err.message : t('err_save'))
                 } finally {
                   setBusy(false)
                 }
               }}
             >
-              {busy ? 'Kaydediliyor…' : 'Kaydet'}
+              {busy ? t('saving') : t('save')}
             </Button>
           )}
         </Card>
         <div className="space-y-5">
-          <Card title="Paket">
-            <p className="text-2xl font-bold">{c.planLabel}</p>
-            <p className="mt-1 text-sm text-slate-500">
-              {c.used} / {c.product_limit.toLocaleString('tr-TR')} aktif ürün · firma kodu {c.code}
-            </p>
-            <p className="mt-3 text-xs text-slate-500">Paket değişikliği için QRNot destek: 0850 888 1 889</p>
+          <Card title={t('co_plan')}>
+            <p className="text-2xl font-bold">{t(`plan_${c.plan}` as MsgKey)}</p>
+            <p className="mt-1 text-sm text-slate-500">{t('co_plan_line', { used: number(c.used), limit: number(c.product_limit), code: c.code })}</p>
+            <p className="mt-3 text-xs text-slate-500">{t('co_plan_note')}</p>
           </Card>
           {isOwner && c.restricted_key && (
-            <Card title="🔒 Yetkili erişim" subtitle="Denetim kurumları ve geri dönüşüm tesisleri için">
-              <p className="text-sm text-slate-600">
-                Herhangi bir pasaport adresinin sonuna aşağıdaki anahtarı eklersen kısıtlı bilgiler (tedarikçi, tesis, notlar, kısıtlı belgeler) de görünür:
+            <Card title={t('ra_title')} subtitle={t('ra_sub')}>
+              <p className="text-sm text-slate-600">{t('ra_desc')}</p>
+              <p className="mt-2 break-all rounded-xl bg-slate-100 px-3 py-2 font-mono text-xs" dir="ltr">
+                ?k={c.restricted_key}
               </p>
-              <p className="mt-2 break-all rounded-xl bg-slate-100 px-3 py-2 font-mono text-xs">?k={c.restricted_key}</p>
-              <p className="mt-2 break-all text-xs text-slate-500">Örnek: {accessLink}</p>
+              <p className="mt-2 break-all text-xs text-slate-500" dir="ltr">
+                {t('ra_example', { url: accessLink })}
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => void navigator.clipboard.writeText(`?k=${c.restricted_key}`)}>
-                  Kopyala
+                  {t('copy')}
                 </Button>
                 <Button
                   size="sm"
                   variant="danger"
                   onClick={async () => {
-                    if (!window.confirm('Anahtar yenilensin mi? Daha önce paylaşılan yetkili erişim linkleri çalışmaz hale gelir.')) return
+                    if (!window.confirm(t('ra_confirm_rotate'))) return
                     const res = await api<{ restrictedKey: string }>('company.rotateKey')
                     setC({ ...c, restricted_key: res.restrictedKey })
                   }}
                 >
-                  Anahtarı yenile
+                  {t('ra_rotate')}
                 </Button>
               </div>
             </Card>
@@ -162,6 +161,7 @@ function CompanySettings({ me }: { me: Me }) {
 }
 
 function TeamSettings({ me }: { me: Me }) {
+  const { t, date } = useT()
   const [users, setUsers] = useState<TeamUser[] | null>(null)
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -174,9 +174,9 @@ function TeamSettings({ me }: { me: Me }) {
     try {
       setUsers((await api<{ users: TeamUser[] }>('users.list')).users)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Yüklenemedi')
+      setError(err instanceof Error ? err.message : t('err_load'))
     }
-  }, [])
+  }, [t])
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
@@ -189,50 +189,48 @@ function TeamSettings({ me }: { me: Me }) {
       await task()
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'İşlem başarısız')
+      setError(err instanceof Error ? err.message : t('err_generic'))
     } finally {
       setBusy(false)
     }
   }
 
+  const secretText = secret ? `${window.location.origin}/dpp/panel\n${t('f_email')}: ${secret.email}\n${t('tm_temp_pw')}: ${secret.password}` : ''
+
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Ekip</h1>
+      <h1 className="text-2xl font-bold">{t('nav_team')}</h1>
       {error && <Alert>{error}</Alert>}
       {secret && (
         <Alert tone="success">
-          <p className="font-semibold">Giriş bilgileri — bu şifre bir daha gösterilmeyecek:</p>
-          <p className="mt-2 font-mono">
-            {window.location.origin}/dpp/panel
-            <br />
-            E-posta: {secret.email}
-            <br />
-            Geçici şifre: {secret.password}
+          <p className="font-semibold">{t('tm_secret_title')}</p>
+          <p className="mt-2 whitespace-pre-line font-mono" dir="ltr">
+            {secretText}
           </p>
           <div className="mt-3 flex gap-2">
-            <Button size="sm" onClick={() => void navigator.clipboard.writeText(`${window.location.origin}/dpp/panel\nE-posta: ${secret.email}\nGeçici şifre: ${secret.password}`)}>
-              Kopyala
+            <Button size="sm" onClick={() => void navigator.clipboard.writeText(secretText)}>
+              {t('copy')}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setSecret(null)}>
-              Kapat
+              {t('close')}
             </Button>
           </div>
-          <p className="mt-2 text-xs">Kullanıcı ilk girişte kendi şifresini belirler.</p>
+          <p className="mt-2 text-xs">{t('tm_first_login')}</p>
         </Alert>
       )}
-      <Card title="Ekip üyesi ekle">
-        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_14rem_auto] sm:items-end">
-          <Field label="E-posta">
-            <input className={inputCls} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Card title={t('tm_add_title')}>
+        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_16rem_auto] sm:items-end">
+          <Field label={t('f_email')}>
+            <input className={inputCls} dir="ltr" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
-          <Field label="Ad soyad">
+          <Field label={t('f_full_name')}>
             <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="Rol">
+          <Field label={t('f_role')}>
             <select className={inputCls} value={role} onChange={(e) => setRole(e.target.value as TeamUser['role'])}>
-              {Object.entries(ROLE_HELP).map(([k, v]) => (
+              {(Object.keys(ROLE_HELP) as Array<TeamUser['role']>).map((k) => (
                 <option key={k} value={k}>
-                  {v}
+                  {t(ROLE_HELP[k])}
                 </option>
               ))}
             </select>
@@ -249,57 +247,62 @@ function TeamSettings({ me }: { me: Me }) {
               })
             }
           >
-            Ekle
+            {t('add')}
           </Button>
         </div>
       </Card>
-      <Card title="Kullanıcılar">
+      <Card title={t('tm_users')}>
         {!users ? (
-          <p className="text-slate-500">Yükleniyor…</p>
+          <p className="text-slate-500">{t('loading')}</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {users.map((u) => (
               <li key={u.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0">
                   <p className="font-semibold">
-                    {u.name || u.email} {u.id === me.id && <span className="text-xs font-normal text-slate-500">(sen)</span>}
-                    {!u.is_active && <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs">Pasif</span>}
-                    {u.must_change_password && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">İlk giriş bekleniyor</span>}
+                    {u.name || u.email} {u.id === me.id && <span className="text-xs font-normal text-slate-500">{t('tm_you')}</span>}
+                    {!u.is_active && <span className="ms-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs">{t('tm_inactive')}</span>}
+                    {u.must_change_password && <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">{t('tm_pending')}</span>}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {u.email} · son giriş {fmtDate(u.last_login_at, true)}
+                    <span dir="ltr">{u.email}</span> · {t(`role_${u.role}` as MsgKey)} · {t('tm_last_login', { d: date(u.last_login_at, true) })}
                   </p>
                 </div>
                 {u.id !== me.id && (
                   <div className="flex flex-wrap items-center gap-2">
                     <select className={`${inputCls} w-auto py-1 text-xs`} value={u.role} disabled={busy} onChange={(e) => void act(() => api('users.update', { id: u.id, role: e.target.value, isActive: u.is_active }))}>
-                      <option value="owner">Yönetici</option>
-                      <option value="editor">Editör</option>
-                      <option value="viewer">İzleyici</option>
+                      <option value="owner">{t('role_owner')}</option>
+                      <option value="editor">{t('role_editor')}</option>
+                      <option value="viewer">{t('role_viewer')}</option>
                     </select>
                     <Button size="sm" disabled={busy} onClick={() => void act(() => api('users.update', { id: u.id, role: u.role, isActive: !u.is_active }))}>
-                      {u.is_active ? 'Pasifleştir' : 'Aktifleştir'}
+                      {u.is_active ? t('tm_deactivate') : t('tm_activate')}
                     </Button>
                     <Button
                       size="sm"
                       disabled={busy}
                       onClick={() =>
                         void act(async () => {
-                          if (!window.confirm(`${u.email} için yeni geçici şifre oluşturulsun mu?`)) return
+                          if (!window.confirm(t('tm_confirm_reset', { email: u.email }))) return
                           const res = await api<{ password: string }>('users.resetPassword', { id: u.id })
                           setSecret({ email: u.email, password: res.password })
                         })
                       }
                     >
-                      Şifre sıfırla
+                      {t('tm_reset')}
                     </Button>
                     <Button
                       size="sm"
                       variant="danger"
                       disabled={busy}
-                      onClick={() => void act(async () => (window.confirm(`${u.email} silinsin mi?`) ? void (await api('users.remove', { id: u.id })) : undefined))}
+                      onClick={() =>
+                        void act(async () => {
+                          if (!window.confirm(t('tm_confirm_delete', { email: u.email }))) return
+                          await api('users.remove', { id: u.id })
+                        })
+                      }
                     >
-                      Sil
+                      {t('delete')}
                     </Button>
                   </div>
                 )}
@@ -313,14 +316,15 @@ function TeamSettings({ me }: { me: Me }) {
 }
 
 function AccountSettings({ me }: { me: Me }) {
+  const { t } = useT()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [msg, setMsg] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   return (
     <div className="max-w-lg space-y-5">
-      <h1 className="text-2xl font-bold">Hesabım</h1>
-      <Card title={me.email} subtitle={`${me.companyName} · ${ROLE_HELP[me.role]}`}>
+      <h1 className="text-2xl font-bold">{t('nav_account')}</h1>
+      <Card title={me.email} subtitle={`${me.companyName} · ${t(ROLE_HELP[me.role])}`}>
         <form
           className="space-y-3"
           onSubmit={async (e) => {
@@ -328,28 +332,26 @@ function AccountSettings({ me }: { me: Me }) {
             setBusy(true)
             setMsg(null)
             try {
-              const res = await fetch('/api/dpp/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password', current, next }) })
-              const data = await res.json().catch(() => ({}))
-              if (!res.ok) throw new Error(data.error || 'Değiştirilemedi')
-              setMsg({ tone: 'success', text: 'Şifren değiştirildi' })
+              await authApi({ action: 'password', current, next })
+              setMsg({ tone: 'success', text: t('acc_changed') })
               setCurrent('')
               setNext('')
             } catch (err) {
-              setMsg({ tone: 'error', text: err instanceof Error ? err.message : 'Değiştirilemedi' })
+              setMsg({ tone: 'error', text: err instanceof Error ? err.message : t('err_pw_change') })
             } finally {
               setBusy(false)
             }
           }}
         >
-          <Field label="Mevcut şifre">
+          <Field label={t('f_current_pw')}>
             <input className={inputCls} type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
           </Field>
-          <Field label="Yeni şifre" hint="En az 8 karakter">
+          <Field label={t('f_new_pw')} hint={t('hint_min8')}>
             <input className={inputCls} type="password" autoComplete="new-password" minLength={8} value={next} onChange={(e) => setNext(e.target.value)} required />
           </Field>
           {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
           <Button type="submit" variant="primary" disabled={busy}>
-            {busy ? 'Kaydediliyor…' : 'Şifreyi değiştir'}
+            {busy ? t('saving') : t('acc_btn')}
           </Button>
         </form>
       </Card>

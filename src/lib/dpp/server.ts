@@ -21,6 +21,7 @@ import {
   type DppPublicView,
   type DppTexts,
 } from './types'
+import { DppError } from './i18n'
 
 // DPP iş kuralları: ürün kaydı, yayınlama (sürümlü), seri numarası üretimi, belgeler, çeviri ve herkese açık görünüm.
 
@@ -43,7 +44,7 @@ async function newPublicId() {
     `) as unknown[]
     if (clash.length === 0) return id
   }
-  throw new Error('Kimlik üretilemedi, tekrar dene')
+  throw new DppError('e_id_failed')
 }
 
 export const passportUrl = (publicId: string) => `${SITE_URL}/p/${publicId}`
@@ -133,12 +134,12 @@ export async function verifyUpload(companyId: string, blobUrl: string, imageOnly
   try {
     meta = await head(blobUrl, { token: String(process.env.BLOB_READ_WRITE_TOKEN || '').trim() })
   } catch {
-    throw new Error('Yüklenen dosya bulunamadı, tekrar yükle')
+    throw new DppError('e_upload_missing')
   }
-  if (!meta.pathname.startsWith(uploadPrefixFor(companyId))) throw new Error('Dosya bu firmaya ait değil')
+  if (!meta.pathname.startsWith(uploadPrefixFor(companyId))) throw new DppError('e_upload_foreign')
   const type = (meta.contentType || '').toLowerCase()
-  if (!DPP_UPLOAD_TYPES.includes(type) || (imageOnly && !type.startsWith('image/'))) throw new Error(imageOnly ? 'Görsel JPG, PNG ya da WEBP olmalı' : 'Sadece PDF ya da görsel yüklenebilir')
-  if (meta.size > DPP_UPLOAD_MAX_BYTES) throw new Error('Dosya 25 MB sınırını aşıyor')
+  if (!DPP_UPLOAD_TYPES.includes(type) || (imageOnly && !type.startsWith('image/'))) throw new DppError(imageOnly ? 'e_img_type' : 'e_file_type')
+  if (meta.size > DPP_UPLOAD_MAX_BYTES) throw new DppError('e_file_size')
   return { url: meta.url, contentType: type, size: meta.size }
 }
 
@@ -151,7 +152,7 @@ export async function saveProduct(
   const defaultLang: DppLang = isDppLang(input.defaultLang) ? input.defaultLang : 'tr'
   const texts = readTextsMap(input.texts)
   const data = sanitizeData(input.data)
-  if (!texts[defaultLang]?.name) throw new Error(`Ürün adı (${DPP_LANG_NAMES[defaultLang]}) zorunlu`)
+  if (!texts[defaultLang]?.name) throw new DppError('e_name_required', { lang: DPP_LANG_NAMES[defaultLang] })
 
   let imageUrl: string | null | undefined
   if (typeof input.imageUrl === 'string' && input.imageUrl) imageUrl = (await verifyUpload(companyId, input.imageUrl, true)).url
@@ -159,7 +160,7 @@ export async function saveProduct(
 
   if (!productId) {
     const { product_limit, used } = await companyLimit(companyId)
-    if (used >= product_limit) throw new Error(`Paketinizdeki ürün sınırına ulaştınız (${product_limit}). Paket yükseltmek için bizimle iletişime geçin.`)
+    if (used >= product_limit) throw new DppError('e_limit', { n: product_limit })
     const publicId = await newPublicId()
     const rows = (await sql`
       INSERT INTO dpp_products (company_id, public_id, default_lang, texts, data, image_url, gtin)
@@ -170,7 +171,7 @@ export async function saveProduct(
   }
 
   const current = await getProduct(companyId, productId)
-  if (!current) throw new Error('Ürün bulunamadı')
+  if (!current) throw new DppError('e_product_not_found')
   const oldImage = current.image_url
   await sql`
     UPDATE dpp_products
@@ -188,12 +189,12 @@ export async function saveProduct(
 
 export async function publishProduct(companyId: string, productId: string, byEmail: string) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const texts = readTextsMap(product.texts)
   const data = readData(product.data)
   const defaultLang = (isDppLang(product.default_lang) ? product.default_lang : 'tr') as DppLang
   const issues = publishIssues(texts, defaultLang, data)
-  if (issues.length) throw new Error(`Yayınlamadan önce tamamla: ${issues.join(', ')}`)
+  if (issues.length) throw new DppError('e_publish_incomplete', {}, issues)
 
   const version = product.version + 1
   const snapshot = { version, defaultLang, texts, data, imageUrl: product.image_url }
@@ -207,10 +208,10 @@ export async function publishProduct(companyId: string, productId: string, byEma
 
 export async function setArchived(companyId: string, productId: string, archived: boolean) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   if (!archived) {
     const { product_limit, used } = await companyLimit(companyId)
-    if (product.status === 'archived' && used >= product_limit) throw new Error(`Ürün sınırına ulaştınız (${product_limit})`)
+    if (product.status === 'archived' && used >= product_limit) throw new DppError('e_limit', { n: product_limit })
   }
   const status = archived ? 'archived' : product.published ? 'published' : 'draft'
   await sql`UPDATE dpp_products SET status = ${status} WHERE id = ${product.id}`
@@ -219,8 +220,8 @@ export async function setArchived(companyId: string, productId: string, archived
 /** Yayınlanmış pasaport silinmez (ürün ömrü boyunca erişilebilir kalmalı); sadece hiç yayınlanmamış taslak silinir. */
 export async function deleteDraft(companyId: string, productId: string) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
-  if (product.version > 0) throw new Error('Yayınlanmış pasaport silinemez; ürünü arşivleyebilirsin')
+  if (!product) throw new DppError('e_product_not_found')
+  if (product.version > 0) throw new DppError('e_cannot_delete_published')
   const docs = (await sql`SELECT blob_url FROM dpp_documents WHERE product_id = ${product.id}`) as Array<{ blob_url: string }>
   await sql`DELETE FROM dpp_products WHERE id = ${product.id}`
   for (const url of [...docs.map((d) => d.blob_url), product.image_url].filter(Boolean) as string[]) await deleteBlob(url).catch(() => undefined)
@@ -228,7 +229,7 @@ export async function deleteDraft(companyId: string, productId: string) {
 
 export async function duplicateProduct(companyId: string, productId: string) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const texts = readTextsMap(product.texts)
   for (const lang of Object.keys(texts) as DppLang[]) texts[lang] = { ...texts[lang]!, name: `${texts[lang]!.name} (kopya)`.slice(0, 200) }
   const data = { ...readData(product.data), gtin: '' }
@@ -245,15 +246,15 @@ export async function generateItems(
   input: { count?: unknown; prefix?: unknown; start?: unknown; batch?: unknown; productionDate?: unknown }
 ) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const count = Math.floor(Number(input.count))
-  if (!Number.isFinite(count) || count < 1 || count > 2000) throw new Error('Tek seferde 1 ile 2000 arasında seri numarası üretilebilir')
+  if (!Number.isFinite(count) || count < 1 || count > 2000) throw new DppError('e_items_range')
   const prefix = String(input.prefix || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 16)
   const start = Math.max(1, Math.floor(Number(input.start) || 1))
   const batch = String(input.batch || '').trim().slice(0, 40)
   const date = /^\d{4}-\d{2}-\d{2}$/.test(String(input.productionDate || '')) ? String(input.productionDate) : null
   const existing = Number(((await sql`SELECT COUNT(*)::int AS n FROM dpp_items WHERE product_id = ${product.id}`) as Array<{ n: number }>)[0]?.n || 0)
-  if (existing + count > MAX_ITEMS_PER_PRODUCT) throw new Error(`Ürün başına en fazla ${MAX_ITEMS_PER_PRODUCT} seri numarası`)
+  if (existing + count > MAX_ITEMS_PER_PRODUCT) throw new DppError('e_items_max', { n: MAX_ITEMS_PER_PRODUCT })
 
   const width = Math.max(6, String(start + count - 1).length)
   const serials = Array.from({ length: count }, (_, i) => `${prefix}${String(start + i).padStart(width, '0')}`)
@@ -274,7 +275,7 @@ export async function generateItems(
   const clashes = (await sql`
     SELECT public_id FROM dpp_items WHERE public_id = ANY(${ids}) UNION SELECT public_id FROM dpp_products WHERE public_id = ANY(${ids})
   `) as Array<{ public_id: string }>
-  if (clashes.length) throw new Error('Kimlik çakışması oluştu, tekrar dene')
+  if (clashes.length) throw new DppError('e_id_clash')
   if (fresh.length) {
     await sql`
       INSERT INTO dpp_items (product_id, public_id, serial, batch, production_date)
@@ -287,7 +288,7 @@ export async function generateItems(
 
 export async function listItems(companyId: string, productId: string, opts: { q?: string; limit?: number; offset?: number }) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const q = String(opts.q || '').trim()
   const like = `%${q}%`
   const limit = Math.min(5000, Math.max(1, opts.limit || 200))
@@ -305,7 +306,7 @@ export async function listItems(companyId: string, productId: string, opts: { q?
 
 export async function deleteItems(companyId: string, productId: string, itemIds: string[]) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const ids = itemIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 2000)
   if (!ids.length) return 0
   const rows = (await sql`DELETE FROM dpp_items WHERE product_id = ${product.id} AND id = ANY(${ids}::uuid[]) RETURNING id`) as unknown[]
@@ -316,12 +317,12 @@ export async function deleteItems(companyId: string, productId: string, itemIds:
 
 export async function addDocument(companyId: string, productId: string, input: { blobUrl?: unknown; title?: unknown; kind?: unknown; visibility?: unknown }) {
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const count = Number(((await sql`SELECT COUNT(*)::int AS n FROM dpp_documents WHERE product_id = ${product.id}`) as Array<{ n: number }>)[0]?.n || 0)
-  if (count >= 40) throw new Error('Ürün başına en fazla 40 belge')
+  if (count >= 40) throw new DppError('e_docs_max')
   const file = await verifyUpload(companyId, String(input.blobUrl || ''), false)
   const title = String(input.title || '').trim().slice(0, 200)
-  if (!title) throw new Error('Belge adı zorunlu')
+  if (!title) throw new DppError('e_doc_title_required')
   const kind = (String(input.kind) in DPP_DOC_KINDS ? String(input.kind) : 'other') as DppDocKind
   const visibility = input.visibility === 'restricted' ? 'restricted' : 'public'
   await sql`
@@ -331,9 +332,9 @@ export async function addDocument(companyId: string, productId: string, input: {
 }
 
 export async function updateDocument(companyId: string, docId: string, input: { title?: unknown; kind?: unknown; visibility?: unknown }) {
-  if (!/^[0-9a-f-]{36}$/i.test(docId)) throw new Error('Belge bulunamadı')
+  if (!/^[0-9a-f-]{36}$/i.test(docId)) throw new DppError('e_doc_not_found')
   const title = String(input.title || '').trim().slice(0, 200)
-  if (!title) throw new Error('Belge adı zorunlu')
+  if (!title) throw new DppError('e_doc_title_required')
   const kind = String(input.kind) in DPP_DOC_KINDS ? String(input.kind) : 'other'
   const visibility = input.visibility === 'restricted' ? 'restricted' : 'public'
   const rows = (await sql`
@@ -341,17 +342,17 @@ export async function updateDocument(companyId: string, docId: string, input: { 
     FROM dpp_products p WHERE d.id = ${docId} AND p.id = d.product_id AND p.company_id = ${companyId}
     RETURNING d.id
   `) as unknown[]
-  if (!rows.length) throw new Error('Belge bulunamadı')
+  if (!rows.length) throw new DppError('e_doc_not_found')
 }
 
 export async function deleteDocument(companyId: string, docId: string) {
-  if (!/^[0-9a-f-]{36}$/i.test(docId)) throw new Error('Belge bulunamadı')
+  if (!/^[0-9a-f-]{36}$/i.test(docId)) throw new DppError('e_doc_not_found')
   const rows = (await sql`
     DELETE FROM dpp_documents d USING dpp_products p
     WHERE d.id = ${docId} AND p.id = d.product_id AND p.company_id = ${companyId}
     RETURNING d.blob_url
   `) as Array<{ blob_url: string }>
-  if (!rows.length) throw new Error('Belge bulunamadı')
+  if (!rows.length) throw new DppError('e_doc_not_found')
   await deleteBlob(rows[0].blob_url).catch(() => undefined)
 }
 
@@ -385,7 +386,7 @@ async function translateTexts(source: DppTexts, materials: string[], from: DppLa
       'You translate product information for an EU Digital Product Passport. Translate every value of the JSON object from the source language to the target language accurately, using standard technical and regulatory terminology for product safety, materials, care, repair and recycling. "materialNames" is an array of material names: return an array of the same length and order. Keep brand names, model codes, numbers, units and certificate names unchanged. Return only a JSON object with exactly the same keys, with no notes or code fences.',
     messages: [{ role: 'user', content: `Source language: ${DPP_LANG_NAMES[from]}\nTarget language: ${DPP_LANG_NAMES[to]}\n\n${JSON.stringify(filled)}` }],
   })
-  if (response.stop_reason === 'refusal') throw new Error('Çeviri yapılamadı')
+  if (response.stop_reason === 'refusal') throw new DppError('e_translate_refused')
   const raw = response.content
     .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === 'text')
     .map((block) => block.text)
@@ -395,22 +396,22 @@ async function translateTexts(source: DppTexts, materials: string[], from: DppLa
   try {
     parsed = JSON.parse(json)
   } catch {
-    throw new Error('Çeviri yanıtı okunamadı, tekrar dene')
+    throw new DppError('e_translate_parse')
   }
   return sanitizeTexts(parsed)
 }
 
 /** Varsayılan dildeki metinleri seçilen dillere çevirir ve taslağa yazar (yayın için ayrıca "Yayınla" gerekir). */
 export async function translateProduct(companyId: string, productId: string, targets: unknown) {
-  if (!translationEnabled()) throw new Error('Otomatik çeviri şu an kullanılamıyor; metinleri elle girebilirsin')
+  if (!translationEnabled()) throw new DppError('e_translate_off')
   const product = await getProduct(companyId, productId)
-  if (!product) throw new Error('Ürün bulunamadı')
+  if (!product) throw new DppError('e_product_not_found')
   const from = (isDppLang(product.default_lang) ? product.default_lang : 'tr') as DppLang
   const texts = readTextsMap(product.texts)
   const source = texts[from]
-  if (!source?.name) throw new Error('Önce varsayılan dildeki metinleri doldur')
+  if (!source?.name) throw new DppError('e_fill_default_first')
   const langs = (Array.isArray(targets) ? targets : []).filter((l): l is DppLang => isDppLang(l) && l !== from).slice(0, 7)
-  if (!langs.length) throw new Error('En az bir hedef dil seç')
+  if (!langs.length) throw new DppError('e_choose_lang')
   const materials = readData(product.data).materials.map((m) => m.name)
   const results = await Promise.allSettled(langs.map((lang) => translateTexts(source, materials, from, lang)))
   const done: DppLang[] = []
@@ -425,7 +426,7 @@ export async function translateProduct(companyId: string, productId: string, tar
     }
   })
   if (done.length) await sql`UPDATE dpp_products SET texts = ${JSON.stringify(texts)}::jsonb, has_changes = TRUE, updated_at = NOW() WHERE id = ${product.id}`
-  if (!done.length) throw new Error('Çeviri şu an yapılamadı, biraz sonra tekrar dene')
+  if (!done.length) throw new DppError('e_translate_failed')
   return { done, failed }
 }
 

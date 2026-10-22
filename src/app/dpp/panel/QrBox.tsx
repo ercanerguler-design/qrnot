@@ -2,11 +2,13 @@
 
 import { QRCodeSVG } from 'qrcode.react'
 import { useRef, useState } from 'react'
+import { useT } from './i18n'
 import { Button } from './ui'
 
 // Pasaport QR'ı: ekranda gösterir, baskı için SVG (vektörel) ya da PNG indirir.
 
 export default function QrBox({ url, filename, size = 168 }: { url: string; filename: string; size?: number }) {
+  const { t } = useT()
   const ref = useRef<HTMLDivElement>(null)
   const [copied, setCopied] = useState(false)
 
@@ -67,7 +69,7 @@ export default function QrBox({ url, filename, size = 168 }: { url: string; file
             })
           }}
         >
-          {copied ? 'Kopyalandı ✓' : 'Linki kopyala'}
+          {copied ? t('copied') : t('qr_copy_link')}
         </Button>
       </div>
     </div>

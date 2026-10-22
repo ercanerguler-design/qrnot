@@ -4,6 +4,7 @@ import { hashPassword, normalizeEmail, verifyPassword } from '@/lib/auth'
 import { sql } from '@/lib/db'
 import { ensureDppSchema } from './schema'
 import type { DppRole } from './types'
+import { DppError } from './i18n'
 
 // DPP paneli oturumları: hediye hesaplarından ve sektör panellerinden bağımsız, kendi çerezi ve tablosu.
 
@@ -100,9 +101,9 @@ export async function getDppUser(req: NextRequest): Promise<DppSessionUser | nul
 /** Yeni kullanıcı (firma yöneticisi ya da ekip üyesi). Geçici şifre döner; ilk girişte değiştirmesi istenir. */
 export async function createDppUser(companyId: string, email: string, role: DppRole, name = '') {
   const normalized = normalizeEmail(email)
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) throw new Error('Geçerli bir e-posta gir')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) throw new DppError('e_valid_email')
   const exists = (await sql`SELECT 1 FROM dpp_users WHERE email = ${normalized}`) as unknown[]
-  if (exists.length) throw new Error('Bu e-posta ile zaten bir DPP kullanıcısı var')
+  if (exists.length) throw new DppError('e_email_exists')
   const password = generateTempPassword()
   const rows = (await sql`
     INSERT INTO dpp_users (company_id, email, name, password_hash, role, must_change_password)
@@ -120,8 +121,8 @@ export async function resetDppUserPassword(userId: string) {
 }
 
 export async function changeDppPassword(userId: string, current: string, next: string) {
-  if (next.length < 8) throw new Error('Yeni şifre en az 8 karakter olmalı')
+  if (next.length < 8) throw new DppError('e_pw_min8')
   const rows = (await sql`SELECT password_hash FROM dpp_users WHERE id = ${userId}`) as Array<{ password_hash: string }>
-  if (!rows[0] || !verifyPassword(current, rows[0].password_hash)) throw new Error('Mevcut şifre hatalı')
+  if (!rows[0] || !verifyPassword(current, rows[0].password_hash)) throw new DppError('e_current_pw')
   await sql`UPDATE dpp_users SET password_hash = ${hashPassword(next)}, must_change_password = FALSE WHERE id = ${userId}`
 }

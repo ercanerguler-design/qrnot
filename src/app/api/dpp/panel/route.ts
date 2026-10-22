@@ -23,16 +23,20 @@ import {
   translationEnabled,
   updateDocument,
 } from '@/lib/dpp/server'
-import { DPP_CATEGORIES, DPP_PLANS, emptyData, emptyTexts, readData, type DppCategory, type DppRole } from '@/lib/dpp/types'
+import { DppError, errorText, msg, type MsgKey, type MsgParams } from '@/lib/dpp/i18n'
+import { requestLang } from '@/lib/dpp/requestLang'
+import { DPP_CATEGORIES, DPP_PLANS, emptyData, emptyTexts, readData, type DppCategory, type DppLang, type DppRole } from '@/lib/dpp/types'
 
 // DPP firma paneli API'si. Tüm işlemler oturumdaki kullanıcının firmasıyla sınırlıdır.
 
-class HttpError extends Error {
+/** Durum kodlu, dile çevrilebilen hata */
+class HttpError extends DppError {
   constructor(
-    message: string,
-    public status = 400
+    key: MsgKey,
+    public status = 400,
+    params: MsgParams = {}
   ) {
-    super(message)
+    super(key, params)
   }
 }
 
@@ -53,27 +57,26 @@ const EDITOR_ACTIONS = new Set([
 const OWNER_ACTIONS = new Set(['company.save', 'company.rotateKey', 'users.add', 'users.update', 'users.resetPassword', 'users.remove'])
 
 export async function POST(req: NextRequest) {
+  const lang = requestLang(req)
   try {
     const user = await getDppUser(req)
-    if (!user) return NextResponse.json({ error: 'Oturum sona erdi, tekrar giriş yap' }, { status: 401 })
-    if (!(await consumeRateLimit(`dpp-panel:${user.id}`, 1200, 3600))) throw new HttpError('Çok fazla istek, biraz bekle', 429)
+    if (!user) return NextResponse.json({ error: msg(lang, 'e_session_expired') }, { status: 401 })
+    if (!(await consumeRateLimit(`dpp-panel:${user.id}`, 1200, 3600))) throw new HttpError('e_too_many', 429)
 
     const body = await req.json().catch(() => ({}))
     const action = String(body.action || '')
-    if (user.mustChangePassword && action !== 'me') throw new HttpError('Devam etmek için önce şifreni değiştir', 403)
-    if (EDITOR_ACTIONS.has(action) && user.role === 'viewer') throw new HttpError('Bu işlem için yetkin yok (izleyici)', 403)
-    if (OWNER_ACTIONS.has(action) && user.role !== 'owner') throw new HttpError('Bu işlemi sadece firma yöneticisi yapabilir', 403)
+    if (user.mustChangePassword && action !== 'me') throw new HttpError('e_change_pw_first', 403)
+    if (EDITOR_ACTIONS.has(action) && user.role === 'viewer') throw new HttpError('e_viewer_forbidden', 403)
+    if (OWNER_ACTIONS.has(action) && user.role !== 'owner') throw new HttpError('e_owner_only', 403)
 
-    return NextResponse.json(await handle(user, action, body))
+    return NextResponse.json(await handle(user, action, body, lang))
   } catch (err) {
-    if (err instanceof HttpError) return NextResponse.json({ error: err.message }, { status: err.status })
-    const message = err instanceof Error ? err.message : 'Sunucu hatası'
-    console.error('[dpp/panel]', err)
-    return NextResponse.json({ error: message }, { status: 400 })
+    if (!(err instanceof DppError)) console.error('[dpp/panel]', err)
+    return NextResponse.json({ error: errorText(err, lang) }, { status: err instanceof HttpError ? err.status : err instanceof DppError ? 400 : 500 })
   }
 }
 
-async function handle(user: DppSessionUser, action: string, body: Record<string, unknown>) {
+async function handle(user: DppSessionUser, action: string, body: Record<string, unknown>, lang: DppLang) {
   const companyId = user.companyId
   const id = String(body.id || '')
 
@@ -86,7 +89,7 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
 
     case 'product.get': {
       const bundle = await getProductBundle(companyId, id)
-      if (!bundle) throw new HttpError('Ürün bulunamadı', 404)
+      if (!bundle) throw new HttpError('e_product_not_found', 404)
       return { product: bundle, translation: translationEnabled() }
     }
 
@@ -126,7 +129,7 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
 
     case 'items.export': {
       const product = await getProduct(companyId, String(body.productId || ''))
-      if (!product) throw new HttpError('Ürün bulunamadı', 404)
+      if (!product) throw new HttpError('e_product_not_found', 404)
       const gtin = readData(product.data).gtin
       const rows = (await sql`
         SELECT public_id, serial, batch, production_date FROM dpp_items WHERE product_id = ${product.id} ORDER BY serial LIMIT 100000
@@ -155,7 +158,7 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
       return { ok: true }
 
     case 'products.import':
-      return importProducts(companyId, body.rows)
+      return importProducts(companyId, body.rows, lang)
 
     case 'company.get': {
       const rows = (await sql`
@@ -176,9 +179,9 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
     case 'company.save': {
       const s = (k: string, max: number) => String(body[k] ?? '').trim().slice(0, max)
       const name = s('name', 200)
-      if (!name) throw new HttpError('Firma adı zorunlu')
+      if (!name) throw new HttpError('e_company_name_required')
       const website = s('website', 300)
-      if (website && !/^https?:\/\//i.test(website)) throw new HttpError('Web sitesi http:// ya da https:// ile başlamalı')
+      if (website && !/^https?:\/\//i.test(website)) throw new HttpError('e_website_http')
       await sql`
         UPDATE dpp_companies
         SET name = ${name}, country = ${s('country', 2).toUpperCase().replace(/[^A-Z]/g, '') || 'TR'}, address = ${s('address', 600)},
@@ -209,33 +212,33 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
     }
 
     case 'users.update': {
-      if (id === user.id) throw new HttpError('Kendi rolünü ya da durumunu değiştiremezsin')
+      if (id === user.id) throw new HttpError('e_self_role')
       const role = normalizeRole(body.role)
       const active = body.isActive !== false
       const rows = (await sql`
         UPDATE dpp_users SET role = ${role}, is_active = ${active} WHERE id = ${id} AND company_id = ${companyId} RETURNING id
       `) as unknown[]
-      if (!rows.length) throw new HttpError('Kullanıcı bulunamadı', 404)
+      if (!rows.length) throw new HttpError('e_user_not_found', 404)
       if (!active) await sql`DELETE FROM dpp_sessions WHERE user_id = ${id}`
       return { ok: true }
     }
 
     case 'users.resetPassword': {
-      if (id === user.id) throw new HttpError('Kendi şifreni "Hesabım" bölümünden değiştir')
+      if (id === user.id) throw new HttpError('e_self_reset')
       const owns = (await sql`SELECT 1 FROM dpp_users WHERE id = ${id} AND company_id = ${companyId}`) as unknown[]
-      if (!owns.length) throw new HttpError('Kullanıcı bulunamadı', 404)
+      if (!owns.length) throw new HttpError('e_user_not_found', 404)
       return { password: await resetDppUserPassword(id) }
     }
 
     case 'users.remove': {
-      if (id === user.id) throw new HttpError('Kendini silemezsin')
+      if (id === user.id) throw new HttpError('e_self_delete')
       const rows = (await sql`DELETE FROM dpp_users WHERE id = ${id} AND company_id = ${companyId} RETURNING id`) as unknown[]
-      if (!rows.length) throw new HttpError('Kullanıcı bulunamadı', 404)
+      if (!rows.length) throw new HttpError('e_user_not_found', 404)
       return { ok: true }
     }
 
     default:
-      throw new HttpError('Geçersiz işlem')
+      throw new HttpError('e_invalid_action')
   }
 }
 
@@ -244,9 +247,9 @@ function normalizeRole(input: unknown): DppRole {
 }
 
 /** CSV'den toplu taslak ürün oluşturma. Her satır bağımsız; hatalı satırlar raporlanır. */
-async function importProducts(companyId: string, input: unknown) {
+async function importProducts(companyId: string, input: unknown, lang: DppLang) {
   const rows = (Array.isArray(input) ? input : []).slice(0, 500) as Array<Record<string, unknown>>
-  if (!rows.length) throw new HttpError('İçe aktarılacak satır yok')
+  if (!rows.length) throw new HttpError('e_no_rows')
   let created = 0
   const errors: string[] = []
   for (const [index, row] of rows.entries()) {
@@ -276,8 +279,8 @@ async function importProducts(companyId: string, input: unknown) {
       await saveProduct(companyId, null, { defaultLang: 'tr', texts, data })
       created++
     } catch (err) {
-      errors.push(`Satır ${line}: ${err instanceof Error ? err.message : 'hata'}`)
-      if (err instanceof Error && err.message.includes('ürün sınırına')) break
+      errors.push(msg(lang, 'e_row', { line, msg: errorText(err, lang) }))
+      if (err instanceof DppError && err.key === 'e_limit') break
     }
   }
   return { created, errors: errors.slice(0, 50) }

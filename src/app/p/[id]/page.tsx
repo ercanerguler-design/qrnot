@@ -5,7 +5,7 @@ import { after } from 'next/server'
 import { loadPublicPassport, digitalLink, passportUrl, recordPassportScan } from '@/lib/dpp/server'
 import { DPP_LANG_NAMES, DPP_LANGS, isDppLang, materialName, type DppData, type DppLang, type DppTexts } from '@/lib/dpp/types'
 import { SITE_URL } from '@/lib/site'
-import { PASSPORT_LABELS } from './labels'
+import { PASSPORT_LABELS } from '@/lib/dpp/passportLabels'
 import PrintButton from './PrintButton'
 
 // Herkese açık Dijital Ürün Pasaportu. Ürün QR'ı / NFC'si / GS1 Digital Link bu sayfayı açar.

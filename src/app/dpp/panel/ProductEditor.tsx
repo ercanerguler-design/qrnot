@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import type { MsgKey } from '@/lib/dpp/i18n'
 import {
   DPP_CATEGORIES,
   DPP_DOC_KINDS,
@@ -9,6 +10,7 @@ import {
   emptyData,
   emptyTexts,
   publishIssues,
+  type DppCategory,
   type DppData,
   type DppDocKind,
   type DppLang,
@@ -17,10 +19,11 @@ import {
   type DppTextKey,
   type DppTexts,
 } from '@/lib/dpp/types'
+import { useT } from './i18n'
 import ItemsPanel from './ItemsPanel'
 import type { Me, View } from './PanelApp'
 import QrBox from './QrBox'
-import { Alert, api, Button, Card, Field, fmtDate, inputCls, StatusBadge, uploadFile } from './ui'
+import { Alert, api, Button, Card, Field, FilePicker, inputCls, StatusBadge, uploadFile } from './ui'
 
 interface Bundle {
   id: string
@@ -42,15 +45,15 @@ interface Bundle {
 }
 
 type Tab = 'general' | 'materials' | 'care' | 'compliance' | 'langs' | 'docs' | 'items' | 'versions'
-const TABS: Array<[Tab, string, boolean]> = [
-  ['general', 'Genel', false],
-  ['materials', 'Malzeme ve çevre', false],
-  ['care', 'Kullanım ve onarım', false],
-  ['compliance', 'Uygunluk ve operatörler', false],
-  ['langs', 'Diller', false],
-  ['docs', 'Belgeler', true],
-  ['items', 'Seri no ve QR', true],
-  ['versions', 'Yayın geçmişi', true],
+const TABS: Array<[Tab, MsgKey, boolean]> = [
+  ['general', 'tab_general', false],
+  ['materials', 'tab_materials', false],
+  ['care', 'tab_care', false],
+  ['compliance', 'tab_compliance', false],
+  ['langs', 'tab_langs', false],
+  ['docs', 'tab_docs', true],
+  ['items', 'tab_items', true],
+  ['versions', 'tab_versions', true],
 ]
 
 const COUNTRIES = ['TR', 'DE', 'FR', 'IT', 'ES', 'NL', 'PL', 'PT', 'BE', 'AT', 'GR', 'BG', 'RO', 'CN', 'IN', 'BD', 'VN', 'PK', 'EG', 'MA', 'US', 'GB']
@@ -60,10 +63,11 @@ const num = (v: number | null) => (v === null || v === undefined ? '' : String(v
 const toNum = (s: string) => (s.trim() === '' ? null : Number(s.replace(',', '.')))
 
 export default function ProductEditor({ productId, go, me }: { productId: string | null; go: (v: View) => void; me: Me }) {
+  const { t, lang, labels, date } = useT()
   const [bundle, setBundle] = useState<Bundle | null>(null)
-  const [texts, setTexts] = useState<Partial<Record<DppLang, DppTexts>>>({ tr: emptyTexts() })
+  const [texts, setTexts] = useState<Partial<Record<DppLang, DppTexts>>>({ [lang]: emptyTexts() })
   const [data, setData] = useState<DppData>(emptyData())
-  const [defaultLang, setDefaultLang] = useState<DppLang>('tr')
+  const [defaultLang, setDefaultLang] = useState<DppLang>(lang)
   const [newImage, setNewImage] = useState<{ url: string; preview: string } | null>(null)
   const [removeImage, setRemoveImage] = useState(false)
   const [dirty, setDirty] = useState(false)
@@ -102,18 +106,18 @@ export default function ProductEditor({ productId, go, me }: { productId: string
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
 
-  const t = texts[defaultLang] || emptyTexts()
-  const setText = (lang: DppLang, key: DppTextKey, value: string) => {
-    setTexts((cur) => ({ ...cur, [lang]: { ...(cur[lang] || emptyTexts()), [key]: value } }))
+  const tx = texts[defaultLang] || emptyTexts()
+  const setText = (l: DppLang, key: DppTextKey, value: string) => {
+    setTexts((cur) => ({ ...cur, [l]: { ...(cur[l] || emptyTexts()), [key]: value } }))
     setDirty(true)
   }
-  const setMaterialName = (lang: DppLang, index: number, value: string) => {
+  const setMaterialName = (l: DppLang, index: number, value: string) => {
     setTexts((cur) => {
-      const base = cur[lang] || emptyTexts()
+      const base = cur[l] || emptyTexts()
       const names = [...(base.materialNames || [])]
       while (names.length <= index) names.push('')
       names[index] = value
-      return { ...cur, [lang]: { ...base, materialNames: names } }
+      return { ...cur, [l]: { ...base, materialNames: names } }
     })
     setDirty(true)
   }
@@ -129,7 +133,7 @@ export default function ProductEditor({ productId, go, me }: { productId: string
     try {
       await task()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'İşlem başarısız')
+      setError(err instanceof Error ? err.message : t('err_generic'))
     } finally {
       setBusy(null)
     }
@@ -150,69 +154,70 @@ export default function ProductEditor({ productId, go, me }: { productId: string
     return res.id
   }
 
-  const issues = publishIssues(texts, defaultLang, data)
+  const issues = publishIssues(texts, defaultLang, data).map((i) => t(i.key, i.params))
 
-  if (loading) return <p className="text-slate-500">Yükleniyor…</p>
+  if (loading) return <p className="text-slate-500">{t('loading')}</p>
   if (productId && !bundle && error) return <Alert>{error}</Alert>
 
   const imageSrc = newImage?.preview || (!removeImage && bundle?.hasImage ? `/api/dpp/image?id=${bundle.id}&v=${encodeURIComponent(bundle.updatedAt)}` : null)
+  const canPublish = !(Boolean(bundle?.version) && !dirty && !bundle?.hasChanges)
 
   return (
     <div className="space-y-5">
       {/* Başlık ve işlemler */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <button type="button" className="text-sm text-slate-500 hover:text-slate-800" onClick={() => (!dirty || window.confirm('Kaydedilmemiş değişiklikler kaybolacak. Çıkılsın mı?')) && go({ page: 'products' })}>
-            ← Ürün pasaportları
+          <button type="button" className="text-sm text-slate-500 hover:text-slate-800" onClick={() => (!dirty || window.confirm(t('ed_confirm_leave'))) && go({ page: 'products' })}>
+            ← {t('nav_products')}
           </button>
-          <h1 className="mt-1 truncate text-2xl font-bold">{t.name || 'Yeni ürün pasaportu'}</h1>
+          <h1 className="mt-1 truncate text-2xl font-bold">{tx.name || t('ed_new_title')}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
             {bundle ? <StatusBadge status={bundle.status} changes={bundle.version > 0 && (dirty || bundle.hasChanges)} /> : <StatusBadge status="draft" />}
             {bundle && bundle.version > 0 && (
               <span>
-                v{bundle.version} · {fmtDate(bundle.publishedAt, true)}
+                v{bundle.version} · {date(bundle.publishedAt, true)}
               </span>
             )}
-            {dirty && <span className="font-semibold text-amber-700">● Kaydedilmemiş değişiklik</span>}
+            {dirty && <span className="font-semibold text-amber-700">{t('ed_unsaved')}</span>}
           </div>
         </div>
         {!readOnly && (
           <div className="flex flex-wrap gap-2">
             {bundle?.version ? (
               <a href={bundle.passportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">
-                Pasaportu aç ↗
+                {t('ed_open_passport')}
               </a>
             ) : null}
             <Button
               onClick={() =>
                 void run('save', async () => {
                   await save()
-                  setNotice(bundle?.version ? 'Kaydedildi. Ziyaretçilerin görmesi için “Güncellemeyi yayınla”ya bas.' : 'Kaydedildi')
+                  setNotice(bundle?.version ? t('ed_saved_need_publish') : t('ed_saved'))
                 })
               }
               disabled={busy !== null || (!dirty && Boolean(bundle))}
             >
-              {busy === 'save' ? 'Kaydediliyor…' : 'Kaydet'}
+              {busy === 'save' ? t('saving') : t('save')}
             </Button>
             <Button
               variant="success"
-              disabled={busy !== null || issues.length > 0 || bundle?.status === 'archived' || (Boolean(bundle?.version) && !dirty && !bundle?.hasChanges)}
-              title={issues.length ? `Eksik: ${issues.join(', ')}` : undefined}
+              disabled={busy !== null || issues.length > 0 || bundle?.status === 'archived' || !canPublish}
+              title={issues.length ? t('ed_missing_title', { list: issues.join(', ') }) : undefined}
               onClick={() =>
                 void run('publish', async () => {
                   const id = dirty || !bundle ? await save() : bundle.id
                   const res = await api<{ version: number }>('product.publish', { id })
                   await load(id)
-                  setNotice(`Yayınlandı · sürüm ${res.version}. Pasaport adresi değişmez; etiketleri yeniden basmana gerek yok.`)
+                  setNotice(t('ed_published_notice', { v: res.version }))
                 })
               }
             >
-              {busy === 'publish' ? 'Yayınlanıyor…' : bundle?.version ? (dirty || bundle.hasChanges ? 'Güncellemeyi yayınla' : 'Yayında ✓') : 'Yayınla'}
+              {busy === 'publish' ? t('ed_publishing') : bundle?.version ? (canPublish ? t('ed_publish_update') : t('ed_live')) : t('ed_publish')}
             </Button>
             {bundle && (
               <details className="relative">
                 <summary className="inline-flex cursor-pointer list-none items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">⋯</summary>
-                <div className="absolute right-0 z-20 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-1 text-sm shadow-lg">
+                <div className="absolute end-0 z-20 mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-1 text-sm shadow-lg">
                   <MenuItem
                     onClick={() =>
                       void run('dup', async () => {
@@ -221,32 +226,32 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                       })
                     }
                   >
-                    📄 Kopyasını oluştur
+                    {t('ed_duplicate')}
                   </MenuItem>
                   <MenuItem
                     onClick={() =>
                       void run('archive', async () => {
                         const archived = bundle.status !== 'archived'
-                        if (archived && !window.confirm('Ürün arşivlensin mi? Pasaport erişilebilir kalır, “artık üretilmiyor” notu gösterilir.')) return
+                        if (archived && !window.confirm(t('ed_confirm_archive'))) return
                         await api('product.archive', { id: bundle.id, archived })
                         await load(bundle.id)
                       })
                     }
                   >
-                    {bundle.status === 'archived' ? '↩ Arşivden çıkar' : '🗄 Arşivle (üretim bitti)'}
+                    {bundle.status === 'archived' ? t('ed_unarchive') : t('ed_archive')}
                   </MenuItem>
                   {bundle.version === 0 && (
                     <MenuItem
                       danger
                       onClick={() =>
                         void run('delete', async () => {
-                          if (!window.confirm('Taslak ve tüm belgeleri / seri numaraları kalıcı olarak silinsin mi?')) return
+                          if (!window.confirm(t('ed_confirm_delete'))) return
                           await api('product.delete', { id: bundle.id })
                           go({ page: 'products' })
                         })
                       }
                     >
-                      🗑 Taslağı sil
+                      {t('ed_delete_draft')}
                     </MenuItem>
                   )}
                 </div>
@@ -260,11 +265,11 @@ export default function ProductEditor({ productId, go, me }: { productId: string
       {notice && <Alert tone="success">{notice}</Alert>}
       {!readOnly && issues.length > 0 && (
         <Alert tone="warn">
-          <b>Yayın için eksik:</b> {issues.join(' · ')}
+          <b>{t('ed_publish_missing')}</b> {issues.join(' · ')}
         </Alert>
       )}
-      {readOnly && <Alert tone="info">İzleyici yetkisiyle görüntülüyorsun; değişiklik yapamazsın.</Alert>}
-      {bundle?.status === 'archived' && <Alert tone="warn">Bu ürün arşivde. Pasaport erişilebilir, ziyaretçiye “artık üretilmiyor” notu gösteriliyor.</Alert>}
+      {readOnly && <Alert tone="info">{t('ed_viewer_notice')}</Alert>}
+      {bundle?.status === 'archived' && <Alert tone="warn">{t('ed_archived_notice')}</Alert>}
 
       {/* Sekmeler */}
       <div className="-mx-4 flex gap-1 overflow-x-auto border-b border-slate-200 px-4">
@@ -273,15 +278,15 @@ export default function ProductEditor({ productId, go, me }: { productId: string
             key={key}
             type="button"
             disabled={needsSaved && !bundle}
-            title={needsSaved && !bundle ? 'Önce ürünü kaydet' : undefined}
+            title={needsSaved && !bundle ? t('ed_save_first') : undefined}
             onClick={() => setTab(key)}
             className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
               tab === key ? 'border-[#0f3d5e] text-[#0f3d5e]' : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            {label}
+            {t(label)}
             {key === 'docs' && bundle ? ` (${bundle.documents.length})` : ''}
-            {key === 'items' && bundle ? ` (${bundle.itemCount.toLocaleString('tr-TR')})` : ''}
+            {key === 'items' && bundle ? ` (${bundle.itemCount.toLocaleString()})` : ''}
           </button>
         ))}
       </div>
@@ -289,42 +294,46 @@ export default function ProductEditor({ productId, go, me }: { productId: string
       <fieldset disabled={readOnly} className="min-w-0 space-y-5">
         {tab === 'general' && (
           <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
-            <Card title="Ürün bilgileri" subtitle={`Metinler ${DPP_LANG_NAMES[defaultLang]} olarak giriliyor. Diğer diller “Diller” sekmesinde.`}>
+            <Card title={t('ed_info_title')} subtitle={t('ed_info_sub', { lang: DPP_LANG_NAMES[defaultLang] })}>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Ürün adı *" className="sm:col-span-2">
-                  <input className={inputCls} value={t.name} maxLength={200} onChange={(e) => setText(defaultLang, 'name', e.target.value)} placeholder="Ör. Organik Pamuk Basic Tişört" />
+                <Field label={t('f_name')} className="sm:col-span-2">
+                  <input className={inputCls} value={tx.name} maxLength={200} onChange={(e) => setText(defaultLang, 'name', e.target.value)} placeholder={t('ph_name')} />
                 </Field>
-                <Field label="Ürün açıklaması" className="sm:col-span-2">
-                  <textarea className={`${inputCls} min-h-28`} value={t.description} maxLength={4000} onChange={(e) => setText(defaultLang, 'description', e.target.value)} />
+                <Field label={t('f_description')} className="sm:col-span-2">
+                  <textarea className={`${inputCls} min-h-28`} value={tx.description} maxLength={4000} onChange={(e) => setText(defaultLang, 'description', e.target.value)} />
                 </Field>
-                <Field label="Marka *">
+                <Field label={t('f_brand')}>
                   <input className={inputCls} value={data.brand} maxLength={120} onChange={(e) => patch({ brand: e.target.value })} />
                 </Field>
-                <Field label="Model / stok kodu (SKU)">
+                <Field label={t('f_model')}>
                   <input className={inputCls} value={data.model} maxLength={120} onChange={(e) => patch({ model: e.target.value })} />
                 </Field>
-                <Field label="GTIN / EAN barkod" hint="8, 12, 13 ya da 14 hane. GS1 standardı gereği 14 haneye tamamlanır (başına 0 eklenir); GS1 Digital Link adresi de çalışır.">
-                  <input className={`${inputCls} font-mono`} inputMode="numeric" value={data.gtin} maxLength={14} onChange={(e) => patch({ gtin: e.target.value.replace(/\D/g, '') })} />
+                <Field label={t('f_gtin')} hint={t('hint_gtin')}>
+                  <input className={`${inputCls} font-mono`} dir="ltr" inputMode="numeric" value={data.gtin} maxLength={14} onChange={(e) => patch({ gtin: e.target.value.replace(/\D/g, '') })} />
                 </Field>
-                <Field label="Kategori">
-                  <select className={inputCls} value={data.category} onChange={(e) => patch({ category: e.target.value as DppData['category'] })}>
-                    {Object.entries(DPP_CATEGORIES).map(([k, v]) => (
+                <Field label={t('f_category')}>
+                  <select className={inputCls} value={data.category} onChange={(e) => patch({ category: e.target.value as DppCategory })}>
+                    {Object.keys(DPP_CATEGORIES).map((k) => (
                       <option key={k} value={k}>
-                        {v}
+                        {labels.categories[k as DppCategory]}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label="Menşe ülke *">
+                <Field label={t('f_origin')}>
                   <CountrySelect value={data.countryOfOrigin} onChange={(v) => patch({ countryOfOrigin: v })} />
                 </Field>
-                <Field label="Pasaportun ana dili">
-                  <select className={inputCls} value={defaultLang} onChange={(e) => {
-                    const l = e.target.value as DppLang
-                    setDefaultLang(l)
-                    setTexts((cur) => (cur[l] ? cur : { ...cur, [l]: { ...emptyTexts(), ...(cur[defaultLang] || {}) } }))
-                    setDirty(true)
-                  }}>
+                <Field label={t('f_default_lang')}>
+                  <select
+                    className={inputCls}
+                    value={defaultLang}
+                    onChange={(e) => {
+                      const l = e.target.value as DppLang
+                      setDefaultLang(l)
+                      setTexts((cur) => (cur[l] ? cur : { ...cur, [l]: { ...emptyTexts(), ...(cur[defaultLang] || {}) } }))
+                      setDirty(true)
+                    }}
+                  >
                     {DPP_LANGS.map((l) => (
                       <option key={l} value={l}>
                         {DPP_LANG_NAMES[l]}
@@ -332,16 +341,16 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                     ))}
                   </select>
                 </Field>
-                <Field label="Ağırlık (gram)">
+                <Field label={t('f_weight')}>
                   <input className={inputCls} inputMode="decimal" value={num(data.weightGrams)} onChange={(e) => patch({ weightGrams: toNum(e.target.value) })} />
                 </Field>
-                <Field label="Ölçüler">
-                  <input className={inputCls} value={data.dimensions} maxLength={120} placeholder="Ör. 70 × 50 cm" onChange={(e) => patch({ dimensions: e.target.value })} />
+                <Field label={t('f_dimensions')}>
+                  <input className={inputCls} value={data.dimensions} maxLength={120} placeholder={t('ph_dimensions')} onChange={(e) => patch({ dimensions: e.target.value })} />
                 </Field>
               </div>
             </Card>
             <div className="space-y-5">
-              <Card title="Ürün görseli">
+              <Card title={t('img_title')}>
                 {imageSrc ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={imageSrc} alt="" className="aspect-square w-full rounded-xl border border-slate-200 object-contain" />
@@ -350,8 +359,8 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                 )}
                 {!readOnly && (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <label className="inline-flex cursor-pointer items-center rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">
-                      {busy === 'image' ? 'Yükleniyor…' : imageSrc ? 'Değiştir' : 'Görsel yükle'}
+                    <label className="inline-flex cursor-pointer items-center rounded-xl bg-[#0f3d5e] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b2f49]">
+                      {busy === 'image' ? t('loading') : imageSrc ? t('img_change') : t('img_upload')}
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
@@ -361,7 +370,7 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                           e.target.value = ''
                           if (!file) return
                           void run('image', async () => {
-                            if (file.size > 25 * 1024 * 1024) throw new Error('Görsel 25 MB’dan küçük olmalı')
+                            if (file.size > 25 * 1024 * 1024) throw new Error(t('err_img_size'))
                             const url = await uploadFile(me.companyId, file)
                             setNewImage({ url, preview: URL.createObjectURL(file) })
                             setRemoveImage(false)
@@ -372,18 +381,22 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                     </label>
                     {imageSrc && (
                       <Button size="sm" variant="ghost" onClick={() => (setNewImage(null), setRemoveImage(true), setDirty(true))}>
-                        Kaldır
+                        {t('img_remove')}
                       </Button>
                     )}
                   </div>
                 )}
-                <p className="mt-2 text-xs text-slate-500">JPG, PNG ya da WEBP · kare, beyaz zeminli görsel önerilir.</p>
+                <p className="mt-2 text-xs text-slate-500">{t('img_hint')}</p>
               </Card>
               {bundle && (
-                <Card title="Pasaport QR'ı" subtitle="Model düzeyinde (tüm ürünler için tek QR)">
+                <Card title={t('qr_title')} subtitle={t('qr_sub')}>
                   <QrBox url={bundle.passportUrl} filename={`dpp-${bundle.publicId}`} />
-                  {!bundle.version && <p className="mt-2 text-xs text-amber-700">Pasaport yayınlanınca bu adres açılır.</p>}
-                  {bundle.digitalLink && <p className="mt-2 break-all text-xs text-slate-500">GS1 Digital Link: {bundle.digitalLink}</p>}
+                  {!bundle.version && <p className="mt-2 text-xs text-amber-700">{t('qr_unpublished')}</p>}
+                  {bundle.digitalLink && (
+                    <p className="mt-2 break-all text-xs text-slate-500" dir="ltr">
+                      GS1 Digital Link: {bundle.digitalLink}
+                    </p>
+                  )}
                 </Card>
               )}
             </div>
@@ -393,19 +406,19 @@ export default function ProductEditor({ productId, go, me }: { productId: string
         {tab === 'materials' && (
           <>
             <MaterialsEditor materials={data.materials} onChange={(materials) => patch({ materials })} />
-            <Card title="Çevresel veriler" subtitle="Bilmediğin alanları boş bırak; pasaportta sadece doldurulanlar görünür.">
+            <Card title={t('env_title')} subtitle={t('env_sub')}>
               <div className="grid gap-4 sm:grid-cols-3">
                 {(
                   [
-                    ['carbonKg', 'Karbon ayak izi (kg CO₂e)'],
-                    ['waterLiters', 'Su kullanımı (litre)'],
-                    ['energyKwh', 'Üretim enerjisi (kWh)'],
-                    ['recycledContentPercent', 'Geri dönüştürülmüş içerik (%)'],
-                    ['recyclablePercent', 'Geri dönüştürülebilirlik (%)'],
-                    ['expectedLifetimeYears', 'Beklenen kullanım ömrü (yıl)'],
+                    ['carbonKg', 'env_carbon'],
+                    ['waterLiters', 'env_water'],
+                    ['energyKwh', 'env_energy'],
+                    ['recycledContentPercent', 'env_recycled'],
+                    ['recyclablePercent', 'env_recyclable'],
+                    ['expectedLifetimeYears', 'env_lifetime'],
                   ] as const
                 ).map(([key, label]) => (
-                  <Field key={key} label={label}>
+                  <Field key={key} label={t(label)}>
                     <input className={inputCls} inputMode="decimal" value={num(data.environment[key])} onChange={(e) => patch({ environment: { ...data.environment, [key]: toNum(e.target.value) } })} />
                   </Field>
                 ))}
@@ -416,41 +429,41 @@ export default function ProductEditor({ productId, go, me }: { productId: string
 
         {tab === 'care' && (
           <>
-            <Card title="Kullanım ve bakım">
-              <Field label="Bakım talimatları" hint="Ör. yıkama sıcaklığı, kurutma, ütüleme, temizlik">
-                <textarea className={`${inputCls} min-h-28`} value={t.care} onChange={(e) => setText(defaultLang, 'care', e.target.value)} />
+            <Card title={t('care_title')}>
+              <Field label={t('f_care')} hint={t('hint_care')}>
+                <textarea className={`${inputCls} min-h-28`} value={tx.care} onChange={(e) => setText(defaultLang, 'care', e.target.value)} />
               </Field>
             </Card>
-            <Card title="Onarım ve garanti">
+            <Card title={t('repair_title')}>
               <div className="grid gap-4 sm:grid-cols-3">
-                <Field label="Garanti süresi (ay)">
+                <Field label={t('f_warranty')}>
                   <input className={inputCls} inputMode="numeric" value={num(data.repairability.warrantyMonths)} onChange={(e) => patch({ repairability: { ...data.repairability, warrantyMonths: toNum(e.target.value) } })} />
                 </Field>
-                <Field label="Yedek parça temini (yıl)">
+                <Field label={t('f_spare')}>
                   <input className={inputCls} inputMode="numeric" value={num(data.repairability.sparePartsYears)} onChange={(e) => patch({ repairability: { ...data.repairability, sparePartsYears: toNum(e.target.value) } })} />
                 </Field>
-                <Field label="Onarılabilirlik puanı (0-10)">
+                <Field label={t('f_repair_score')}>
                   <input className={inputCls} inputMode="decimal" value={num(data.repairability.repairScore)} onChange={(e) => patch({ repairability: { ...data.repairability, repairScore: toNum(e.target.value) } })} />
                 </Field>
-                <Field label="Servis / onarım bağlantısı" className="sm:col-span-3">
-                  <input className={inputCls} placeholder="https://" value={data.repairability.serviceUrl} onChange={(e) => patch({ repairability: { ...data.repairability, serviceUrl: e.target.value } })} />
+                <Field label={t('f_service')} className="sm:col-span-3">
+                  <input className={inputCls} dir="ltr" placeholder="https://" value={data.repairability.serviceUrl} onChange={(e) => patch({ repairability: { ...data.repairability, serviceUrl: e.target.value } })} />
                 </Field>
-                <Field label="Onarım bilgisi" className="sm:col-span-3">
-                  <textarea className={`${inputCls} min-h-24`} value={t.repair} onChange={(e) => setText(defaultLang, 'repair', e.target.value)} />
+                <Field label={t('f_repair')} className="sm:col-span-3">
+                  <textarea className={`${inputCls} min-h-24`} value={tx.repair} onChange={(e) => setText(defaultLang, 'repair', e.target.value)} />
                 </Field>
               </div>
             </Card>
-            <Card title="Kullanım ömrü sonu">
-              <Field label="Geri dönüşüm ve bertaraf talimatı" hint="Ürün nasıl ayrıştırılır, hangi atık kutusuna atılır, geri toplama noktaları">
-                <textarea className={`${inputCls} min-h-24`} value={t.endOfLife} onChange={(e) => setText(defaultLang, 'endOfLife', e.target.value)} />
+            <Card title={t('eol_title')}>
+              <Field label={t('f_eol')} hint={t('hint_eol')}>
+                <textarea className={`${inputCls} min-h-24`} value={tx.endOfLife} onChange={(e) => setText(defaultLang, 'endOfLife', e.target.value)} />
               </Field>
             </Card>
-            <Card title="Güvenlik">
+            <Card title={t('safety_title')}>
               <div className="grid gap-4">
-                <Field label="Güvenlik bilgileri ve uyarılar">
-                  <textarea className={`${inputCls} min-h-20`} value={t.safety} onChange={(e) => setText(defaultLang, 'safety', e.target.value)} />
+                <Field label={t('f_safety')}>
+                  <textarea className={`${inputCls} min-h-20`} value={tx.safety} onChange={(e) => setText(defaultLang, 'safety', e.target.value)} />
                 </Field>
-                <Field label="Endişe verici maddeler (SVHC)" hint="REACH aday listesindeki maddeler, konsantrasyon. Yoksa “İçermez” yazabilirsin.">
+                <Field label={t('f_svhc')} hint={t('hint_svhc')}>
                   <textarea className={`${inputCls} min-h-20`} value={data.substancesOfConcern} onChange={(e) => patch({ substancesOfConcern: e.target.value })} />
                 </Field>
               </div>
@@ -462,23 +475,18 @@ export default function ProductEditor({ productId, go, me }: { productId: string
           <>
             <ComplianceEditor items={data.compliance} onChange={(compliance) => patch({ compliance })} />
             <div className="grid gap-5 lg:grid-cols-2">
-              <PartyEditor title="Üretici *" party={data.manufacturer} onChange={(manufacturer) => patch({ manufacturer })} />
-              <PartyEditor
-                title="AB sorumlu ekonomik operatör"
-                subtitle="AB dışından ihracatta: AB’deki ithalatçı ya da yetkili temsilci"
-                party={data.euOperator}
-                onChange={(euOperator) => patch({ euOperator })}
-              />
+              <PartyEditor title={t('party_manufacturer')} party={data.manufacturer} onChange={(manufacturer) => patch({ manufacturer })} />
+              <PartyEditor title={t('party_eu')} subtitle={t('party_eu_sub')} party={data.euOperator} onChange={(euOperator) => patch({ euOperator })} />
             </div>
-            <Card title="🔒 Yetkili erişim bilgileri" subtitle="Herkese gösterilmez. Sadece “Firma bilgileri”ndeki yetkili erişim linkiyle (denetim, geri dönüşüm) görülür.">
+            <Card title={t('restr_title')} subtitle={t('restr_sub')}>
               <div className="grid gap-4">
-                <Field label="Tedarikçiler">
+                <Field label={t('f_suppliers')}>
                   <textarea className={`${inputCls} min-h-20`} value={data.restricted.suppliers} onChange={(e) => patch({ restricted: { ...data.restricted, suppliers: e.target.value } })} />
                 </Field>
-                <Field label="Üretim tesisi">
+                <Field label={t('f_facility')}>
                   <textarea className={`${inputCls} min-h-16`} value={data.restricted.facility} onChange={(e) => patch({ restricted: { ...data.restricted, facility: e.target.value } })} />
                 </Field>
-                <Field label="Notlar (sökme talimatı, tehlikeli bileşenler vb.)">
+                <Field label={t('f_notes')}>
                   <textarea className={`${inputCls} min-h-20`} value={data.restricted.notes} onChange={(e) => patch({ restricted: { ...data.restricted, notes: e.target.value } })} />
                 </Field>
               </div>
@@ -502,30 +510,29 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                 if (dirty) await save()
                 const res = await api<{ done: DppLang[]; failed: DppLang[] }>('product.translate', { id: bundle.id, langs })
                 await load(bundle.id)
-                setNotice(
-                  `Çevrildi: ${res.done.map((l) => DPP_LANG_NAMES[l]).join(', ')}.${res.failed.length ? ` Çevrilemedi: ${res.failed.map((l) => DPP_LANG_NAMES[l]).join(', ')}.` : ''} Kontrol edip “Güncellemeyi yayınla” ile yayına al.`
-                )
+                const names = (ls: DppLang[]) => ls.map((l) => DPP_LANG_NAMES[l]).join(', ')
+                setNotice([t('tr_done', { list: names(res.done) }), res.failed.length ? t('tr_failed', { list: names(res.failed) }) : '', t('tr_review')].filter(Boolean).join(' '))
               })
             }
           />
         )}
 
         {tab === 'docs' && bundle && <DocumentsEditor bundle={bundle} me={me} readOnly={readOnly} reload={() => load(bundle.id)} />}
-        {tab === 'items' && bundle && <ItemsPanel productId={bundle.id} productName={t.name} gtin={data.gtin} published={bundle.version > 0} readOnly={readOnly} onChange={() => load(bundle.id)} />}
+        {tab === 'items' && bundle && <ItemsPanel productId={bundle.id} productName={tx.name} gtin={data.gtin} published={bundle.version > 0} readOnly={readOnly} onChange={() => load(bundle.id)} />}
         {tab === 'versions' && bundle && (
-          <Card title="Yayın geçmişi" subtitle="Her yayın değiştirilemez bir sürüm olarak saklanır. Pasaport adresi ve QR kodu hiç değişmez.">
+          <Card title={t('tab_versions')} subtitle={t('ver_sub')}>
             {bundle.versions.length === 0 ? (
-              <p className="text-sm text-slate-500">Henüz yayınlanmadı.</p>
+              <p className="text-sm text-slate-500">{t('ver_none')}</p>
             ) : (
               <ul className="divide-y divide-slate-100 text-sm">
                 {bundle.versions.map((v) => (
-                  <li key={v.version} className="flex items-center justify-between py-2.5">
+                  <li key={v.version} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
                     <span>
-                      <b>Sürüm {v.version}</b>
-                      {v.version === bundle.version && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">Yayında</span>}
+                      <b>{t('ver_label', { v: v.version })}</b>
+                      {v.version === bundle.version && <span className="ms-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">{t('st_published')}</span>}
                     </span>
                     <span className="text-slate-500">
-                      {fmtDate(v.created_at, true)} · {v.published_by}
+                      {date(v.created_at, true)} · {v.published_by}
                     </span>
                   </li>
                 ))}
@@ -540,66 +547,68 @@ export default function ProductEditor({ productId, go, me }: { productId: string
 
 function MenuItem({ children, onClick, danger }: { children: React.ReactNode; onClick: () => void; danger?: boolean }) {
   return (
-    <button type="button" onClick={onClick} className={`block w-full rounded-xl px-3 py-2 text-left hover:bg-slate-100 ${danger ? 'text-red-700' : ''}`}>
+    <button type="button" onClick={onClick} className={`block w-full rounded-xl px-3 py-2 text-start hover:bg-slate-100 ${danger ? 'text-red-700' : ''}`}>
       {children}
     </button>
   )
 }
 
 function CountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const region = new Intl.DisplayNames(['tr'], { type: 'region' })
+  const { t, lang } = useT()
+  const region = new Intl.DisplayNames([lang], { type: 'region' })
   const codes = COUNTRIES.includes(value) || !value ? COUNTRIES : [value, ...COUNTRIES]
   return (
     <div className="flex gap-2">
-      <select className={inputCls} value={COUNTRIES.includes(value) ? value : value ? value : ''} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Seç…</option>
+      <select className={inputCls} value={value || ''} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{t('choose')}</option>
         {codes.map((c) => (
           <option key={c} value={c}>
             {region.of(c)} ({c})
           </option>
         ))}
       </select>
-      <input className={`${inputCls} w-20 font-mono uppercase`} maxLength={2} value={value} title="ISO ülke kodu" onChange={(e) => onChange(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))} />
+      <input className={`${inputCls} w-20 font-mono uppercase`} dir="ltr" maxLength={2} value={value} title={t('iso_hint')} onChange={(e) => onChange(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))} />
     </div>
   )
 }
 
 function MaterialsEditor({ materials, onChange }: { materials: DppMaterial[]; onChange: (m: DppMaterial[]) => void }) {
+  const { t } = useT()
   const total = materials.reduce((s, m) => s + (m.percent || 0), 0)
   const set = (i: number, p: Partial<DppMaterial>) => onChange(materials.map((m, j) => (j === i ? { ...m, ...p } : m)))
   return (
     <Card
-      title="Malzeme bileşimi *"
-      subtitle="Oranlar girilirse toplamı %100 olmalı"
+      title={t('mat_title')}
+      subtitle={t('mat_sub')}
       actions={
         <span className={`rounded-full px-3 py-1 text-sm font-semibold ${materials.length === 0 ? 'bg-slate-100 text-slate-500' : Math.abs(total - 100) <= 0.5 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-          Toplam %{Math.round(total * 10) / 10}
+          {t('mat_total', { n: Math.round(total * 10) / 10 })}
         </span>
       }
     >
       <div className="space-y-2">
         {materials.length > 0 && (
           <div className="hidden grid-cols-[1fr_6rem_8rem_10rem_2.5rem] gap-2 text-xs font-semibold text-slate-500 sm:grid">
-            <span>Malzeme</span>
-            <span>Oran (%)</span>
-            <span>Geri dönüşümlü (%)</span>
-            <span>Kaynak / menşe</span>
+            <span>{t('mat_name')}</span>
+            <span>{t('mat_pct')}</span>
+            <span>{t('mat_recycled')}</span>
+            <span>{t('mat_origin')}</span>
             <span />
           </div>
         )}
         {materials.map((m, i) => (
           <div key={i} className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 p-2 sm:grid-cols-[1fr_6rem_8rem_10rem_2.5rem] sm:border-0 sm:p-0">
-            <input className={`${inputCls} col-span-2 sm:col-span-1`} placeholder="Ör. Organik pamuk" value={m.name} onChange={(e) => set(i, { name: e.target.value })} />
+            <input className={`${inputCls} col-span-2 sm:col-span-1`} placeholder={t('ph_material')} value={m.name} onChange={(e) => set(i, { name: e.target.value })} />
             <input className={inputCls} inputMode="decimal" placeholder="%" value={num(m.percent)} onChange={(e) => set(i, { percent: toNum(e.target.value) })} />
             <input className={inputCls} inputMode="decimal" placeholder="%" value={num(m.recycledPercent)} onChange={(e) => set(i, { recycledPercent: toNum(e.target.value) })} />
-            <input className={inputCls} placeholder="Ör. Türkiye" value={m.origin} onChange={(e) => set(i, { origin: e.target.value })} />
-            <Button variant="ghost" size="sm" onClick={() => onChange(materials.filter((_, j) => j !== i))} aria-label="Satırı sil">
+            <input className={inputCls} placeholder={t('ph_origin')} value={m.origin} onChange={(e) => set(i, { origin: e.target.value })} />
+            <Button variant="ghost" size="sm" onClick={() => onChange(materials.filter((_, j) => j !== i))} aria-label={t('delete_row')}>
               ✕
             </Button>
           </div>
         ))}
         <Button size="sm" onClick={() => onChange([...materials, { name: '', percent: null, recycledPercent: null, origin: '' }])}>
-          ＋ Malzeme ekle
+          {t('mat_add')}
         </Button>
       </div>
     </Card>
@@ -607,16 +616,17 @@ function MaterialsEditor({ materials, onChange }: { materials: DppMaterial[]; on
 }
 
 function ComplianceEditor({ items, onChange }: { items: DppData['compliance']; onChange: (c: DppData['compliance']) => void }) {
+  const { t } = useT()
   const set = (i: number, p: Partial<DppData['compliance'][number]>) => onChange(items.map((c, j) => (j === i ? { ...c, ...p } : c)))
   const missing = COMPLIANCE_PRESETS.filter((p) => !items.some((c) => c.name === p))
   return (
-    <Card title="Uygunluk ve sertifikalar" subtitle="Sertifika belgelerini “Belgeler” sekmesinden PDF olarak ekleyebilirsin.">
+    <Card title={t('comp_title')} subtitle={t('comp_sub')}>
       <div className="space-y-2">
         {items.map((c, i) => (
           <div key={i} className="grid grid-cols-[1fr_1fr_2.5rem] gap-2">
-            <input className={inputCls} placeholder="Ör. OEKO-TEX Standard 100" value={c.name} onChange={(e) => set(i, { name: e.target.value })} />
-            <input className={inputCls} placeholder="Sertifika / referans no" value={c.reference} onChange={(e) => set(i, { reference: e.target.value })} />
-            <Button variant="ghost" size="sm" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Sil">
+            <input className={inputCls} placeholder={t('ph_comp_name')} value={c.name} onChange={(e) => set(i, { name: e.target.value })} />
+            <input className={inputCls} placeholder={t('ph_comp_ref')} value={c.reference} onChange={(e) => set(i, { reference: e.target.value })} />
+            <Button variant="ghost" size="sm" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label={t('delete')}>
               ✕
             </Button>
           </div>
@@ -628,7 +638,7 @@ function ComplianceEditor({ items, onChange }: { items: DppData['compliance']; o
             </button>
           ))}
           <button type="button" onClick={() => onChange([...items, { name: '', reference: '' }])} className="rounded-full border border-dashed border-slate-400 px-2.5 py-1 text-xs hover:bg-slate-50">
-            ＋ Diğer
+            {t('comp_other')}
           </button>
         </div>
       </div>
@@ -637,16 +647,17 @@ function ComplianceEditor({ items, onChange }: { items: DppData['compliance']; o
 }
 
 function PartyEditor({ title, subtitle, party, onChange }: { title: string; subtitle?: string; party: DppParty; onChange: (p: DppParty) => void }) {
+  const { t } = useT()
   return (
     <Card title={title} subtitle={subtitle}>
       <div className="grid gap-3">
-        <Field label="Ünvan">
+        <Field label={t('f_party_name')}>
           <input className={inputCls} value={party.name} onChange={(e) => onChange({ ...party, name: e.target.value })} />
         </Field>
-        <Field label="Adres">
+        <Field label={t('f_address')}>
           <textarea className={`${inputCls} min-h-16`} value={party.address} onChange={(e) => onChange({ ...party, address: e.target.value })} />
         </Field>
-        <Field label="İletişim (e-posta / telefon / web)">
+        <Field label={t('f_contact')}>
           <input className={inputCls} value={party.contact} onChange={(e) => onChange({ ...party, contact: e.target.value })} />
         </Field>
       </div>
@@ -675,28 +686,26 @@ function LanguagesEditor({
   busy: boolean
   onTranslate: (langs: DppLang[]) => void
 }) {
+  const { t } = useT()
   const others = DPP_LANGS.filter((l) => l !== defaultLang)
   const [lang, setLang] = useState<DppLang>(others[0])
   const [selected, setSelected] = useState<DppLang[]>(others.filter((l) => !texts[l]?.name))
   const tt = texts[lang] || emptyTexts()
   const src = texts[defaultLang] || emptyTexts()
-  const fields: Array<[DppTextKey, string, boolean]> = [
-    ['name', 'Ürün adı', false],
-    ['description', 'Açıklama', true],
-    ['care', 'Bakım', true],
-    ['repair', 'Onarım', true],
-    ['endOfLife', 'Kullanım ömrü sonu', true],
-    ['safety', 'Güvenlik', true],
+  const fields: Array<[DppTextKey, MsgKey, boolean]> = [
+    ['name', 'lf_name', false],
+    ['description', 'lf_description', true],
+    ['care', 'lf_care', true],
+    ['repair', 'lf_repair', true],
+    ['endOfLife', 'lf_eol', true],
+    ['safety', 'lf_safety', true],
   ]
 
   return (
     <div className="space-y-5">
-      <Card
-        title="Otomatik çeviri"
-        subtitle={`${DPP_LANG_NAMES[defaultLang]} metinlerini yapay zekâ ile seçtiğin dillere çevirir. Sonucu kontrol edip düzenleyebilirsin.`}
-      >
+      <Card title={t('tr_title')} subtitle={t('tr_sub', { lang: DPP_LANG_NAMES[defaultLang] })}>
         {!translation ? (
-          <Alert tone="info">Otomatik çeviri şu an kapalı. Metinleri aşağıdan elle girebilirsin.</Alert>
+          <Alert tone="info">{t('tr_off')}</Alert>
         ) : (
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
@@ -709,14 +718,14 @@ function LanguagesEditor({
               ))}
             </div>
             <Button variant="primary" disabled={!canTranslate || busy || selected.length === 0} onClick={() => onTranslate(selected)}>
-              {busy ? 'Çevriliyor… (birkaç saniye sürebilir)' : `Seçilen ${selected.length} dile çevir`}
+              {busy ? t('tr_busy') : t('tr_btn', { n: selected.length })}
             </Button>
-            {!canTranslate && <p className="text-xs text-slate-500">Çeviri için önce ürünü kaydet.</p>}
+            {!canTranslate && <p className="text-xs text-slate-500">{t('tr_save_first')}</p>}
           </div>
         )}
       </Card>
 
-      <Card title="Dile göre metinler" subtitle="Doldurulmamış dilde ziyaretçiye ana dil gösterilir.">
+      <Card title={t('langs_title')} subtitle={t('langs_sub')}>
         <div className="mb-4 flex flex-wrap gap-1">
           {others.map((l) => (
             <button
@@ -732,27 +741,29 @@ function LanguagesEditor({
         <div className="grid gap-4" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
           {fields.map(([key, label, multi]) => (
             <div key={key} className="grid gap-2 lg:grid-cols-2">
-              <Field label={`${label} (${DPP_LANG_NAMES[lang]})`}>
+              <Field label={`${t(label)} (${DPP_LANG_NAMES[lang]})`}>
                 {multi ? (
                   <textarea className={`${inputCls} min-h-20`} value={tt[key]} onChange={(e) => setText(lang, key, e.target.value)} />
                 ) : (
                   <input className={inputCls} value={tt[key]} onChange={(e) => setText(lang, key, e.target.value)} />
                 )}
               </Field>
-              <div className="hidden lg:block" dir="ltr">
-                <span className="mb-1 block text-xs font-semibold text-slate-400">Kaynak ({DPP_LANG_NAMES[defaultLang]})</span>
+              <div className="hidden lg:block" dir={defaultLang === 'ar' ? 'rtl' : 'ltr'}>
+                <span className="mb-1 block text-xs font-semibold text-slate-400">{t('lf_source', { lang: DPP_LANG_NAMES[defaultLang] })}</span>
                 <p className="min-h-10 whitespace-pre-line rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500">{src[key] || '—'}</p>
               </div>
             </div>
           ))}
           {materials.some(Boolean) && (
             <div className="grid gap-2 border-t border-slate-100 pt-4">
-              <span className="text-xs font-semibold text-slate-600">Malzeme adları ({DPP_LANG_NAMES[lang]})</span>
+              <span className="text-xs font-semibold text-slate-600">{t('lf_materials', { lang: DPP_LANG_NAMES[lang] })}</span>
               {materials.map((name, i) =>
                 name ? (
                   <div key={i} className="grid items-center gap-2 lg:grid-cols-2">
                     <input className={inputCls} placeholder={name} value={tt.materialNames?.[i] || ''} onChange={(e) => setMaterialName(lang, i, e.target.value)} />
-                    <p className="hidden rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500 lg:block" dir="ltr">{name}</p>
+                    <p className="hidden rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500 lg:block" dir={defaultLang === 'ar' ? 'rtl' : 'ltr'}>
+                      {name}
+                    </p>
                   </div>
                 ) : null
               )}
@@ -765,6 +776,7 @@ function LanguagesEditor({
 }
 
 function DocumentsEditor({ bundle, me, readOnly, reload }: { bundle: Bundle; me: Me; readOnly: boolean; reload: () => Promise<void> }) {
+  const { t, labels } = useT()
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<DppDocKind>('certificate')
   const [visibility, setVisibility] = useState<'public' | 'restricted'>('public')
@@ -777,14 +789,14 @@ function DocumentsEditor({ bundle, me, readOnly, reload }: { bundle: Bundle; me:
     setError(null)
     setProgress(0)
     try {
-      if (file.size > 25 * 1024 * 1024) throw new Error('Dosya 25 MB’dan küçük olmalı')
+      if (file.size > 25 * 1024 * 1024) throw new Error(t('err_file_size'))
       const blobUrl = await uploadFile(me.companyId, file, setProgress)
       await api('docs.add', { productId: bundle.id, blobUrl, title: title || file.name.replace(/\.[^.]+$/, ''), kind, visibility })
       setTitle('')
       setFile(null)
       await reload()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Yüklenemedi')
+      setError(err instanceof Error ? err.message : t('err_upload'))
     } finally {
       setProgress(null)
     }
@@ -793,39 +805,45 @@ function DocumentsEditor({ bundle, me, readOnly, reload }: { bundle: Bundle; me:
   return (
     <div className="space-y-5">
       {!readOnly && (
-        <Card title="Belge ekle" subtitle="PDF ya da görsel, en fazla 25 MB. Belgeler pasaportta anında görünür (yeniden yayın gerekmez).">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label="Dosya">
-              <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="block w-full text-sm" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+        <Card title={t('doc_add_title')} subtitle={t('doc_add_sub')}>
+          <div className="grid gap-4">
+            <Field label={t('f_file')}>
+              <FilePicker accept="application/pdf,image/jpeg,image/png,image/webp" file={file} onChange={setFile} disabled={progress !== null} />
             </Field>
-            <Field label="Belge adı">
-              <input className={inputCls} value={title} placeholder={file?.name || 'Ör. OEKO-TEX sertifikası'} onChange={(e) => setTitle(e.target.value)} />
-            </Field>
-            <Field label="Tür">
-              <select className={inputCls} value={kind} onChange={(e) => setKind(e.target.value as DppDocKind)}>
-                {Object.entries(DPP_DOC_KINDS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Görünürlük">
-              <select className={inputCls} value={visibility} onChange={(e) => setVisibility(e.target.value as 'public' | 'restricted')}>
-                <option value="public">Herkese açık</option>
-                <option value="restricted">🔒 Sadece yetkili erişim</option>
-              </select>
-            </Field>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Field label={t('f_doc_title')}>
+                <input className={inputCls} value={title} placeholder={file?.name.replace(/\.[^.]+$/, '') || t('ph_doc_title')} onChange={(e) => setTitle(e.target.value)} />
+              </Field>
+              <Field label={t('f_doc_kind')}>
+                <select className={inputCls} value={kind} onChange={(e) => setKind(e.target.value as DppDocKind)}>
+                  {Object.keys(DPP_DOC_KINDS).map((k) => (
+                    <option key={k} value={k}>
+                      {labels.docKinds[k as DppDocKind]}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label={t('f_visibility')}>
+                <select className={inputCls} value={visibility} onChange={(e) => setVisibility(e.target.value as 'public' | 'restricted')}>
+                  <option value="public">{t('vis_public')}</option>
+                  <option value="restricted">{t('vis_restricted')}</option>
+                </select>
+              </Field>
+            </div>
           </div>
-          {error && <div className="mt-3"><Alert>{error}</Alert></div>}
+          {error && (
+            <div className="mt-3">
+              <Alert>{error}</Alert>
+            </div>
+          )}
           <Button variant="primary" className="mt-4" disabled={!file || progress !== null} onClick={() => void add()}>
-            {progress !== null ? `Yükleniyor… %${Math.round(progress)}` : 'Belgeyi ekle'}
+            {progress !== null ? t('doc_uploading', { n: Math.round(progress) }) : t('doc_add_btn')}
           </Button>
         </Card>
       )}
-      <Card title="Belgeler">
+      <Card title={t('tab_docs')}>
         {bundle.documents.length === 0 ? (
-          <p className="text-sm text-slate-500">Henüz belge yok.</p>
+          <p className="text-sm text-slate-500">{t('docs_none')}</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {bundle.documents.map((d) => (
@@ -839,6 +857,7 @@ function DocumentsEditor({ bundle, me, readOnly, reload }: { bundle: Bundle; me:
 }
 
 function DocRow({ doc, readOnly, reload }: { doc: Bundle['documents'][number]; readOnly: boolean; reload: () => Promise<void> }) {
+  const { t, labels, date, number } = useT()
   const [busy, setBusy] = useState(false)
   const update = async (patch: Record<string, unknown>) => {
     setBusy(true)
@@ -846,7 +865,7 @@ function DocRow({ doc, readOnly, reload }: { doc: Bundle['documents'][number]; r
       await api('docs.update', { id: doc.id, title: doc.title, kind: doc.kind, visibility: doc.visibility, ...patch })
       await reload()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Güncellenemedi')
+      window.alert(err instanceof Error ? err.message : t('err_update'))
     } finally {
       setBusy(false)
     }
@@ -856,21 +875,21 @@ function DocRow({ doc, readOnly, reload }: { doc: Bundle['documents'][number]; r
       <a href={`/api/dpp/doc/${doc.id}`} target="_blank" rel="noopener noreferrer" className="min-w-0 hover:text-sky-700">
         <p className="truncate font-semibold">📄 {doc.title}</p>
         <p className="text-xs text-slate-500">
-          {DPP_DOC_KINDS[doc.kind] || doc.kind} · {Math.max(1, Math.round(doc.size_bytes / 1024))} KB · {fmtDate(doc.created_at)}
+          {labels.docKinds[doc.kind] || doc.kind} · {number(Math.max(1, Math.round(doc.size_bytes / 1024)))} KB · {date(doc.created_at)}
         </p>
       </a>
       {!readOnly && (
         <div className="flex items-center gap-2">
           <select className={`${inputCls} w-auto py-1 text-xs`} value={doc.visibility} disabled={busy} onChange={(e) => void update({ visibility: e.target.value })}>
-            <option value="public">Herkese açık</option>
-            <option value="restricted">🔒 Yetkili erişim</option>
+            <option value="public">{t('vis_public')}</option>
+            <option value="restricted">{t('vis_restricted_short')}</option>
           </select>
           <Button
             size="sm"
             variant="danger"
             disabled={busy}
             onClick={async () => {
-              if (!window.confirm(`“${doc.title}” silinsin mi?`)) return
+              if (!window.confirm(t('doc_confirm_delete', { title: doc.title }))) return
               setBusy(true)
               try {
                 await api('docs.delete', { id: doc.id })
@@ -880,7 +899,7 @@ function DocRow({ doc, readOnly, reload }: { doc: Bundle['documents'][number]; r
               }
             }}
           >
-            Sil
+            {t('delete')}
           </Button>
         </div>
       )}

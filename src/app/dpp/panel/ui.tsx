@@ -1,7 +1,9 @@
 'use client'
 
 import { upload } from '@vercel/blob/client'
-import type { ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
+import { msg } from '@/lib/dpp/i18n'
+import { panelLang, useT } from './i18n'
 
 // DPP paneli ortak arayüz parçaları ve API yardımcıları.
 
@@ -17,15 +19,27 @@ export class ApiError extends Error {
 export async function api<T>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
   const res = await fetch('/api/dpp/panel', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-dpp-lang': panelLang() },
     body: JSON.stringify({ action, ...payload }),
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
     if (res.status === 401) window.dispatchEvent(new Event('dpp:logout'))
-    throw new ApiError(data.error || 'İşlem başarısız', res.status)
+    throw new ApiError(data.error || msg(panelLang(), 'err_generic'), res.status)
   }
   return data as T
+}
+
+/** Oturum API'si (giriş, çıkış, şifre) */
+export async function authApi(payload: Record<string, unknown>) {
+  const res = await fetch('/api/dpp/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-dpp-lang': panelLang() },
+    body: JSON.stringify(payload),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new ApiError(data.error || msg(panelLang(), 'err_generic'), res.status)
+  return data
 }
 
 /** Dosyayı firmanın klasörüne doğrudan Blob'a yükler; dönen URL kaydetme işlemine gönderilir. */
@@ -34,6 +48,7 @@ export async function uploadFile(companyId: string, file: File, onProgress?: (p:
   const blob = await upload(`dpp/${companyId}/${Date.now()}.${ext}`, file, {
     access: 'private',
     handleUploadUrl: '/api/dpp/upload',
+    clientPayload: JSON.stringify({ lang: panelLang() }),
     contentType: file.type || undefined,
     multipart: file.size > 8 * 1024 * 1024,
     onUploadProgress: ({ percentage }) => onProgress?.(percentage),
@@ -107,6 +122,51 @@ export function Field({ label, hint, children, className = '' }: { label: string
   )
 }
 
+/** Belirgin dosya seçici: büyük, kesik çizgili alan + seçilen dosyanın adı ve boyutu. */
+export function FilePicker({ accept, file, onChange, disabled }: { accept: string; file: File | null; onChange: (f: File | null) => void; disabled?: boolean }) {
+  const { t, number } = useT()
+  const ref = useRef<HTMLInputElement>(null)
+  const [drag, setDrag] = useState(false)
+  return (
+    <div
+      onDragOver={(e) => {
+        e.preventDefault()
+        if (!disabled) setDrag(true)
+      }}
+      onDragLeave={() => setDrag(false)}
+      onDrop={(e) => {
+        e.preventDefault()
+        setDrag(false)
+        if (!disabled && e.dataTransfer.files[0]) onChange(e.dataTransfer.files[0])
+      }}
+      className={`flex flex-wrap items-center gap-3 rounded-xl border-2 border-dashed px-4 py-3 transition ${drag ? 'border-sky-500 bg-sky-50' : file ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-300 bg-slate-50'}`}
+    >
+      <input ref={ref} type="file" accept={accept} className="hidden" disabled={disabled} onChange={(e) => onChange(e.target.files?.[0] || null)} />
+      <Button variant="primary" size="sm" disabled={disabled} onClick={() => ref.current?.click()}>
+        {t('doc_choose')}
+      </Button>
+      <span className="min-w-0 flex-1 text-sm">
+        {file ? (
+          <>
+            <span className="block truncate font-semibold text-slate-800">{file.name}</span>
+            <span className="text-xs text-slate-500">{number(Math.max(1, Math.round(file.size / 1024)))} KB</span>
+          </>
+        ) : (
+          <>
+            <span className="block text-slate-600">{t('doc_no_file')}</span>
+            <span className="text-xs text-slate-400">{t('doc_drop')}</span>
+          </>
+        )}
+      </span>
+      {file && !disabled && (
+        <button type="button" className="text-slate-400 hover:text-slate-700" aria-label={t('delete')} onClick={() => (onChange(null), ref.current && (ref.current.value = ''))}>
+          ✕
+        </button>
+      )}
+    </div>
+  )
+}
+
 export function Alert({ tone = 'error', children }: { tone?: 'error' | 'success' | 'info' | 'warn'; children: ReactNode }) {
   const cls = {
     error: 'border-red-200 bg-red-50 text-red-800',
@@ -118,16 +178,17 @@ export function Alert({ tone = 'error', children }: { tone?: 'error' | 'success'
 }
 
 export function StatusBadge({ status, changes }: { status: string; changes?: boolean }) {
+  const { t } = useT()
   const map: Record<string, [string, string]> = {
-    draft: ['Taslak', 'bg-slate-100 text-slate-700'],
-    published: ['Yayında', 'bg-emerald-100 text-emerald-800'],
-    archived: ['Arşivde', 'bg-amber-100 text-amber-800'],
+    draft: [t('st_draft'), 'bg-slate-100 text-slate-700'],
+    published: [t('st_published'), 'bg-emerald-100 text-emerald-800'],
+    archived: [t('st_archived'), 'bg-amber-100 text-amber-800'],
   }
   const [label, cls] = map[status] || [status, 'bg-slate-100 text-slate-700']
   return (
     <span className="inline-flex items-center gap-1">
       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${cls}`}>{label}</span>
-      {changes && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">Yayınlanmamış değişiklik</span>}
+      {changes && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">{t('st_unpublished_changes')}</span>}
     </span>
   )
 }
@@ -140,10 +201,4 @@ export function Empty({ icon, title, children }: { icon: string; title: string; 
       {children && <div className="mt-2 text-sm text-slate-500">{children}</div>}
     </div>
   )
-}
-
-export function fmtDate(value: string | null | undefined, withTime = false) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return withTime ? d.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : d.toLocaleDateString('tr-TR')
 }

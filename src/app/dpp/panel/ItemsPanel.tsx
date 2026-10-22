@@ -2,7 +2,8 @@
 
 import { QRCodeSVG } from 'qrcode.react'
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, api, Button, Card, csvCell, downloadText, Field, fmtDate, inputCls } from './ui'
+import { useT } from './i18n'
+import { Alert, api, Button, Card, csvCell, downloadText, Field, inputCls } from './ui'
 
 // Tekil ürün pasaportları: seri numarası üretimi, liste, CSV dışa aktarma ve QR etiket baskısı.
 
@@ -25,7 +26,8 @@ interface ExportRow {
 }
 
 const PAGE = 200
-const LABEL_SIZES = { 25: '25 mm', 30: '30 mm', 40: '40 mm', 50: '50 mm' } as const
+const LABEL_SIZES = [25, 30, 40, 50] as const
+type LabelSize = (typeof LABEL_SIZES)[number]
 const MAX_PRINT = 600
 
 export default function ItemsPanel({
@@ -43,6 +45,7 @@ export default function ItemsPanel({
   readOnly: boolean
   onChange: () => Promise<void>
 }) {
+  const { t, date, number } = useT()
   const [items, setItems] = useState<Item[]>([])
   const [total, setTotal] = useState(0)
   const [q, setQ] = useState('')
@@ -52,7 +55,7 @@ export default function ItemsPanel({
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [labels, setLabels] = useState<ExportRow[] | null>(null)
-  const [labelSize, setLabelSize] = useState<keyof typeof LABEL_SIZES>(30)
+  const [labelSize, setLabelSize] = useState<LabelSize>(30)
   const [useDigitalLink, setUseDigitalLink] = useState(false)
 
   const load = useCallback(
@@ -76,67 +79,70 @@ export default function ItemsPanel({
     try {
       await task()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'İşlem başarısız')
+      setError(err instanceof Error ? err.message : t('err_generic'))
     } finally {
       setBusy(null)
     }
   }
 
   const fetchAll = async () => (await api<{ items: ExportRow[] }>('items.export', { productId })).items
+  const startNo = Number(form.start) || 1
+  const countNo = Number(form.count) || 0
 
   return (
     <div className="space-y-5">
-      <Alert tone="info">
-        Her seri numarası kendi pasaport adresini alır: ürünü okutan kişi model bilgilerinin yanında <b>seri no, parti ve üretim tarihini</b> de görür. Model düzeyinde tek QR yeterliyse “Genel” sekmesindeki QR’ı kullan.
-      </Alert>
-      {!published && <Alert tone="warn">Pasaport henüz yayınlanmadı. Etiketleri basabilirsin ama okutulduğunda sayfa yayınlandıktan sonra açılır.</Alert>}
+      <Alert tone="info">{t('it_info')}</Alert>
+      {!published && <Alert tone="warn">{t('it_unpublished')}</Alert>}
       {error && <Alert>{error}</Alert>}
       {info && <Alert tone="success">{info}</Alert>}
 
       {!readOnly && (
-        <Card title="Seri numarası üret" subtitle="Tek seferde en fazla 2.000 adet. Var olan seri numaraları atlanır.">
+        <Card title={t('it_gen_title')} subtitle={t('it_gen_sub')}>
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Field label="Adet">
+            <Field label={t('f_count')}>
               <input className={inputCls} inputMode="numeric" value={form.count} onChange={(e) => setForm({ ...form, count: e.target.value.replace(/\D/g, '') })} />
             </Field>
-            <Field label="Ön ek" hint="Ör. TS24-">
-              <input className={`${inputCls} font-mono uppercase`} maxLength={16} value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value.toUpperCase() })} />
+            <Field label={t('f_prefix')} hint={t('hint_prefix')}>
+              <input className={`${inputCls} font-mono uppercase`} dir="ltr" maxLength={16} value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value.toUpperCase() })} />
             </Field>
-            <Field label="Başlangıç no">
+            <Field label={t('f_start')}>
               <input className={inputCls} inputMode="numeric" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value.replace(/\D/g, '') })} />
             </Field>
-            <Field label="Parti / lot">
+            <Field label={t('f_batch')}>
               <input className={inputCls} maxLength={40} value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} />
             </Field>
-            <Field label="Üretim tarihi">
+            <Field label={t('f_prod_date')}>
               <input className={inputCls} type="date" value={form.productionDate} onChange={(e) => setForm({ ...form, productionDate: e.target.value })} />
             </Field>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            Örnek: {form.prefix}
-            {String(Number(form.start) || 1).padStart(Math.max(6, String((Number(form.start) || 1) + (Number(form.count) || 1) - 1).length), '0')} …
+            {t('it_example')}{' '}
+            <span className="font-mono" dir="ltr">
+              {form.prefix}
+              {String(startNo).padStart(Math.max(6, String(startNo + Math.max(1, countNo) - 1).length), '0')} …
+            </span>
           </p>
           <Button
             variant="primary"
             className="mt-3"
-            disabled={busy !== null || !Number(form.count)}
+            disabled={busy !== null || !countNo}
             onClick={() =>
               void run('gen', async () => {
-                const res = await api<{ created: number; skipped: number }>('items.generate', { productId, ...form, count: Number(form.count), start: Number(form.start) || 1 })
-                setInfo(`${res.created.toLocaleString('tr-TR')} seri numarası oluşturuldu${res.skipped ? `, ${res.skipped} tanesi zaten vardı` : ''}.`)
+                const res = await api<{ created: number; skipped: number }>('items.generate', { productId, ...form, count: countNo, start: startNo })
+                setInfo([t('it_generated', { n: number(res.created) }), res.skipped ? t('it_existing', { n: number(res.skipped) }) : ''].filter(Boolean).join(' '))
                 setForm((f) => ({ ...f, start: String((Number(f.start) || 1) + Number(f.count)) }))
                 await load()
                 await onChange()
               })
             }
           >
-            {busy === 'gen' ? 'Üretiliyor…' : `${Number(form.count || 0).toLocaleString('tr-TR')} seri numarası üret`}
+            {busy === 'gen' ? t('it_gen_busy') : t('it_gen_btn', { n: number(countNo) })}
           </Button>
         </Card>
       )}
 
       <Card
-        title={`Seri numaraları (${total.toLocaleString('tr-TR')})`}
+        title={t('it_list_title', { n: number(total) })}
         actions={
           <>
             <Button
@@ -145,15 +151,15 @@ export default function ItemsPanel({
               onClick={() =>
                 void run('csv', async () => {
                   const rows = await fetchAll()
-                  const header = ['Seri no', 'Parti', 'Üretim tarihi', 'Pasaport adresi', 'GS1 Digital Link']
+                  const header = [t('csv_serial'), t('csv_batch'), t('csv_production_date'), t('csv_url'), 'GS1 Digital Link']
                   downloadText(
-                    `dpp-seri-${new Date().toISOString().slice(0, 10)}.csv`,
-                    [header.join(';'), ...rows.map((r) => [r.serial, r.batch, r.productionDate, r.url, r.digitalLink].map(csvCell).join(';'))].join('\n')
+                    `dpp-serials-${new Date().toISOString().slice(0, 10)}.csv`,
+                    [header.map(csvCell).join(';'), ...rows.map((r) => [r.serial, r.batch, r.productionDate, r.url, r.digitalLink].map(csvCell).join(';'))].join('\n')
                   )
                 })
               }
             >
-              ⬇ CSV (lazer / etiket yazılımı için)
+              {t('it_csv')}
             </Button>
             <Button
               size="sm"
@@ -167,13 +173,13 @@ export default function ItemsPanel({
                 })
               }
             >
-              🖨 QR etiketleri {selected.size ? `(${selected.size} seçili)` : ''}
+              {t('it_labels')} {selected.size ? t('it_selected', { n: selected.size }) : ''}
             </Button>
           </>
         }
       >
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <input className={`${inputCls} max-w-xs`} placeholder="Seri no ya da parti ara…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className={`${inputCls} max-w-xs`} placeholder={t('ph_item_search')} value={q} onChange={(e) => setQ(e.target.value)} />
           {!readOnly && selected.size > 0 && (
             <Button
               size="sm"
@@ -181,39 +187,39 @@ export default function ItemsPanel({
               disabled={busy !== null}
               onClick={() =>
                 void run('del', async () => {
-                  if (!window.confirm(`${selected.size} seri numarası silinsin mi? Bu ürünlerin etiketleri artık açılmaz.`)) return
+                  if (!window.confirm(t('it_confirm_delete', { n: selected.size }))) return
                   const res = await api<{ deleted: number }>('items.delete', { productId, ids: [...selected] })
                   setSelected(new Set())
-                  setInfo(`${res.deleted} seri numarası silindi.`)
+                  setInfo(t('it_deleted', { n: res.deleted }))
                   await load()
                   await onChange()
                 })
               }
             >
-              Seçilenleri sil ({selected.size})
+              {t('it_delete_selected', { n: selected.size })}
             </Button>
           )}
         </div>
         {items.length === 0 ? (
-          <p className="py-6 text-center text-sm text-slate-500">{total === 0 ? 'Henüz seri numarası yok.' : 'Aramaya uyan kayıt yok.'}</p>
+          <p className="py-6 text-center text-sm text-slate-500">{total === 0 ? t('it_none') : t('it_no_match')}</p>
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="border-y border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="border-y border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="w-10 px-5 py-2">
+                  <th className="w-10 px-5 py-2 text-start">
                     <input
                       type="checkbox"
-                      aria-label="Tümünü seç"
+                      aria-label={t('select_all')}
                       checked={items.length > 0 && items.every((i) => selected.has(i.id))}
                       onChange={(e) => setSelected(e.target.checked ? new Set(items.map((i) => i.id)) : new Set())}
                     />
                   </th>
-                  <th className="px-3 py-2">Seri no</th>
-                  <th className="px-3 py-2">Parti</th>
-                  <th className="px-3 py-2">Üretim</th>
-                  <th className="px-3 py-2 text-right">Okutma</th>
-                  <th className="px-5 py-2 text-right">Pasaport</th>
+                  <th className="px-3 py-2 text-start">{t('th_serials')}</th>
+                  <th className="px-3 py-2 text-start">{t('th_batch')}</th>
+                  <th className="px-3 py-2 text-start">{t('th_production')}</th>
+                  <th className="px-3 py-2 text-end">{t('th_scans')}</th>
+                  <th className="px-5 py-2 text-end">{t('th_passport')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -233,12 +239,14 @@ export default function ItemsPanel({
                         }
                       />
                     </td>
-                    <td className="px-3 py-2 font-mono">{i.serial}</td>
+                    <td className="px-3 py-2 font-mono" dir="ltr">
+                      {i.serial}
+                    </td>
                     <td className="px-3 py-2">{i.batch || '—'}</td>
-                    <td className="px-3 py-2">{fmtDate(i.production_date)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{i.scans}</td>
-                    <td className="px-5 py-2 text-right">
-                      <a href={`/p/${i.public_id}`} target="_blank" rel="noopener noreferrer" className="text-sky-700 hover:underline">
+                    <td className="px-3 py-2">{date(i.production_date)}</td>
+                    <td className="px-3 py-2 text-end tabular-nums">{number(i.scans)}</td>
+                    <td className="px-5 py-2 text-end">
+                      <a href={`/p/${i.public_id}`} target="_blank" rel="noopener noreferrer" className="text-sky-700 hover:underline" dir="ltr">
                         /p/{i.public_id} ↗
                       </a>
                     </td>
@@ -250,7 +258,7 @@ export default function ItemsPanel({
         )}
         {items.length < total && (
           <Button className="mt-3 w-full" onClick={() => void load(items.length)}>
-            Daha fazla göster ({(total - items.length).toLocaleString('tr-TR')})
+            {t('more', { n: number(total - items.length) })}
           </Button>
         )}
       </Card>
@@ -261,14 +269,14 @@ export default function ItemsPanel({
           <div className="mx-auto max-w-5xl rounded-2xl bg-white p-5 print:max-w-none print:rounded-none print:p-0">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
               <div>
-                <h3 className="font-semibold">QR etiketleri · {labels.length.toLocaleString('tr-TR')} adet</h3>
-                {total > MAX_PRINT && !selected.size && <p className="text-xs text-amber-700">Bir seferde en fazla {MAX_PRINT} etiket basılır. Daha fazlası için CSV’yi etiket yazılımında kullan.</p>}
+                <h3 className="font-semibold">{t('lb_title', { n: number(labels.length) })}</h3>
+                {total > MAX_PRINT && !selected.size && <p className="text-xs text-amber-700">{t('lb_limit', { n: MAX_PRINT })}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <select className={`${inputCls} w-auto`} value={labelSize} onChange={(e) => setLabelSize(Number(e.target.value) as keyof typeof LABEL_SIZES)}>
-                  {Object.entries(LABEL_SIZES).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      QR boyutu {v}
+                <select className={`${inputCls} w-auto`} value={labelSize} onChange={(e) => setLabelSize(Number(e.target.value) as LabelSize)}>
+                  {LABEL_SIZES.map((s) => (
+                    <option key={s} value={s}>
+                      {t('lb_size', { s: `${s} mm` })}
                     </option>
                   ))}
                 </select>
@@ -278,19 +286,23 @@ export default function ItemsPanel({
                   </label>
                 )}
                 <Button variant="primary" onClick={() => window.print()}>
-                  🖨 Yazdır
+                  {t('lb_print')}
                 </Button>
-                <Button onClick={() => setLabels(null)}>Kapat</Button>
+                <Button onClick={() => setLabels(null)}>{t('close')}</Button>
               </div>
             </div>
-            <div id="dpp-labels" className="flex flex-wrap gap-[3mm]">
+            <div id="dpp-labels" className="flex flex-wrap gap-[3mm]" dir="ltr">
               {labels.map((r) => (
                 <div key={r.serial} className="flex flex-col items-center border border-dashed border-slate-300 p-[2mm] text-center" style={{ width: `${labelSize + 6}mm`, breakInside: 'avoid' }}>
                   <QRCodeSVG value={useDigitalLink && r.digitalLink ? r.digitalLink : r.url} level="M" marginSize={0} style={{ width: `${labelSize}mm`, height: `${labelSize}mm` }} />
                   <p className="mt-[1mm] w-full truncate font-mono leading-tight" style={{ fontSize: labelSize >= 40 ? '9pt' : '7pt' }}>
                     {r.serial}
                   </p>
-                  {labelSize >= 40 && <p className="w-full truncate leading-tight text-slate-600" style={{ fontSize: '7pt' }}>{productName}</p>}
+                  {labelSize >= 40 && (
+                    <p className="w-full truncate leading-tight text-slate-600" style={{ fontSize: '7pt' }}>
+                      {productName}
+                    </p>
+                  )}
                   <p className="leading-tight text-slate-500" style={{ fontSize: '6pt' }}>
                     DPP
                   </p>

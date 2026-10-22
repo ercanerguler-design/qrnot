@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DPP_CATEGORIES, readTextsMap, type DppCategory, type DppLang } from '@/lib/dpp/types'
+import { useT } from './i18n'
 import type { Me, View } from './PanelApp'
-import { Alert, api, Button, Card, csvCell, downloadText, Empty, fmtDate, inputCls, StatusBadge } from './ui'
+import { Alert, api, Button, Card, csvCell, downloadText, Empty, inputCls, StatusBadge } from './ui'
 
 interface Row {
   id: string
@@ -63,6 +64,7 @@ function parseCsv(text: string) {
 }
 
 export default function Products({ go, me }: { go: (v: View) => void; me: Me }) {
+  const { t, labels, date, number } = useT()
   const [rows, setRows] = useState<Row[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
@@ -77,7 +79,7 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
       const data = await api<{ products: Row[] }>('products.list')
       setRows(data.products)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Liste alınamadı')
+      setError(err instanceof Error ? err.message : 'Error')
     }
   }, [])
 
@@ -86,6 +88,8 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
     void load()
   }, [load])
 
+  const nameOf = useCallback((r: Row) => readTextsMap(r.texts)[r.default_lang]?.name || t('pr_unnamed'), [t])
+
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase()
     return (rows || []).filter((r) => {
@@ -93,35 +97,20 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
       if (status && status !== 'active' && r.status !== status) return false
       if (category && r.data.category !== category) return false
       if (!needle) return true
-      const texts = readTextsMap(r.texts)
-      const name = texts[r.default_lang]?.name || ''
-      return [name, r.data.brand, r.data.model, r.data.gtin, r.public_id].some((v) => String(v || '').toLowerCase().includes(needle))
+      return [nameOf(r), r.data.brand, r.data.model, r.data.gtin, r.public_id].some((v) => String(v || '').toLowerCase().includes(needle))
     })
-  }, [rows, q, status, category])
+  }, [rows, q, status, category, nameOf])
 
-  const nameOf = (r: Row) => readTextsMap(r.texts)[r.default_lang]?.name || 'İsimsiz ürün'
+  const statusLabel = (s: string) => (s === 'published' ? t('st_published') : s === 'archived' ? t('st_archived') : t('st_draft'))
 
   const exportCsv = () => {
-    const header = ['Ürün', 'Marka', 'Model', 'GTIN', 'Kategori', 'Durum', 'Sürüm', 'Seri no adedi', 'Belge', 'Okutma (30 gün)', 'Pasaport adresi', 'Son güncelleme']
+    const header = [t('csv_product'), t('csv_brand'), t('csv_model'), 'GTIN', t('csv_category'), t('csv_status'), t('csv_version'), t('csv_serial_count'), t('csv_documents'), t('csv_scans30'), t('csv_url'), t('csv_updated')]
     const lines = list.map((r) =>
-      [
-        nameOf(r),
-        r.data.brand,
-        r.data.model,
-        r.data.gtin,
-        DPP_CATEGORIES[r.data.category || 'other'],
-        r.status,
-        r.version,
-        r.items,
-        r.documents,
-        r.scans30,
-        `${window.location.origin}/p/${r.public_id}`,
-        fmtDate(r.updated_at),
-      ]
+      [nameOf(r), r.data.brand, r.data.model, r.data.gtin, labels.categories[r.data.category || 'other'], statusLabel(r.status), r.version, r.items, r.documents, r.scans30, `${window.location.origin}/p/${r.public_id}`, date(r.updated_at)]
         .map(csvCell)
         .join(';')
     )
-    downloadText(`dpp-urunler-${new Date().toISOString().slice(0, 10)}.csv`, [header.join(';'), ...lines].join('\n'))
+    downloadText(`dpp-products-${new Date().toISOString().slice(0, 10)}.csv`, [header.map(csvCell).join(';'), ...lines].join('\n'))
   }
 
   const importCsv = async (file: File) => {
@@ -130,13 +119,13 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
     setInfo(null)
     try {
       const parsed = parseCsv(await file.text())
-      if (!parsed.length) throw new Error('Dosyada satır bulunamadı')
-      if (!('name' in parsed[0])) throw new Error('İlk satırda "name" sütunu olmalı. Şablonu indirip kullan.')
+      if (!parsed.length) throw new Error(t('pr_err_norows'))
+      if (!('name' in parsed[0])) throw new Error(t('pr_err_noname'))
       const res = await api<{ created: number; errors: string[] }>('products.import', { rows: parsed })
-      setInfo(`${res.created} taslak ürün oluşturuldu.${res.errors.length ? ` ${res.errors.length} satır atlandı: ${res.errors.slice(0, 5).join(' · ')}` : ''}`)
+      setInfo([t('pr_imported', { n: res.created }), res.errors.length ? t('pr_skipped', { n: res.errors.length, list: res.errors.slice(0, 5).join(' · ') }) : ''].filter(Boolean).join(' '))
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'İçe aktarma başarısız')
+      setError(err instanceof Error ? err.message : t('err_generic'))
     } finally {
       setImporting(false)
     }
@@ -146,39 +135,37 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Ürün pasaportları</h1>
-          <p className="text-sm text-slate-500">Her ürün modeli için bir pasaport; tekil ürünler için seri numarası üretebilirsin.</p>
+          <h1 className="text-2xl font-bold">{t('nav_products')}</h1>
+          <p className="text-sm text-slate-500">{t('pr_sub')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && (
             <>
               <details className="relative">
-                <summary className="inline-flex cursor-pointer list-none items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">
-                  ⬆ Toplu içe aktar
-                </summary>
-                <div className="absolute right-0 z-20 mt-2 w-80 space-y-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-lg">
-                  <p className="text-slate-600">CSV ile çok sayıda ürünü taslak olarak ekle. Malzemeleri “Pamuk 95; Elastan 5” biçiminde yaz.</p>
+                <summary className="inline-flex cursor-pointer list-none items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">{t('pr_import')}</summary>
+                <div className="absolute end-0 z-20 mt-2 w-80 space-y-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-lg">
+                  <p className="text-slate-600">{t('pr_import_help')}</p>
                   <Button
                     size="sm"
                     onClick={() =>
                       downloadText(
-                        'dpp-urun-sablonu.csv',
+                        'dpp-template.csv',
                         [
                           IMPORT_HEADERS.join(';'),
-                          ['Organik Pamuk Tişört', 'Örnek Marka', 'TS-001', '8690000000000', 'textile', 'TR', 'Örnek Tekstil A.Ş.', 'İstanbul, Türkiye', 'Organik pamuk 95; Elastan 5', 'Unisex basic tişört', '30°C’de yıkayın'].map(csvCell).join(';'),
+                          [t('tpl_name'), t('tpl_brand'), 'TS-001', '', 'textile', 'TR', t('tpl_manufacturer'), t('tpl_address'), t('tpl_materials'), t('tpl_description'), t('tpl_care')].map(csvCell).join(';'),
                         ].join('\n')
                       )
                     }
                   >
-                    ⬇ Şablonu indir
+                    {t('pr_template')}
                   </Button>
                   <label className="block">
-                    <span className="mb-1 block text-xs font-semibold text-slate-600">CSV dosyası seç</span>
+                    <span className="mb-1 block text-xs font-semibold text-slate-600">{t('pr_choose_csv')}</span>
                     <input
                       type="file"
                       accept=".csv,text/csv"
                       disabled={importing}
-                      className="block w-full text-xs"
+                      className="block w-full text-xs file:me-3 file:rounded-lg file:border-0 file:bg-[#0f3d5e] file:px-3 file:py-1.5 file:font-semibold file:text-white"
                       onChange={(e) => {
                         const f = e.target.files?.[0]
                         if (f) void importCsv(f)
@@ -186,11 +173,13 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
                       }}
                     />
                   </label>
-                  <p className="text-xs text-slate-500">Kategori kodları: {Object.keys(DPP_CATEGORIES).join(', ')}</p>
+                  <p className="text-xs text-slate-500" dir="ltr">
+                    {t('pr_cat_codes')} {Object.keys(DPP_CATEGORIES).join(', ')}
+                  </p>
                 </div>
               </details>
               <Button variant="primary" onClick={() => go({ page: 'product', id: null })}>
-                ＋ Yeni ürün
+                {t('pr_new')}
               </Button>
             </>
           )}
@@ -199,50 +188,50 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
 
       {error && <Alert>{error}</Alert>}
       {info && <Alert tone="success">{info}</Alert>}
-      {importing && <Alert tone="info">İçe aktarılıyor…</Alert>}
+      {importing && <Alert tone="info">{t('pr_importing')}</Alert>}
 
       <Card>
         <div className="mb-4 flex flex-wrap gap-2">
-          <input className={`${inputCls} max-w-xs`} placeholder="Ürün adı, marka, model, GTIN…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className={`${inputCls} max-w-xs`} placeholder={t('pr_search')} value={q} onChange={(e) => setQ(e.target.value)} />
           <select className={`${inputCls} w-auto`} value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="active">Aktif (taslak + yayında)</option>
-            <option value="published">Yayında</option>
-            <option value="draft">Taslak</option>
-            <option value="archived">Arşivde</option>
-            <option value="">Tümü</option>
+            <option value="active">{t('pr_f_active')}</option>
+            <option value="published">{t('st_published')}</option>
+            <option value="draft">{t('st_draft')}</option>
+            <option value="archived">{t('st_archived')}</option>
+            <option value="">{t('pr_f_all')}</option>
           </select>
           <select className={`${inputCls} w-auto`} value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">Tüm kategoriler</option>
-            {Object.entries(DPP_CATEGORIES).map(([k, v]) => (
+            <option value="">{t('pr_f_allcats')}</option>
+            {Object.keys(DPP_CATEGORIES).map((k) => (
               <option key={k} value={k}>
-                {v}
+                {labels.categories[k as DppCategory]}
               </option>
             ))}
           </select>
-          <Button className="ml-auto" onClick={exportCsv} disabled={!list.length}>
-            ⬇ Listeyi indir (CSV)
+          <Button className="ms-auto" onClick={exportCsv} disabled={!list.length}>
+            {t('pr_export')}
           </Button>
         </div>
 
         {rows === null ? (
-          <p className="py-8 text-center text-slate-500">Yükleniyor…</p>
+          <p className="py-8 text-center text-slate-500">{t('loading')}</p>
         ) : rows.length === 0 ? (
-          <Empty icon="📦" title="Henüz ürün pasaportu yok">
-            {canEdit ? 'Sağ üstteki “Yeni ürün” ile ilk pasaportunu oluştur ya da CSV ile toplu ekle.' : 'Firmanızda henüz ürün yok.'}
+          <Empty icon="📦" title={t('pr_empty_title')}>
+            {canEdit ? t('pr_empty_edit') : t('pr_empty_view')}
           </Empty>
         ) : list.length === 0 ? (
-          <p className="py-8 text-center text-slate-500">Filtreye uyan ürün yok</p>
+          <p className="py-8 text-center text-slate-500">{t('pr_no_match')}</p>
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[760px] text-sm">
-              <thead className="border-y border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="border-y border-slate-200 bg-slate-50 text-start text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-5 py-2.5">Ürün</th>
-                  <th className="px-3 py-2.5">GTIN</th>
-                  <th className="px-3 py-2.5">Durum</th>
-                  <th className="px-3 py-2.5 text-right">Seri no</th>
-                  <th className="px-3 py-2.5 text-right">Okutma</th>
-                  <th className="px-5 py-2.5 text-right">Güncelleme</th>
+                  <th className="px-5 py-2.5 text-start">{t('th_product')}</th>
+                  <th className="px-3 py-2.5 text-start">GTIN</th>
+                  <th className="px-3 py-2.5 text-start">{t('th_status')}</th>
+                  <th className="px-3 py-2.5 text-end">{t('th_serials')}</th>
+                  <th className="px-3 py-2.5 text-end">{t('th_scans')}</th>
+                  <th className="px-5 py-2.5 text-end">{t('th_updated')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -258,20 +247,20 @@ export default function Products({ go, me }: { go: (v: View) => void; me: Me }) 
                         )}
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{nameOf(r)}</p>
-                          <p className="truncate text-xs text-slate-500">
-                            {[r.data.brand, r.data.model, DPP_CATEGORIES[r.data.category || 'other']].filter(Boolean).join(' · ')}
-                          </p>
+                          <p className="truncate text-xs text-slate-500">{[r.data.brand, r.data.model, labels.categories[r.data.category || 'other']].filter(Boolean).join(' · ')}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3 font-mono text-xs">{r.data.gtin || '—'}</td>
+                    <td className="px-3 py-3 font-mono text-xs" dir="ltr">
+                      {r.data.gtin || '—'}
+                    </td>
                     <td className="px-3 py-3">
                       <StatusBadge status={r.status} changes={r.has_draft_changes} />
-                      {r.version > 0 && <span className="ml-1 text-xs text-slate-400">v{r.version}</span>}
+                      {r.version > 0 && <span className="ms-1 text-xs text-slate-400">v{r.version}</span>}
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums">{r.items.toLocaleString('tr-TR')}</td>
-                    <td className="px-3 py-3 text-right tabular-nums">{r.scans30.toLocaleString('tr-TR')}</td>
-                    <td className="px-5 py-3 text-right text-xs text-slate-500">{fmtDate(r.updated_at)}</td>
+                    <td className="px-3 py-3 text-end tabular-nums">{number(r.items)}</td>
+                    <td className="px-3 py-3 text-end tabular-nums">{number(r.scans30)}</td>
+                    <td className="px-5 py-3 text-end text-xs text-slate-500">{date(r.updated_at)}</td>
                   </tr>
                 ))}
               </tbody>

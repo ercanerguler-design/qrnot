@@ -1,6 +1,8 @@
 // Dijital Ürün Pasaportu (DPP) — istemci ve sunucunun ortak kullandığı tipler, sabitler ve doğrulayıcılar.
 // Sunucuya özel import yok: panel bileşenleri de bu dosyayı kullanır.
 
+import { DppError, type MsgKey, type MsgParams } from './i18n'
+
 export const DPP_LANGS = ['tr', 'en', 'de', 'fr', 'es', 'nl', 'ar', 'ru'] as const
 export type DppLang = (typeof DPP_LANGS)[number]
 
@@ -210,7 +212,7 @@ export function sanitizeData(input: unknown): DppData {
   const rep = (o.repairability && typeof o.repairability === 'object' ? o.repairability : {}) as Record<string, unknown>
   const res = (o.restricted && typeof o.restricted === 'object' ? o.restricted : {}) as Record<string, unknown>
   const gtin = normalizeGtin(o.gtin)
-  if (gtin === null) throw new Error('GTIN / barkod geçersiz (8, 12, 13 ya da 14 hane, kontrol hanesi doğru olmalı)')
+  if (gtin === null) throw new DppError('e_gtin_invalid')
   const category = str(o.category, 24)
   return {
     brand: str(o.brand, 120),
@@ -272,16 +274,16 @@ export function readTextsMap(input: unknown): Partial<Record<DppLang, DppTexts>>
 }
 
 /** Yayın öncesi kontrol: pasaportun anlamlı olması için gereken asgari alanlar. */
-export function publishIssues(texts: Partial<Record<DppLang, DppTexts>>, defaultLang: DppLang, data: DppData): string[] {
+export function publishIssues(texts: Partial<Record<DppLang, DppTexts>>, defaultLang: DppLang, data: DppData): Array<{ key: MsgKey; params?: MsgParams }> {
   const t = texts[defaultLang]
-  const issues: string[] = []
-  if (!t?.name) issues.push('Ürün adı')
-  if (!data.brand) issues.push('Marka')
-  if (!data.manufacturer.name) issues.push('Üretici adı')
-  if (!data.countryOfOrigin) issues.push('Menşe ülke')
-  if (data.materials.length === 0) issues.push('En az bir malzeme')
+  const issues: Array<{ key: MsgKey; params?: MsgParams }> = []
+  if (!t?.name) issues.push({ key: 'iss_name' })
+  if (!data.brand) issues.push({ key: 'iss_brand' })
+  if (!data.manufacturer.name) issues.push({ key: 'iss_manufacturer' })
+  if (!data.countryOfOrigin) issues.push({ key: 'iss_origin' })
+  if (data.materials.length === 0) issues.push({ key: 'iss_material' })
   const total = data.materials.reduce((sum, m) => sum + (m.percent || 0), 0)
-  if (data.materials.some((m) => m.percent !== null) && Math.abs(total - 100) > 0.5) issues.push(`Malzeme oranları toplamı %100 olmalı (şu an %${Math.round(total * 10) / 10})`)
+  if (data.materials.some((m) => m.percent !== null) && Math.abs(total - 100) > 0.5) issues.push({ key: 'iss_material_sum', params: { n: Math.round(total * 10) / 10 } })
   return issues
 }
 

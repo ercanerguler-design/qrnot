@@ -1,13 +1,15 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import type { MsgKey } from '@/lib/dpp/i18n'
+import { LangSelect, PanelI18nProvider, useT } from './i18n'
 import Overview from './Overview'
 import ProductEditor from './ProductEditor'
 import Products from './Products'
 import Settings from './Settings'
-import { Alert, Button, Field, inputCls } from './ui'
+import { Alert, authApi, Button, Field, inputCls } from './ui'
 
-// DPP firma paneli: giriş, ilk girişte şifre değiştirme ve sol menülü uygulama kabuğu.
+// DPP firma paneli: giriş, ilk girişte şifre değiştirme ve sol menülü uygulama kabuğu (8 dil).
 
 export interface Me {
   id: string
@@ -22,15 +24,13 @@ export interface Me {
 
 export type View = { page: 'overview' } | { page: 'products' } | { page: 'product'; id: string | null } | { page: 'company' } | { page: 'users' } | { page: 'account' }
 
-const NAV: Array<{ page: View['page']; icon: string; label: string; ownerOnly?: boolean }> = [
-  { page: 'overview', icon: '📊', label: 'Genel bakış' },
-  { page: 'products', icon: '📦', label: 'Ürün pasaportları' },
-  { page: 'company', icon: '🏢', label: 'Firma bilgileri' },
-  { page: 'users', icon: '👥', label: 'Ekip', ownerOnly: true },
-  { page: 'account', icon: '🔑', label: 'Hesabım' },
+const NAV: Array<{ page: View['page']; icon: string; label: MsgKey; ownerOnly?: boolean }> = [
+  { page: 'overview', icon: '📊', label: 'nav_overview' },
+  { page: 'products', icon: '📦', label: 'nav_products' },
+  { page: 'company', icon: '🏢', label: 'nav_company' },
+  { page: 'users', icon: '👥', label: 'nav_team', ownerOnly: true },
+  { page: 'account', icon: '🔑', label: 'nav_account' },
 ]
-
-const ROLE_LABEL = { owner: 'Yönetici', editor: 'Editör', viewer: 'İzleyici' }
 
 function viewFromUrl(): View {
   const p = new URLSearchParams(window.location.search)
@@ -41,6 +41,15 @@ function viewFromUrl(): View {
 }
 
 export default function PanelApp() {
+  return (
+    <PanelI18nProvider>
+      <Shell />
+    </PanelI18nProvider>
+  )
+}
+
+function Shell() {
+  const { t } = useT()
   const [me, setMe] = useState<Me | null | undefined>(undefined)
   const [view, setView] = useState<View>({ page: 'overview' })
 
@@ -77,11 +86,11 @@ export default function PanelApp() {
   }, [])
 
   const logout = async () => {
-    await fetch('/api/dpp/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) })
+    await authApi({ action: 'logout' }).catch(() => undefined)
     setMe(null)
   }
 
-  if (me === undefined) return <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">Yükleniyor…</div>
+  if (me === undefined) return <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">{t('loading')}</div>
   if (me === null) return <Login onDone={loadMe} />
   if (me.mustChangePassword) return <FirstPassword me={me} onDone={loadMe} />
 
@@ -91,19 +100,20 @@ export default function PanelApp() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#0f3d5e] text-xs font-bold text-white">DPP</span>
-            <div className="leading-tight">
-              <p className="font-semibold">{me.companyName}</p>
-              <p className="text-xs text-slate-500">Dijital Ürün Pasaportu · QRNot</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0f3d5e] text-xs font-bold text-white">DPP</span>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate font-semibold">{me.companyName}</p>
+              <p className="truncate text-xs text-slate-500">{t('app_subtitle')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">
-              {me.email} · {ROLE_LABEL[me.role]}
+          <div className="flex shrink-0 items-center gap-2 text-sm">
+            <span className="hidden text-slate-500 md:inline">
+              {me.email} · {t(`role_${me.role}`)}
             </span>
+            <LangSelect />
             <Button variant="ghost" size="sm" onClick={() => void logout()}>
-              Çıkış
+              {t('logout')}
             </Button>
           </div>
         </div>
@@ -121,11 +131,11 @@ export default function PanelApp() {
               }`}
             >
               <span aria-hidden>{n.icon}</span>
-              {n.label}
+              {t(n.label)}
             </button>
           ))}
           <a href="/dpp" target="_blank" className="hidden rounded-xl px-3 py-2 text-xs text-slate-500 hover:bg-slate-200/60 lg:mt-6 lg:block">
-            DPP rehberi ↗
+            {t('nav_guide')}
           </a>
         </nav>
 
@@ -141,9 +151,13 @@ export default function PanelApp() {
 }
 
 function AuthFrame({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+  const { t } = useT()
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-sky-50 px-4 py-10 text-slate-900">
       <div className="w-full max-w-sm">
+        <div className="mb-4 flex justify-end">
+          <LangSelect />
+        </div>
         <div className="mb-6 text-center">
           <span className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-[#0f3d5e] text-sm font-bold text-white">DPP</span>
           <h1 className="mt-3 text-xl font-bold">{title}</h1>
@@ -151,9 +165,9 @@ function AuthFrame({ title, subtitle, children }: { title: string; subtitle: str
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">{children}</div>
         <p className="mt-4 text-center text-xs text-slate-500">
-          QRNot Dijital Ürün Pasaportu ·{' '}
+          {t('footer_brand')} ·{' '}
           <a href="/dpp" className="underline">
-            Bilgi
+            {t('footer_info')}
           </a>
         </p>
       </div>
@@ -162,6 +176,7 @@ function AuthFrame({ title, subtitle, children }: { title: string; subtitle: str
 }
 
 function Login({ onDone }: { onDone: () => Promise<void> }) {
+  const { t } = useT()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -172,37 +187,36 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch('/api/dpp/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', email, password }) })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı')
+      await authApi({ action: 'login', email, password })
       await onDone()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Giriş yapılamadı')
+      setError(err instanceof Error ? err.message : t('err_login_failed'))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <AuthFrame title="DPP Paneli" subtitle="Firma hesabınla giriş yap">
+    <AuthFrame title={t('login_title')} subtitle={t('login_sub')}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="E-posta">
-          <input className={inputCls} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Field label={t('f_email')}>
+          <input className={inputCls} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required dir="ltr" />
         </Field>
-        <Field label="Şifre">
+        <Field label={t('f_password')}>
           <input className={inputCls} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
         {error && <Alert>{error}</Alert>}
         <Button type="submit" variant="primary" className="w-full py-3" disabled={busy}>
-          {busy ? 'Giriş yapılıyor…' : 'Giriş yap'}
+          {busy ? t('login_busy') : t('login_btn')}
         </Button>
-        <p className="text-center text-xs text-slate-500">Şifreni unuttuysan firma yöneticinden ya da QRNot destekten sıfırlama iste.</p>
+        <p className="text-center text-xs text-slate-500">{t('login_forgot')}</p>
       </form>
     </AuthFrame>
   )
 }
 
 function FirstPassword({ me, onDone }: { me: Me; onDone: () => Promise<void> }) {
+  const { t } = useT()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [again, setAgain] = useState('')
@@ -211,36 +225,34 @@ function FirstPassword({ me, onDone }: { me: Me; onDone: () => Promise<void> }) 
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (next !== again) return setError('Yeni şifreler eşleşmiyor')
+    if (next !== again) return setError(t('err_pw_mismatch'))
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch('/api/dpp/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password', current, next }) })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Şifre değiştirilemedi')
+      await authApi({ action: 'password', current, next })
       await onDone()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Şifre değiştirilemedi')
+      setError(err instanceof Error ? err.message : t('err_pw_change'))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <AuthFrame title="Şifreni belirle" subtitle={`${me.email} · ilk giriş için kendi şifreni oluştur`}>
+    <AuthFrame title={t('fp_title')} subtitle={t('fp_sub', { email: me.email })}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Size verilen geçici şifre">
+        <Field label={t('fp_temp')}>
           <input className={inputCls} type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
         </Field>
-        <Field label="Yeni şifre" hint="En az 8 karakter">
+        <Field label={t('f_new_pw')} hint={t('hint_min8')}>
           <input className={inputCls} type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} minLength={8} required />
         </Field>
-        <Field label="Yeni şifre (tekrar)">
+        <Field label={t('f_new_pw_again')}>
           <input className={inputCls} type="password" autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} minLength={8} required />
         </Field>
         {error && <Alert>{error}</Alert>}
         <Button type="submit" variant="primary" className="w-full py-3" disabled={busy}>
-          {busy ? 'Kaydediliyor…' : 'Şifreyi kaydet ve devam et'}
+          {busy ? t('saving') : t('fp_btn')}
         </Button>
       </form>
     </AuthFrame>

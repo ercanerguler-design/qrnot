@@ -58,6 +58,8 @@ export default async function PassportPage({ params, searchParams }: Props) {
     }
   }
   const fmt = new Intl.NumberFormat(uiLang, { maximumFractionDigits: 2 })
+  // Yüzde biçimi dile göre: TR "%95", EN/DE "95%", FR "95 %"
+  const pct = (value: number) => new Intl.NumberFormat(uiLang, { style: "percent", maximumFractionDigits: 1 }).format(value / 100)
   const date = (iso: string) => new Date(iso).toLocaleDateString(uiLang, { year: 'numeric', month: 'long', day: 'numeric' })
   const keyParam = view.restrictedAccess && k ? `?k=${encodeURIComponent(k)}` : ''
   const langHref = (l: DppLang) => `/p/${id}?lang=${l}${view.restrictedAccess && k ? `&k=${encodeURIComponent(k)}` : ''}`
@@ -82,8 +84,8 @@ export default async function PassportPage({ params, searchParams }: Props) {
     [L.carbon, d.environment.carbonKg !== null ? `${fmt.format(d.environment.carbonKg)} kg CO₂e` : ''],
     [L.water, d.environment.waterLiters !== null ? `${fmt.format(d.environment.waterLiters)} L` : ''],
     [L.energy, d.environment.energyKwh !== null ? `${fmt.format(d.environment.energyKwh)} kWh` : ''],
-    [L.recycledContent, d.environment.recycledContentPercent !== null ? `%${fmt.format(d.environment.recycledContentPercent)}` : ''],
-    [L.recyclable, d.environment.recyclablePercent !== null ? `%${fmt.format(d.environment.recyclablePercent)}` : ''],
+    [L.recycledContent, d.environment.recycledContentPercent !== null ? pct(d.environment.recycledContentPercent) : ''],
+    [L.recyclable, d.environment.recyclablePercent !== null ? pct(d.environment.recyclablePercent) : ''],
     [L.lifetime, d.environment.expectedLifetimeYears !== null ? `${fmt.format(d.environment.expectedLifetimeYears)} ${L.years}` : ''],
   ].filter((f): f is [string, string] => Boolean(f[1]))
 
@@ -205,7 +207,7 @@ export default async function PassportPage({ params, searchParams }: Props) {
                 <li key={i}>
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="font-medium">{materialName(d as DppData, view.texts, contentLang, view.defaultLang, i)}</span>
-                    {m.percent !== null && <span className="font-semibold tabular-nums">%{fmt.format(m.percent)}</span>}
+                    {m.percent !== null && <span className="font-semibold tabular-nums">{pct(m.percent)}</span>}
                   </div>
                   {m.percent !== null && (
                     <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#eef2f6]">
@@ -214,7 +216,7 @@ export default async function PassportPage({ params, searchParams }: Props) {
                   )}
                   {(m.recycledPercent || m.origin) && (
                     <p className="mt-1 text-xs text-[#6b7b8f]">
-                      {m.recycledPercent ? `♻️ %${fmt.format(m.recycledPercent)} ${L.recycled}` : ''}
+                      {m.recycledPercent ? `♻️ ${pct(m.recycledPercent)} ${L.recycled}` : ''}
                       {m.recycledPercent && m.origin ? ' · ' : ''}
                       {m.origin ? `${L.materialOrigin}: ${m.origin}` : ''}
                     </p>

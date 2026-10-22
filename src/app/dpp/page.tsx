@@ -348,7 +348,7 @@ function PassportMock({ lang }: { lang: Lang }) {
               <div key={String(name)}>
                 <div className="flex justify-between">
                   <span>{name}</span>
-                  <span className="font-semibold">%{pct}</span>
+                  <span className="font-semibold">{en ? `${pct}%` : `%${pct}`}</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-[#eef2f6]">
                   <div className="h-full rounded-full bg-[#2f7fb3]" style={{ width: `${pct}%` }} />
@@ -358,8 +358,8 @@ function PassportMock({ lang }: { lang: Lang }) {
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
             {[
-              ['2,1 kg', 'CO₂e'],
-              ['%30', en ? 'recycled' : 'geri dönüşüm'],
+              [en ? '2.1 kg' : '2,1 kg', 'CO₂e'],
+              [en ? '30%' : '%30', en ? 'recycled' : 'geri dönüşüm'],
               ['24 ' + (en ? 'mo' : 'ay'), en ? 'warranty' : 'garanti'],
             ].map(([v, k]) => (
               <div key={k} className="rounded-xl bg-[#f3f8f4] py-2">

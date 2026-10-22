@@ -18,7 +18,7 @@ Görseller bu klasörde; hepsi `node deliverables/dpp/build-dpp.mjs` ile yeniden
 | `sosyal/<tr\|en>/9x16-story-reels-tiktok/` | 1080×1920, 4 kare | Instagram / Facebook Story, Reels kapağı, TikTok, YouTube Shorts |
 | `assets/` | Canlı sistemden gerçek ekran görüntüleri | Teklif dosyası, web sitesi, basın |
 
-**Dil kuralı:** `tr` klasörlerindeki her görsel Türkçe, `en` klasörlerindeki her görsel İngilizce içeriklidir. Çok dilli pasaportu göstermek için kullanılan telefonlar bilerek farklı dillerdedir (TR setinde TR/DE/AR, EN setinde EN/DE/AR) ve altlarında dil etiketi yazar. Firma paneli arayüzü şu an Türkçe olduğu için **İngilizce materyallerde panel ekran görüntüsü yoktur**; onun yerine dilden bağımsız gerçek çıktılar (etiket sayfası, yayın geçmişi, JSON veri) kullanılır ve İngilizce katalogda "panel arayüzü şu an Türkçe" notu açıkça yazar.
+**Dil kuralı:** `tr` klasörlerindeki her görsel Türkçe, `en` klasörlerindeki her görsel İngilizce içeriklidir. Çok dilli pasaportu göstermek için kullanılan telefonlar bilerek farklı dillerdedir (TR setinde TR/DE/AR, EN setinde EN/DE/AR) ve altlarında dil etiketi yazar. Firma paneli 8 dilde çalıştığı için her set kendi dilindeki panel ekranlarını kullanır: Türkçe materyalde Türkçe, İngilizce materyalde İngilizce arayüz. İngilizce materyalde paneldeki "Diller" sekmesi kullanılmaz (çeviri düzenlerken Türkçe içerik gösterdiği için).
 
 **Ekran görüntüleri:** Canlı sistemden, örnek bir firma ("Anadolu Tekstil A.Ş.", "Anadolu Wear") ve örnek verilerle alındı. Bu firma ve markalar gerçek değildir; katalogda "örnek verilerle, görseller temsilidir" notu vardır.
 
@@ -37,7 +37,6 @@ Görseller bu klasörde; hepsi `node deliverables/dpp/build-dpp.mjs` ile yeniden
 - Tekstil, mobilya vb. için kesin tarih — bu tarihler ikincil düzenlemelerle belirlenecek. "Sizin ürün grubunuz için güncel takvimi birlikte netleştiriyoruz" de.
 - "Uyumluluk sorumluluğunu biz alıyoruz" — sorumluluk üreticidedir; biz süreci kolaylaştırıyoruz.
 - Fiyat — paketler ürün sayısıyla tanımlı, fiyat teklifle verilir.
-- "Panel İngilizce" — panel şu an Türkçe. Pasaportlar 8 dilde.
 
 ---
 
@@ -79,7 +78,7 @@ Karşıdaki firmanın sektörünü işaret et. Mesaj: erken başlayan öne geçe
 Uygulama yok; 8 dil; Arapça sağdan sola. Tekil üründe seri no, parti, üretim tarihi. Canlı demoda dili değiştirerek göster.
 
 **7 · Firma paneli**
-TR sunumda: panel ekranlarını göster — genel bakış, sekmeli düzenleyici, yayın öncesi eksik kontrolü (%100 kuralı). EN sunumda: yayın geçmişi ve JSON veri; "panel arayüzü Türkçe, pasaportlar 8 dilde" notunu söyle.
+Panel ekranlarını göster: genel bakış, sekmeli düzenleyici, yayın öncesi eksik kontrolü (%100 kuralı). Panelin de 8 dilde kullanılabildiğini söyle: sağ üstteki dil seçiciyle her kullanıcı kendi dilini seçer; AB’deki ithalatçı ya da yabancı ekip kendi dilinde çalışır.
 
 **8 · Üretimden rafa**
 Seri numarası üretimi (tek seferde 2.000'e kadar), etiket baskısı (25–50 mm) ya da CSV ile lazer / etiket yazılımı. GS1 Digital Link: mevcut barkodlu ürünlerde standart adres de pasaportu açar.
@@ -122,7 +121,7 @@ QR'ı okutturup örnek pasaportu açtır. Net bir sonraki adım iste: *"Önümü
 > Hassas bilgiler "yetkili erişim" alanında durur; sadece sizin verdiğiniz anahtarla görünür ve anahtarı istediğiniz an yenileyebilirsiniz. Taslaktaki değişiklikler siz yayınlamadan görünmez. Okutmalarda kişisel veri tutulmaz.
 
 **"Panel İngilizce mi?"**
-> Panel arayüzü şu an Türkçe; pasaportlar 8 dilde yayınlanıyor. Ekibinizde yabancı kullanıcı varsa bunu konuşalım.
+> Evet. Panel 8 dilde kullanılabiliyor (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Felemenkçe, Arapça, Rusça). Her kullanıcı kendi dilini seçer; uyarı ve hata mesajları da o dilde gelir. Pasaportlar da 8 dilde yayınlanıyor.
 
 **"Ne kadar?"**
 > Ürün modeli sayısına ve hizmet kapsamına göre teklif hazırlıyoruz. Seri numarası sınırsız. Önce pilotla ihtiyacınızı netleştirelim.
@@ -302,5 +301,4 @@ node deliverables/dpp/build-dpp.mjs
 ```
 
 - Metinler `build-dpp.mjs` içindeki `T.tr` ve `T.en` nesnelerindedir.
-- Ekran görüntüleri `assets/` klasöründedir. Dosya adı kuralı: `passport-<materyal dili>-<arayüz dili>.png` ve `panel-tr-*.png`.
-- Panel İngilizce arayüze kavuşursa `panel-en-*.png` görüntüleri eklenip İngilizce materyallere panel ekranları da konabilir.
+- Ekran görüntüleri `assets/` klasöründedir. Dosya adı kuralı: `passport-<materyal dili>-<arayüz dili>.png` ve `panel-<tr|en>-*.png` (panel arayüzü materyalin dilinde).

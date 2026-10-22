@@ -92,7 +92,7 @@ const T = {
       ['Languages', 'Otomatik çeviri', 'Yapay zekâ ile 7 dile çevir, kontrol et, yayınla'],
       ['FileUp', 'Belgeler', 'PDF / görsel; herkese açık ya da kısıtlı'],
       ['Upload', 'CSV içe aktarma', 'Yüzlerce ürünü tek dosyayla taslak olarak ekle'],
-      ['Users', 'Ekip ve roller', 'Yönetici, editör, izleyici'],
+      ['Users', 'Ekip, roller, 8 dilli panel', 'Yönetici, editör, izleyici · panel 8 dilde kullanılabilir'],
     ],
     prodKicker: 'Üretimden rafa',
     prodTitle: 'Etiketi bir kez basın.',
@@ -147,7 +147,6 @@ const T = {
         [1, '1 Ekim 2026', 'İlk yayın'],
       ],
     },
-    panelLangNote: '',
     whyTitle: 'Neden QRNot?',
     why: [
       ['Factory', 'QR / NFC üretim deneyimi', 'Fiziksel QR ve NFC ürünlerini kendimiz üretiyor, etiket baskısını biliyoruz.'],
@@ -246,7 +245,7 @@ const T = {
       ['Languages', 'Auto-translation', 'Translate into 7 languages with AI, review, publish'],
       ['FileUp', 'Documents', 'PDF / images, public or restricted'],
       ['Upload', 'CSV import', 'Add hundreds of products as drafts in one file'],
-      ['Users', 'Team and roles', 'Owner, editor, viewer'],
+      ['Users', 'Team, roles, 8-language panel', 'Owner, editor, viewer · the panel itself works in 8 languages'],
     ],
     prodKicker: 'From line to shelf',
     prodTitle: 'Print the label once.',
@@ -301,7 +300,6 @@ const T = {
         [1, 'October 1, 2026', 'First publication'],
       ],
     },
-    panelLangNote: 'The company panel interface is currently in Turkish; passports are published in 8 languages.',
     whyTitle: 'Why QRNot?',
     why: [
       ['Factory', 'QR / NFC production know-how', 'We produce physical QR and NFC products ourselves and know label printing.'],
@@ -425,6 +423,8 @@ const jsonCard = (height) => `<div style="height:${height}px;background:#0b1b2b;
   <b style="color:${C.mint}">"documents"</b>: [ … ]
 }`}</div>`
 
+const PANEL = (t, name) => `panel-${t.lang}-${name}.png`
+const PANEL_SECOND = (t) => (t.lang === 'tr' ? PANEL(t, 'languages') : PANEL(t, 'items'))
 const browser = (img, url = 'qrnot.com/dpp/panel') =>
   `<div class="browser"><div class="bar"><span class="dot" style="background:#ff6058"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#28c840"></span><span class="url">🔒 ${url}</span></div><img src="${asset(img)}"></div>`
 
@@ -489,13 +489,8 @@ const catalogPages = (t) => [
     <div class="kicker" style="font-size:17px;color:${C.green};margin-top:64px">${t.panelKicker}</div>
     <h2 style="font-size:60px;margin-top:16px">${t.panelTitle}</h2>
     <p class="muted" style="font-size:21px;line-height:1.6;margin-top:18px">${t.panelLead}</p>
-    ${
-      t.lang === 'tr'
-        ? `<div style="margin-top:34px">${browserCrop('panel-tr-overview.png', 560)}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">${browserCrop('panel-tr-materials.png', 250)}${browserCrop('panel-tr-languages.png', 250)}</div>`
-        : `<div style="margin-top:34px;display:flex;flex-direction:column;gap:20px">${versionGraphic(t, 380)}${jsonCard(370)}</div>
-    <div class="soft" style="margin-top:20px;padding:22px 26px;display:flex;gap:14px;align-items:center">${icon('Info', 24, C.sky, 2)}<span style="font-size:18px">${t.panelLangNote}</span></div>`
-    }
+    <div style="margin-top:34px">${browserCrop(PANEL(t, 'overview'), 560)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">${browserCrop(PANEL(t, 'materials'), 250)}${browserCrop(PANEL_SECOND(t), 250)}</div>
     <div style="margin-top:auto;margin-bottom:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
       ${t.panelFeatures.map(([ic, title, desc], i) => `<div class="card" style="padding:18px 20px;display:flex;gap:16px;align-items:center">${ringIcon(ic, [C.sky, C.green, C.navy][i % 3], 48)}<div><div style="font-size:18px;font-weight:700">${title}</div><div class="muted" style="font-size:14px;margin-top:4px;line-height:1.35">${desc}</div></div></div>`).join('')}
     </div>` },
@@ -508,7 +503,7 @@ const catalogPages = (t) => [
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px">
       ${t.prodSteps.map(([ic, title, desc], i) => `<div class="soft" style="padding:22px;position:relative"><span class="head" style="position:absolute;right:20px;top:16px;font-size:34px;color:${C.line}">0${i + 1}</span>${ringIcon(ic, C.navy, 50, '#fff')}<div style="font-size:19px;font-weight:700;margin-top:14px">${title}</div><div class="muted" style="font-size:15px;margin-top:6px;line-height:1.4">${desc}</div></div>`).join('')}
     </div>
-    <div style="margin-top:30px">${t.lang === 'tr' ? browserCrop('panel-tr-labels.png', 640) : labelSheet(640)}</div>
+    <div style="margin-top:30px">${browserCrop(PANEL(t, 'labels'), 640)}</div>
     <div class="dark" style="margin-top:auto;margin-bottom:26px;border-radius:24px;padding:30px 34px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center">
       <div><div class="head" style="font-size:28px">${t.gs1Title}</div><div class="muted" style="font-size:18px;margin-top:8px">${t.gs1Lead}</div>
         <div style="margin-top:14px;font:600 22px Consolas, monospace;color:${C.mint}">${t.gs1Example}</div>
@@ -628,11 +623,7 @@ const deckSlides = (t) => [
         <p class="muted" style="font-size:22px;line-height:1.55;margin-top:22px">${t.panelLead}</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:auto;margin-bottom:24px">${t.panelFeatures.map(([ic, title, desc], i) => `<div style="display:flex;gap:14px;align-items:center">${ringIcon(ic, [C.sky, C.green, C.navy][i % 3], 44)}<div><span style="font-size:20px;font-weight:700">${title}</span> <span class="muted" style="font-size:17px">· ${desc}</span></div></div>`).join('')}</div>
       </div>
-      ${
-        t.lang === 'tr'
-          ? `<div style="position:relative">${browser('panel-tr-overview.png')}<div style="position:absolute;width:62%;right:-30px;bottom:-10px">${browser('panel-tr-editor.png')}</div></div>`
-          : `<div style="display:flex;flex-direction:column;gap:20px">${versionGraphic(t, 470)}${jsonCard(330)}<div class="muted" style="font-size:17px">${icon('Info', 18, C.sky, 2)} ${t.panelLangNote}</div></div>`
-      }
+      <div style="position:relative">${browser(PANEL(t, 'overview'))}<div style="position:absolute;width:62%;right:-30px;bottom:-10px">${browser(PANEL(t, 'editor'))}</div></div>
     </div>` },
   { slug: 'uretim-etiket', body: `
     <div style="display:grid;grid-template-columns:600px 1fr;gap:60px;flex:1">
@@ -642,7 +633,7 @@ const deckSlides = (t) => [
         <div style="display:flex;flex-direction:column;gap:14px;margin-top:28px">${t.prodSteps.map(([ic, title, desc], i) => `<div style="display:flex;gap:16px;align-items:center"><span class="head" style="font-size:28px;color:${C.green};width:44px">0${i + 1}</span>${ringIcon(ic, C.navy, 46)}<div><div style="font-size:20px;font-weight:700">${title}</div><div class="muted" style="font-size:16px">${desc}</div></div></div>`).join('')}</div>
         <div class="dark" style="border-radius:20px;padding:22px 26px;margin-top:auto;margin-bottom:24px"><div style="font-size:20px;font-weight:700">${t.gs1Title}</div><div style="font:600 20px Consolas, monospace;color:${C.mint};margin-top:8px">${t.gs1Example}</div></div>
       </div>
-      <div>${t.lang === 'tr' ? browser('panel-tr-labels.png') : labelSheet(820)}</div>
+      <div>${browser(PANEL(t, 'labels'))}</div>
     </div>` },
   { slug: 'guven', body: `
     ${sTitle(t, t.trustKicker, t.trustTitle)}
@@ -693,12 +684,8 @@ function socialVisual(i, t, h) {
   const tall = h >= 900
   const half = Math.round((h - 20) / 2)
   const stack = (a, b) => `<div style="display:flex;flex-direction:column;gap:20px">${a}${b}</div>`
-  if (i === 2) {
-    if (t.lang === 'tr') return tall ? stack(browserCrop('panel-tr-editor.png', half - 40), browserCrop('panel-tr-languages.png', half - 40)) : browserCrop('panel-tr-editor.png', h - 40)
-    return tall ? stack(versionGraphic(t, Math.round(h * 0.52)), jsonCard(Math.round(h * 0.46) - 20)) : versionGraphic(t, h)
-  }
-  if (t.lang === 'tr') return tall ? stack(browserCrop('panel-tr-labels.png', half - 40), browserCrop('panel-tr-items.png', half - 40)) : browserCrop('panel-tr-labels.png', h - 40)
-  return labelSheet(h, 5)
+  if (i === 2) return tall ? stack(browserCrop(PANEL(t, 'editor'), half - 40), browserCrop(PANEL(t, 'materials'), half - 40)) : browserCrop(PANEL(t, 'editor'), h - 40)
+  return tall ? stack(browserCrop(PANEL(t, 'labels'), half - 40), browserCrop(PANEL(t, 'items'), half - 40)) : browserCrop(PANEL(t, 'labels'), h - 40)
 }
 
 const socialPost = (p, i, t, fmt) => {

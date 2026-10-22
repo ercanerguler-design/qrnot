@@ -223,8 +223,13 @@ export async function deleteDraft(companyId: string, productId: string) {
   if (!product) throw new DppError('e_product_not_found')
   if (product.version > 0) throw new DppError('e_cannot_delete_published')
   const docs = (await sql`SELECT blob_url FROM dpp_documents WHERE product_id = ${product.id}`) as Array<{ blob_url: string }>
+  // Tedarikçilerin yüklediği, ürüne aktarılmamış dosyalar (aktarılanlar zaten dpp_documents içinde)
+  const supplierFiles = (await sql`
+    SELECT f->>'url' AS url FROM dpp_supplier_requests r, jsonb_array_elements(COALESCE(r.response->'files', '[]'::jsonb)) f
+    WHERE r.product_id = ${product.id} AND COALESCE((f->>'applied')::boolean, FALSE) = FALSE
+  `) as Array<{ url: string }>
   await sql`DELETE FROM dpp_products WHERE id = ${product.id}`
-  for (const url of [...docs.map((d) => d.blob_url), product.image_url].filter(Boolean) as string[]) await deleteBlob(url).catch(() => undefined)
+  for (const url of [...docs.map((d) => d.blob_url), ...supplierFiles.map((f) => f.url), product.image_url].filter(Boolean) as string[]) await deleteBlob(url).catch(() => undefined)
 }
 
 export async function duplicateProduct(companyId: string, productId: string) {

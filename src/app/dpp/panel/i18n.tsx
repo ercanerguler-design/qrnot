@@ -26,11 +26,12 @@ interface PanelI18n {
 
 const Ctx = createContext<PanelI18n | null>(null)
 
-function initialLang(): DppLang {
+function initialLang(preferred?: DppLang): DppLang {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (isDppLang(saved)) return saved
   } catch {}
+  if (preferred) return preferred
   for (const l of navigator.languages || [navigator.language]) {
     const code = String(l).slice(0, 2).toLowerCase()
     if (isDppLang(code)) return code
@@ -38,13 +39,14 @@ function initialLang(): DppLang {
   return 'tr'
 }
 
-export function PanelI18nProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<DppLang>('tr')
+/** preferred: kayıtlı seçim yoksa kullanılacak dil (ör. tedarikçi formunun firma tarafından seçilen dili) */
+export function PanelI18nProvider({ children, preferred }: { children: React.ReactNode; preferred?: DppLang }) {
+  const [lang, setLangState] = useState<DppLang>(preferred || 'tr')
 
   useEffect(() => {
-    const raf = window.requestAnimationFrame(() => setLangState(initialLang()))
+    const raf = window.requestAnimationFrame(() => setLangState(initialLang(preferred)))
     return () => window.cancelAnimationFrame(raf)
-  }, [])
+  }, [preferred])
 
   useEffect(() => {
     currentLang = lang

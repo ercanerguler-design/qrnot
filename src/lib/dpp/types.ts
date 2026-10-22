@@ -1,6 +1,7 @@
 // Dijital Ürün Pasaportu (DPP) — istemci ve sunucunun ortak kullandığı tipler, sabitler ve doğrulayıcılar.
 // Sunucuya özel import yok: panel bileşenleri de bu dosyayı kullanır.
 
+import { isMaterialTypeChoice, type MaterialTypeChoice } from './carbon'
 import { DppError, type MsgKey, type MsgParams } from './i18n'
 
 export const DPP_LANGS = ['tr', 'en', 'de', 'fr', 'es', 'nl', 'ar', 'ru'] as const
@@ -80,6 +81,8 @@ export interface DppMaterial {
   percent: number | null
   recycledPercent: number | null
   origin: string
+  /** Karbon tahmini için lif türü ('' = adından otomatik algıla, 'none' = güvenilir değer yok) */
+  type?: MaterialTypeChoice
 }
 
 export interface DppParty {
@@ -108,6 +111,10 @@ export interface DppData {
     recycledContentPercent: number | null
     recyclablePercent: number | null
     expectedLifetimeYears: number | null
+    /** 'declared' = firmanın beyanı (LCA vb.) · 'estimate' = QRNot hammadde aşaması tahmini (aralıkla) */
+    carbonBasis: 'declared' | 'estimate'
+    carbonMin: number | null
+    carbonMax: number | null
   }
   repairability: {
     warrantyMonths: number | null
@@ -145,7 +152,7 @@ export function emptyData(): DppData {
     weightGrams: null,
     dimensions: '',
     materials: [],
-    environment: { carbonKg: null, waterLiters: null, energyKwh: null, recycledContentPercent: null, recyclablePercent: null, expectedLifetimeYears: null },
+    environment: { carbonKg: null, waterLiters: null, energyKwh: null, recycledContentPercent: null, recyclablePercent: null, expectedLifetimeYears: null, carbonBasis: 'declared', carbonMin: null, carbonMax: null },
     repairability: { warrantyMonths: null, sparePartsYears: null, repairScore: null, serviceUrl: '' },
     compliance: [],
     substancesOfConcern: '',
@@ -228,7 +235,7 @@ export function sanitizeData(input: unknown): DppData {
       .slice(0, 30)
       .map((m) => {
         const r = (m && typeof m === 'object' ? m : {}) as Record<string, unknown>
-        return { name: str(r.name, 120), percent: num(r.percent, 0, 100), recycledPercent: num(r.recycledPercent, 0, 100), origin: str(r.origin, 80) }
+        return { name: str(r.name, 120), percent: num(r.percent, 0, 100), recycledPercent: num(r.recycledPercent, 0, 100), origin: str(r.origin, 80), type: isMaterialTypeChoice(r.type) ? r.type : '' }
       })
       .filter((m) => m.name),
     environment: {
@@ -238,6 +245,10 @@ export function sanitizeData(input: unknown): DppData {
       recycledContentPercent: num(env.recycledContentPercent, 0, 100),
       recyclablePercent: num(env.recyclablePercent, 0, 100),
       expectedLifetimeYears: num(env.expectedLifetimeYears, 0, 200),
+      // Tahmin sadece karbon değeri ve aralığı birlikte varsa geçerli; aksi halde beyan kabul edilir
+      ...(env.carbonBasis === 'estimate' && num(env.carbonMin, 0, 1_000_000) !== null && num(env.carbonMax, 0, 1_000_000) !== null && num(env.carbonKg, 0, 1_000_000) !== null
+        ? { carbonBasis: 'estimate' as const, carbonMin: num(env.carbonMin, 0, 1_000_000), carbonMax: num(env.carbonMax, 0, 1_000_000) }
+        : { carbonBasis: 'declared' as const, carbonMin: null, carbonMax: null }),
     },
     repairability: {
       warrantyMonths: num(rep.warrantyMonths, 0, 1200),

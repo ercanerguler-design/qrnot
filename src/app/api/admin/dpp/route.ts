@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
         SELECT p.image_url FROM dpp_products p WHERE p.company_id = ${id} AND p.image_url IS NOT NULL
         UNION
         SELECT v.snapshot->>'imageUrl' FROM dpp_versions v JOIN dpp_products p ON p.id = v.product_id WHERE p.company_id = ${id} AND v.snapshot->>'imageUrl' IS NOT NULL
+        UNION
+        SELECT f->>'url' FROM dpp_supplier_requests r, jsonb_array_elements(COALESCE(r.response->'files', '[]'::jsonb)) f WHERE r.company_id = ${id}
       `) as Array<{ url: string }>
       await sql`DELETE FROM dpp_companies WHERE id = ${id}`
       await Promise.all(blobs.map((b) => deleteBlob(b.url).catch(() => undefined)))

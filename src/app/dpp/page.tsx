@@ -48,6 +48,8 @@ const C = {
       ['🤖', 'Makine okunur veri', 'Her pasaport JSON olarak da sunulur; denetim yazılımları ve entegrasyonlar doğrudan okuyabilir.'],
       ['📊', 'Okutma analizi', 'Hangi ürün, hangi ülkede, hangi dilde okutuluyor: 30 günlük panel.'],
       ['👥', 'Ekip ve roller', 'Yönetici, editör ve izleyici rolleri. Toplu ürün yükleme için CSV içe aktarma.'],
+      ['🤝', 'Tedarikçi veri portalı', 'Tedarikçinize bir link gönderin; malzeme, sertifika, tesis ve SVHC bilgilerini kendi dilinde doldursun, belgelerini yüklesin. İnceleyip tek tıkla ürüne aktarın.'],
+      ['🌱', 'Karbon tahmini yardımcısı', 'Malzeme oranları ve ağırlıktan hammadde aşaması için kaynaklı bir karbon aralığı hesaplayın. Pasaportta açıkça “tahmin” olarak gösterilir.'],
     ],
     howKicker: 'Nasıl çalışır?',
     howTitle: '4 adımda pasaport',
@@ -71,13 +73,14 @@ const C = {
     honestTitle: 'Açık konuşalım',
     honest:
       'QRNot DPP, pasaport verinizi bugünden toplamanız, yayınlamanız ve ürünlerinize uygulamanız için hazır bir altyapıdır. AB’nin teknik standartları ve ürün grubu kuralları kesinleştikçe veri modelini güncelliyoruz. Ürününüzün ilgili mevzuata uygunluğunun sorumluluğu üreticidedir; biz bu süreci kolaylaştırıyoruz.',
+    securityLink: 'Güvenlik ve veri işleme (KVKK / GDPR) →',
     faqKicker: 'Sık sorulan sorular',
     faq: [
       ['Ürün başına ayrı QR mı gerekiyor?', 'İkisi de mümkün. Bazı ürün grupları model düzeyinde, bazıları parti ya da tekil ürün düzeyinde pasaport isteyecek. Panelden model QR’ı ya da her ürün için seri numaralı QR üretebilirsiniz.'],
       ['Bilgileri güncellersem etiketler değişir mi?', 'Hayır. Pasaport adresi sabittir; her güncelleme yeni bir sürüm olarak yayınlanır, eski sürümler kayıtta kalır.'],
       ['Hangi diller destekleniyor?', 'Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Felemenkçe, Arapça ve Rusça. Ziyaretçi dilini seçer; metinleri otomatik çevirip kontrol edebilirsiniz.'],
       ['Mevcut barkodumu (GTIN) kullanabilir miyim?', 'Evet. GTIN girdiğiniz ürünlerde GS1 Digital Link adresi de pasaportu açar.'],
-      ['Verilerim nerede saklanıyor?', 'Pasaport verileri ve belgeler QRNot altyapısında, firmanıza ayrılmış alanda tutulur. Yayınlanmış pasaportlar ürün ömrü boyunca erişilebilir kalacak şekilde silinemez, sadece arşivlenebilir.'],
+      ['Verilerim nerede saklanıyor?', 'Veritabanı ve dosyalar ABD’deki bulut altyapısında (Neon / AWS us-east-1 ve Vercel) şifreli bağlantıyla, firmanıza ayrılmış alanda tutulur; KVKK / GDPR için veri işleme sözleşmesi imzalıyoruz. Yayınlanmış pasaportlar ürün ömrü boyunca erişilebilir kalacak şekilde silinemez, sadece arşivlenebilir. Ayrıntılar: Güvenlik ve veri işleme sayfası.'],
     ],
     finalTitle: 'İhracatınız için ilk pasaportu birlikte hazırlayalım.',
   },
@@ -115,6 +118,8 @@ const C = {
       ['🤖', 'Machine-readable data', 'Every passport is also served as JSON for compliance tools and integrations.'],
       ['📊', 'Scan analytics', 'Which product is scanned, in which country and language: a 30-day dashboard.'],
       ['👥', 'Team and roles', 'Owner, editor and viewer roles. CSV import for bulk product upload.'],
+      ['🤝', 'Supplier data portal', 'Send your supplier a link to fill in materials, certificates, facility and SVHC details in their own language and upload documents. Review and copy into the product in one click.'],
+      ['🌱', 'Carbon estimate helper', 'Calculate a sourced carbon range for the raw-material stage from material shares and weight. It is clearly labelled as an “estimate” in the passport.'],
     ],
     howKicker: 'How it works',
     howTitle: 'A passport in 4 steps',
@@ -138,13 +143,14 @@ const C = {
     honestTitle: 'In plain terms',
     honest:
       'QRNot DPP is ready-made infrastructure to collect, publish and apply your passport data today. We update the data model as EU technical standards and product-group rules are finalised. The manufacturer remains responsible for the product’s compliance; we make the process easier.',
+    securityLink: 'Security and data processing (GDPR / KVKK) →',
     faqKicker: 'FAQ',
     faq: [
       ['Do I need a separate QR per item?', 'Both are possible. Some product groups will require model-level passports, others batch or item level. Generate a model QR or serialised QR codes per item from the panel.'],
       ['If I update the data, do labels change?', 'No. The passport URL is permanent; each update is published as a new version and earlier versions stay on record.'],
       ['Which languages are supported?', 'Turkish, English, German, French, Spanish, Dutch, Arabic and Russian. Visitors pick their language; you can auto-translate and review.'],
       ['Can I use my existing barcode (GTIN)?', 'Yes. For products with a GTIN, the GS1 Digital Link URL also opens the passport.'],
-      ['Where is my data stored?', 'Passport data and documents are kept on QRNot infrastructure in a space reserved for your company. Published passports cannot be deleted, only archived, so they stay available for the product’s lifetime.'],
+      ['Where is my data stored?', 'The database and files are kept on cloud infrastructure in the USA (Neon / AWS us-east-1 and Vercel) over encrypted connections, in a space reserved for your company; we sign a data processing agreement for GDPR / KVKK. Published passports cannot be deleted, only archived, so they stay available for the product’s lifetime. Details: Security and data processing page.'],
     ],
     finalTitle: 'Let’s prepare the first passport for your exports together.',
   },
@@ -287,6 +293,9 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
             </details>
           ))}
         </div>
+        <Link href={withLang('/dpp/guvenlik', lang)} className="mt-5 inline-block text-sm font-semibold text-coral hover:underline">
+          {c.securityLink}
+        </Link>
       </section>
 
       <section className="mx-auto max-w-4xl px-4 py-20 text-center">

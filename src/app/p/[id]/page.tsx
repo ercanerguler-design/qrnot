@@ -81,7 +81,14 @@ export default async function PassportPage({ params, searchParams }: Props) {
   ].filter((f): f is [string, string] => Boolean(f[1]))
 
   const env: Array<[string, string]> = [
-    [L.carbon, d.environment.carbonKg !== null ? `${fmt.format(d.environment.carbonKg)} kg CO₂e` : ''],
+    [
+      L.carbon,
+      d.environment.carbonKg === null
+        ? ''
+        : d.environment.carbonBasis === 'estimate' && d.environment.carbonMin !== null && d.environment.carbonMax !== null
+          ? `≈ ${fmt.format(d.environment.carbonKg)} kg CO₂e (${L.carbonEstimate.replace('{min}', fmt.format(d.environment.carbonMin)).replace('{max}', fmt.format(d.environment.carbonMax))})`
+          : `${fmt.format(d.environment.carbonKg)} kg CO₂e`,
+    ],
     [L.water, d.environment.waterLiters !== null ? `${fmt.format(d.environment.waterLiters)} L` : ''],
     [L.energy, d.environment.energyKwh !== null ? `${fmt.format(d.environment.energyKwh)} kWh` : ''],
     [L.recycledContent, d.environment.recycledContentPercent !== null ? pct(d.environment.recycledContentPercent) : ''],

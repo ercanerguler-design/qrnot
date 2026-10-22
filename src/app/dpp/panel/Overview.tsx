@@ -12,6 +12,7 @@ interface OverviewData {
   top: Array<{ id: string; name: string; scans: number }>
   countries: Array<{ country: string; scans: number }>
   plan: { plan: string; product_limit: number }
+  suppliers: Array<{ id: string; productId: string; productName: string; supplierName: string; submittedAt: string }>
 }
 
 export default function Overview({ go, me }: { go: (v: View) => void; me: Me }) {
@@ -71,6 +72,22 @@ export default function Overview({ go, me }: { go: (v: View) => void; me: Me }) 
           </div>
         ))}
       </div>
+
+      {data.suppliers.length > 0 && (
+        <section className="rounded-2xl border border-amber-300 bg-amber-50 p-5 shadow-sm">
+          <h2 className="font-semibold text-amber-950">🤝 {t('sr_pending', { n: data.suppliers.length })}</h2>
+          <ul className="mt-3 space-y-1.5 text-sm">
+            {data.suppliers.map((s) => (
+              <li key={s.id}>
+                <button type="button" className="text-start text-sky-800 hover:underline" onClick={() => go({ page: 'product', id: s.productId, tab: 'suppliers' })}>
+                  <span className="font-semibold">{s.supplierName}</span> → {s.productName}
+                </button>
+                <span className="text-slate-500"> · {new Date(s.submittedAt).toLocaleDateString(locale)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {steps.some((s) => !s.done) && (
         <Card title={t('ov_steps_title')} subtitle={t('ov_steps_sub')}>

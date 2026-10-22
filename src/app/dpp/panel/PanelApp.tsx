@@ -22,7 +22,7 @@ export interface Me {
   companyCode: string
 }
 
-export type View = { page: 'overview' } | { page: 'products' } | { page: 'product'; id: string | null } | { page: 'company' } | { page: 'users' } | { page: 'account' }
+export type View = { page: 'overview' } | { page: 'products' } | { page: 'product'; id: string | null; tab?: string } | { page: 'company' } | { page: 'users' } | { page: 'account' }
 
 const NAV: Array<{ page: View['page']; icon: string; label: MsgKey; ownerOnly?: boolean }> = [
   { page: 'overview', icon: '📊', label: 'nav_overview' },
@@ -35,7 +35,7 @@ const NAV: Array<{ page: View['page']; icon: string; label: MsgKey; ownerOnly?: 
 function viewFromUrl(): View {
   const p = new URLSearchParams(window.location.search)
   const page = p.get('v')
-  if (page === 'product') return { page: 'product', id: p.get('id') }
+  if (page === 'product') return { page: 'product', id: p.get('id'), tab: p.get('tab') || undefined }
   if (page === 'products' || page === 'company' || page === 'users' || page === 'account') return { page }
   return { page: 'overview' }
 }
@@ -81,6 +81,7 @@ function Shell() {
     url.search = ''
     if (next.page !== 'overview') url.searchParams.set('v', next.page)
     if (next.page === 'product' && next.id) url.searchParams.set('id', next.id)
+    if (next.page === 'product' && next.tab) url.searchParams.set('tab', next.tab)
     window.history.pushState(null, '', url)
     window.scrollTo({ top: 0 })
   }, [])
@@ -142,7 +143,7 @@ function Shell() {
         <main className="min-w-0">
           {view.page === 'overview' && <Overview go={go} me={me} />}
           {view.page === 'products' && <Products go={go} me={me} />}
-          {view.page === 'product' && <ProductEditor key={view.id || 'new'} productId={view.id} go={go} me={me} />}
+          {view.page === 'product' && <ProductEditor key={view.id || 'new'} productId={view.id} initialTab={view.tab} go={go} me={me} />}
           {(view.page === 'company' || view.page === 'users' || view.page === 'account') && <Settings section={view.page} me={me} />}
         </main>
       </div>

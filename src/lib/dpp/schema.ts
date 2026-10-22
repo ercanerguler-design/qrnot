@@ -122,6 +122,29 @@ export function ensureDppSchema() {
         )
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_dpp_scans_product ON dpp_scans(product_id, created_at DESC)`
+      // Tedarikçi veri talepleri: tedarikçi tahmin edilemez token'lı linkle (giriş yapmadan) yanıt verir
+      await sql`
+        CREATE TABLE IF NOT EXISTS dpp_supplier_requests (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          company_id UUID NOT NULL REFERENCES dpp_companies(id) ON DELETE CASCADE,
+          product_id UUID NOT NULL REFERENCES dpp_products(id) ON DELETE CASCADE,
+          token VARCHAR(48) UNIQUE NOT NULL,
+          supplier_name VARCHAR(200) NOT NULL,
+          contact VARCHAR(200) NOT NULL DEFAULT '',
+          message TEXT NOT NULL DEFAULT '',
+          fields JSONB NOT NULL DEFAULT '[]'::jsonb,
+          lang VARCHAR(4) NOT NULL DEFAULT 'tr',
+          status VARCHAR(12) NOT NULL DEFAULT 'open',
+          response JSONB,
+          expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+          submitted_at TIMESTAMP WITH TIME ZONE,
+          created_by VARCHAR(255) NOT NULL DEFAULT '',
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_dpp_supplier_requests_product ON dpp_supplier_requests(product_id, created_at DESC)`
+      await sql`CREATE INDEX IF NOT EXISTS idx_dpp_supplier_requests_company ON dpp_supplier_requests(company_id, status)`
     })().catch((err) => {
       dppSchemaPromise = null
       throw err

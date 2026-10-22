@@ -21,6 +21,8 @@ export interface PassportLabels {
   materialOrigin: string
   environment: string
   carbon: string
+  /** {min} {max} yer tutucuları */
+  carbonEstimate: string
   water: string
   energy: string
   recycledContent: string
@@ -80,6 +82,7 @@ const tr: PassportLabels = {
   materialOrigin: 'Kaynak',
   environment: 'Çevresel etki',
   carbon: 'Karbon ayak izi',
+  carbonEstimate: 'tahmin · hammadde aşaması, aralık {min}–{max}',
   water: 'Su kullanımı',
   energy: 'Üretim enerjisi',
   recycledContent: 'Geri dönüştürülmüş içerik',
@@ -142,6 +145,7 @@ const en: PassportLabels = {
   materialOrigin: 'Source',
   environment: 'Environmental impact',
   carbon: 'Carbon footprint',
+  carbonEstimate: 'estimate · raw-material stage, range {min}–{max}',
   water: 'Water use',
   energy: 'Production energy',
   recycledContent: 'Recycled content',
@@ -205,6 +209,7 @@ const de: PassportLabels = {
   materialOrigin: 'Herkunft',
   environment: 'Umweltauswirkungen',
   carbon: 'CO₂-Fußabdruck',
+  carbonEstimate: 'Schätzung · Rohstoffphase, Spanne {min}–{max}',
   water: 'Wasserverbrauch',
   energy: 'Produktionsenergie',
   recycledContent: 'Recyclinganteil',
@@ -268,6 +273,7 @@ const fr: PassportLabels = {
   materialOrigin: 'Provenance',
   environment: 'Impact environnemental',
   carbon: 'Empreinte carbone',
+  carbonEstimate: 'estimation · étape matière première, fourchette {min}–{max}',
   water: "Consommation d'eau",
   energy: 'Énergie de production',
   recycledContent: 'Contenu recyclé',
@@ -331,6 +337,7 @@ const es: PassportLabels = {
   materialOrigin: 'Origen',
   environment: 'Impacto ambiental',
   carbon: 'Huella de carbono',
+  carbonEstimate: 'estimación · etapa de materia prima, rango {min}–{max}',
   water: 'Consumo de agua',
   energy: 'Energía de producción',
   recycledContent: 'Contenido reciclado',
@@ -394,6 +401,7 @@ const nl: PassportLabels = {
   materialOrigin: 'Herkomst',
   environment: 'Milieu-impact',
   carbon: 'CO₂-voetafdruk',
+  carbonEstimate: 'schatting · grondstoffase, bandbreedte {min}–{max}',
   water: 'Waterverbruik',
   energy: 'Productie-energie',
   recycledContent: 'Gerecycled gehalte',
@@ -457,6 +465,7 @@ const ar: PassportLabels = {
   materialOrigin: 'المصدر',
   environment: 'الأثر البيئي',
   carbon: 'البصمة الكربونية',
+  carbonEstimate: 'تقدير · مرحلة المواد الخام، النطاق {min}–{max}',
   water: 'استهلاك المياه',
   energy: 'طاقة الإنتاج',
   recycledContent: 'المحتوى المعاد تدويره',
@@ -520,6 +529,7 @@ const ru: PassportLabels = {
   materialOrigin: 'Происхождение',
   environment: 'Воздействие на окружающую среду',
   carbon: 'Углеродный след',
+  carbonEstimate: 'оценка · стадия сырья, диапазон {min}–{max}',
   water: 'Расход воды',
   energy: 'Энергия производства',
   recycledContent: 'Доля переработанного сырья',

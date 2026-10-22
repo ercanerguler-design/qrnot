@@ -25,6 +25,14 @@ import {
 } from '@/lib/dpp/server'
 import { DppError, errorText, msg, type MsgKey, type MsgParams } from '@/lib/dpp/i18n'
 import { requestLang } from '@/lib/dpp/requestLang'
+import {
+  applySupplierResponse,
+  createSupplierRequest,
+  deleteSupplierRequest,
+  listSupplierRequests,
+  pendingSupplierResponses,
+  setSupplierRequestStatus,
+} from '@/lib/dpp/suppliers'
 import { DPP_CATEGORIES, DPP_PLANS, emptyData, emptyTexts, readData, type DppCategory, type DppLang, type DppRole } from '@/lib/dpp/types'
 
 // DPP firma paneli API'si. Tüm işlemler oturumdaki kullanıcının firmasıyla sınırlıdır.
@@ -53,6 +61,11 @@ const EDITOR_ACTIONS = new Set([
   'docs.update',
   'docs.delete',
   'products.import',
+  'suppliers.create',
+  'suppliers.apply',
+  'suppliers.reject',
+  'suppliers.reopen',
+  'suppliers.delete',
 ])
 const OWNER_ACTIONS = new Set(['company.save', 'company.rotateKey', 'users.add', 'users.update', 'users.resetPassword', 'users.remove'])
 
@@ -81,8 +94,10 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
   const id = String(body.id || '')
 
   switch (action) {
-    case 'overview':
-      return companyOverview(companyId)
+    case 'overview': {
+      const [overview, suppliers] = await Promise.all([companyOverview(companyId), pendingSupplierResponses(companyId)])
+      return { ...overview, suppliers }
+    }
 
     case 'products.list':
       return { products: await listProducts(companyId), translation: translationEnabled() }
@@ -155,6 +170,27 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
 
     case 'docs.delete':
       await deleteDocument(companyId, id)
+      return { ok: true }
+
+    case 'suppliers.list':
+      return listSupplierRequests(companyId, String(body.productId || ''))
+
+    case 'suppliers.create': {
+      if (!(await consumeRateLimit(`dpp-sr-create:${companyId}`, 100, 3600))) throw new HttpError('e_too_many', 429)
+      return createSupplierRequest(companyId, user.email, body)
+    }
+
+    case 'suppliers.apply':
+      await applySupplierResponse(companyId, id, body.sections)
+      return { ok: true }
+
+    case 'suppliers.reject':
+    case 'suppliers.reopen':
+      await setSupplierRequestStatus(companyId, id, action === 'suppliers.reject' ? 'reject' : 'reopen', body.days)
+      return { ok: true }
+
+    case 'suppliers.delete':
+      await deleteSupplierRequest(companyId, id)
       return { ok: true }
 
     case 'products.import':

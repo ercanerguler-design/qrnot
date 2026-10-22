@@ -120,6 +120,15 @@ QR'ı okutturup örnek pasaportu açtır. Net bir sonraki adım iste: *"Önümü
 **"Verilerimiz güvende mi? Tedarikçi bilgilerimiz görünür mü?"**
 > Hassas bilgiler "yetkili erişim" alanında durur; sadece sizin verdiğiniz anahtarla görünür ve anahtarı istediğiniz an yenileyebilirsiniz. Taslaktaki değişiklikler siz yayınlamadan görünmez. Okutmalarda kişisel veri tutulmaz.
 
+**"Verilerimiz hangi ülkede? KVKK / GDPR sözleşmesi imzalıyor musunuz?"**
+> Veritabanı ve dosyalar ABD'deki bulut altyapısında (Neon / AWS us-east-1 ve Vercel), şifreli bağlantıyla tutuluyor. Veri işleme sözleşmesi imzalıyoruz; yurt dışı aktarım için KVKK standart sözleşmesi ve GDPR SCC yaklaşımı kullanılıyor. AB'de (Frankfurt) tutulmasını şart koşan müşteri için bölge taşıma konuşulabilir. Ayrıntılar: qrnot.com/dpp/guvenlik. *(Not: Kendi ISO 27001 / SOC 2 sertifikamız yok; bunu sorulursa açıkça söyle. Sözleşme taslakları `sozlesme/` klasöründe, imzadan önce avukata okutulmalı.)*
+
+**"Tedarikçilerimizden bilgiyi toplamak en zor kısım."**
+> Bunun için tedarikçi veri portalı var. Ürün sayfasından tedarikçiye bir link gönderiyorsunuz (WhatsApp / e-posta). Tedarikçi giriş yapmadan, kendi dilinde malzeme bileşimini, sertifikalarını, tesis ve SVHC bilgisini dolduruyor, belgelerini yüklüyor. Siz inceliyor, istediğiniz bölümleri tek tıkla ürüne aktarıyorsunuz. Siz onaylamadan hiçbir şey ürüne geçmiyor.
+
+**"Karbon ayak izimizi bilmiyoruz."**
+> Karbon tahmini yardımcısı, malzeme oranları ve ürün ağırlığından hammadde (lif) aşaması için kaynaklı bir aralık hesaplıyor. Pasaportta açıkça "tahmin" olarak gösteriliyor. Kesin beyan için ürüne özel LCA gerekir; LCA'nız varsa kendi değerinizi beyan olarak girersiniz. *(Not: Bunu "karbon hesaplama" ya da "LCA" diye satma; "tahmin yardımcısı" de.)*
+
 **"Panel İngilizce mi?"**
 > Evet. Panel 8 dilde kullanılabiliyor (Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Felemenkçe, Arapça, Rusça). Her kullanıcı kendi dilini seçer; uyarı ve hata mesajları da o dilde gelir. Pasaportlar da 8 dilde yayınlanıyor.
 

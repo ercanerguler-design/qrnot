@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { CARBON_FACTORS, CARBON_SOURCES, estimateCarbon, guessMaterialType, type CarbonFactorKey, type MaterialTypeChoice } from '@/lib/dpp/carbon'
 import type { MsgKey } from '@/lib/dpp/i18n'
 import {
   DPP_CATEGORIES,
@@ -23,6 +24,7 @@ import { useT } from './i18n'
 import ItemsPanel from './ItemsPanel'
 import type { Me, View } from './PanelApp'
 import QrBox from './QrBox'
+import SuppliersPanel from './SuppliersPanel'
 import { Alert, api, Button, Card, Field, FilePicker, inputCls, StatusBadge, uploadFile } from './ui'
 
 interface Bundle {
@@ -44,7 +46,7 @@ interface Bundle {
   digitalLink: string | null
 }
 
-type Tab = 'general' | 'materials' | 'care' | 'compliance' | 'langs' | 'docs' | 'items' | 'versions'
+type Tab = 'general' | 'materials' | 'care' | 'compliance' | 'langs' | 'docs' | 'suppliers' | 'items' | 'versions'
 const TABS: Array<[Tab, MsgKey, boolean]> = [
   ['general', 'tab_general', false],
   ['materials', 'tab_materials', false],
@@ -52,6 +54,7 @@ const TABS: Array<[Tab, MsgKey, boolean]> = [
   ['compliance', 'tab_compliance', false],
   ['langs', 'tab_langs', false],
   ['docs', 'tab_docs', true],
+  ['suppliers', 'tab_suppliers', true],
   ['items', 'tab_items', true],
   ['versions', 'tab_versions', true],
 ]
@@ -62,8 +65,8 @@ const COMPLIANCE_PRESETS = ['CE', 'OEKO-TEX Standard 100', 'GOTS', 'GRS', 'REACH
 const num = (v: number | null) => (v === null || v === undefined ? '' : String(v))
 const toNum = (s: string) => (s.trim() === '' ? null : Number(s.replace(',', '.')))
 
-export default function ProductEditor({ productId, go, me }: { productId: string | null; go: (v: View) => void; me: Me }) {
-  const { t, lang, labels, date } = useT()
+export default function ProductEditor({ productId, initialTab, go, me }: { productId: string | null; initialTab?: string; go: (v: View) => void; me: Me }) {
+  const { t, lang, labels, date, number } = useT()
   const [bundle, setBundle] = useState<Bundle | null>(null)
   const [texts, setTexts] = useState<Partial<Record<DppLang, DppTexts>>>({ [lang]: emptyTexts() })
   const [data, setData] = useState<DppData>(emptyData())
@@ -71,7 +74,7 @@ export default function ProductEditor({ productId, go, me }: { productId: string
   const [newImage, setNewImage] = useState<{ url: string; preview: string } | null>(null)
   const [removeImage, setRemoveImage] = useState(false)
   const [dirty, setDirty] = useState(false)
-  const [tab, setTab] = useState<Tab>('general')
+  const [tab, setTab] = useState<Tab>(() => (productId && TABS.some(([k]) => k === initialTab) ? (initialTab as Tab) : 'general'))
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -406,6 +409,12 @@ export default function ProductEditor({ productId, go, me }: { productId: string
         {tab === 'materials' && (
           <>
             <MaterialsEditor materials={data.materials} onChange={(materials) => patch({ materials })} />
+            <CarbonEstimator
+              materials={data.materials}
+              weightGrams={data.weightGrams}
+              onTypes={(materials) => patch({ materials })}
+              onApply={(e) => patch({ environment: { ...data.environment, carbonKg: e.mid, carbonMin: e.min, carbonMax: e.max, carbonBasis: 'estimate' } })}
+            />
             <Card title={t('env_title')} subtitle={t('env_sub')}>
               <div className="grid gap-4 sm:grid-cols-3">
                 {(
@@ -419,10 +428,29 @@ export default function ProductEditor({ productId, go, me }: { productId: string
                   ] as const
                 ).map(([key, label]) => (
                   <Field key={key} label={t(label)}>
-                    <input className={inputCls} inputMode="decimal" value={num(data.environment[key])} onChange={(e) => patch({ environment: { ...data.environment, [key]: toNum(e.target.value) } })} />
+                    <input
+                      className={inputCls}
+                      inputMode="decimal"
+                      value={num(data.environment[key])}
+                      onChange={(e) =>
+                        patch({
+                          environment: {
+                            ...data.environment,
+                            [key]: toNum(e.target.value),
+                            // Elle değiştirilen karbon değeri artık tahmin değil, firma beyanıdır
+                            ...(key === 'carbonKg' ? { carbonBasis: 'declared' as const, carbonMin: null, carbonMax: null } : {}),
+                          },
+                        })
+                      }
+                    />
                   </Field>
                 ))}
               </div>
+              {data.environment.carbonBasis === 'estimate' && data.environment.carbonMin !== null && data.environment.carbonMax !== null && (
+                <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  {t('cb_basis_estimate', { min: number(data.environment.carbonMin), max: number(data.environment.carbonMax) })}
+                </p>
+              )}
             </Card>
           </>
         )}
@@ -518,6 +546,9 @@ export default function ProductEditor({ productId, go, me }: { productId: string
         )}
 
         {tab === 'docs' && bundle && <DocumentsEditor bundle={bundle} me={me} readOnly={readOnly} reload={() => load(bundle.id)} />}
+        {tab === 'suppliers' && bundle && (
+          <SuppliersPanel productId={bundle.id} productName={tx.name} companyName={me.companyName} readOnly={readOnly} dirty={dirty} onApplied={() => load(bundle.id)} />
+        )}
         {tab === 'items' && bundle && <ItemsPanel productId={bundle.id} productName={tx.name} gtin={data.gtin} published={bundle.version > 0} readOnly={readOnly} onChange={() => load(bundle.id)} />}
         {tab === 'versions' && bundle && (
           <Card title={t('tab_versions')} subtitle={t('ver_sub')}>
@@ -610,6 +641,102 @@ function MaterialsEditor({ materials, onChange }: { materials: DppMaterial[]; on
         <Button size="sm" onClick={() => onChange([...materials, { name: '', percent: null, recycledPercent: null, origin: '' }])}>
           {t('mat_add')}
         </Button>
+      </div>
+    </Card>
+  )
+}
+
+const CARBON_TYPES = Object.keys(CARBON_FACTORS) as CarbonFactorKey[]
+
+function CarbonEstimator({
+  materials,
+  weightGrams,
+  onTypes,
+  onApply,
+}: {
+  materials: DppMaterial[]
+  weightGrams: number | null
+  onTypes: (m: DppMaterial[]) => void
+  onApply: (e: { min: number; max: number; mid: number }) => void
+}) {
+  const { t, number } = useT()
+  const [applied, setApplied] = useState(false)
+  const est = estimateCarbon(materials, weightGrams)
+  const typeLabel = (k: CarbonFactorKey) => t(`cb_t_${k}` as MsgKey)
+  const rows = materials.map((m, i) => ({ m, i })).filter(({ m }) => m.name.trim())
+  return (
+    <Card title={t('cb_title')} subtitle={t('cb_sub')}>
+      <div className="space-y-3">
+        {rows.length > 0 && (
+          <div className="space-y-2">
+            {rows.map(({ m, i }) => {
+              const guess = guessMaterialType(m.name)
+              return (
+                <div key={i} className="grid gap-2 sm:grid-cols-[1fr_20rem] sm:items-center">
+                  <span className="text-sm text-slate-700">
+                    {m.name}
+                    {m.percent !== null && <span className="text-slate-400"> · {number(m.percent)}%</span>}
+                  </span>
+                  <select
+                    className={inputCls}
+                    aria-label={t('cb_type')}
+                    value={m.type || ''}
+                    onChange={(e) => {
+                      setApplied(false)
+                      onTypes(materials.map((x, j) => (j === i ? { ...x, type: e.target.value as MaterialTypeChoice } : x)))
+                    }}
+                  >
+                    <option value="">{guess ? t('cb_auto', { t: typeLabel(guess) }) : t('cb_auto_none')}</option>
+                    {CARBON_TYPES.map((k) => (
+                      <option key={k} value={k}>
+                        {typeLabel(k)}
+                      </option>
+                    ))}
+                    <option value="none">{t('cb_none')}</option>
+                  </select>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {!est || est.coveredPercent === 0 ? (
+          <p className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">{est ? t('cb_unknown', { list: est.unknown.join(', ') }) : t('cb_need')}</p>
+        ) : (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
+            <p className="font-semibold">{t('cb_result', { min: number(est.min), max: number(est.max), mid: number(est.mid) })}</p>
+            <p className="mt-1">{t('cb_coverage', { p: number(est.coveredPercent) })}</p>
+            {est.unknown.length > 0 && <p className="mt-1 text-amber-800">{t('cb_unknown', { list: est.unknown.join(', ') })}</p>}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Button
+                size="sm"
+                onClick={() => {
+                  onApply(est)
+                  setApplied(true)
+                }}
+              >
+                {t('cb_apply')}
+              </Button>
+              {applied && <span className="text-emerald-800">{t('cb_applied')}</span>}
+            </div>
+          </div>
+        )}
+        <details className="text-xs text-slate-500">
+          <summary className="cursor-pointer">{t('cb_sources')}</summary>
+          <ul className="mt-2 space-y-1">
+            {CARBON_TYPES.map((k) => (
+              <li key={k} dir="ltr">
+                {typeLabel(k)}: {number(CARBON_FACTORS[k].min)}–{number(CARBON_FACTORS[k].max)} kg CO₂e/kg
+              </li>
+            ))}
+            {CARBON_SOURCES.map((src) => (
+              <li key={src.url}>
+                <a className="underline" href={src.url} target="_blank" rel="noopener noreferrer">
+                  {src.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
       </div>
     </Card>
   )

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
 import { deactivateAllExpiredDemoQrs, ensureQrSchema, QRCode, sql } from '@/lib/db'
+import { ensureGrowthSchema } from '@/lib/growthSchema'
 
 
 export async function POST(req: NextRequest) {
   try {
     await ensureQrSchema()
+    await ensureGrowthSchema()
     await deactivateAllExpiredDemoQrs()
 
     const body = await req.json().catch(() => ({}))
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest) {
     `) as Array<Pick<QRCode, 'slug' | 'is_demo' | 'order_type' | 'creator_user_id' | 'is_active' | 'is_claimed' | 'title' | 'demo_expires_at' | 'created_at' | 'updated_at' | 'play_count' | 'recording_count' | 'recording_limit' | 'video_recording_count' | 'video_recording_limit'>>
 
     const users = await sql`
-      SELECT id, email, account_type, free_slots, paid_slots, used_slots, created_at
+      SELECT id, email, account_type, free_slots, paid_slots, used_slots, premium_until, created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT 2000
@@ -85,6 +87,7 @@ export async function POST(req: NextRequest) {
         paidSlots: Number(user.paid_slots),
         usedSlots: Number(user.used_slots),
         remainingSlots: Math.max(0, Number(user.free_slots) + Number(user.paid_slots) - Number(user.used_slots)),
+        premiumUntil: user.premium_until && new Date(String(user.premium_until)).getTime() > Date.now() ? user.premium_until : null,
         createdAt: user.created_at,
       })),
     })

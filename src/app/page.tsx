@@ -35,6 +35,24 @@ const C = {
       ['Sesini ekle', "QR'ı telefonla okut, sesini kaydet ya da video, fotoğraf, Spotify şarkısı ekle. 1 dakika sürer."],
       ['Hediye et', 'Okutan herkes içeriğini anında açar. Sonradan değiştirmek istersen sahip linkinden güncellersin.'],
     ],
+    featKicker: 'Yeni özellikler',
+    featTitle: 'Bir QR’dan çok daha fazlası',
+    featDesc: 'Hediyen verildikten sonra da yaşamaya devam eder. Hepsi uygulama gerektirmeden, telefonun tarayıcısında çalışır.',
+    featBadge: { premium: 'Premium', guestbook: 'Anı defteri', new: 'Yeni' },
+    features: [
+      ['⏳', 'Zaman kapsülü', 'İçeriğin seçtiğin tarihe kadar kilitli kalır: “18 yaşına girince açılsın.” O güne kadar okutan geri sayımı görür.', 'new'],
+      ['🔔', 'Okutulma bildirimi', 'Hediyen her açıldığında haberin olur. Bildirimler hesabına ve istersen telefonuna gelir.', 'new'],
+      ['💬', 'Cevap ver', 'Hediyeyi alan kişi sana sesli ya da yazılı teşekkür bırakır. Cevapları sadece sen görürsün.', 'new'],
+      ['👨‍👩‍👧', 'Grup hediyesi', 'Tek davet linkiyle ailen ve arkadaşların kendi mesajlarını aynı QR’a ekler. Sen onaylamadan hiçbiri görünmez.', 'new'],
+      ['📍', 'Kayıp modu', 'Anahtarlık ya da evcil hayvan künyesi kaybolursa, bulan kişi izin verirse konumunu ve notunu tek dokunuşla sana gönderir.', 'new'],
+      ['🌍', 'Yapay zekâ altyazı ve çeviri', 'Sesli mesajın yazıya dökülür; dinleyen kişi 8 dilde altyazıyla okur. Yurt dışındaki sevdiklerin için ideal.', 'premium'],
+      ['🎬', 'Anı filmi', 'Misafirlerinin bıraktığı tüm anılar tam ekran bir filme dönüşür. Düğünün ertesi günü ailenle TV’de izle.', 'guestbook'],
+      ['📺', 'Canlı anı duvarı', 'Etkinlik sırasında gelen anılar salondaki ekrana ya da projeksiyona canlı düşer, köşedeki QR yeni misafirleri davet eder.', 'guestbook'],
+    ],
+    premiumTitle: 'QRNot Premium',
+    premiumDesc: 'Sınırsız içerik güncelleme ve yapay zekâ altyazı / çeviri. Tüm QR’ların için geçerli.',
+    premiumPrice: '199 TL / yıl',
+    premiumCta: 'Premium’u incele',
     usesKicker: 'Kim için?',
     usesTitle: 'Her anının bir sesi var',
     uses: [
@@ -49,7 +67,7 @@ const C = {
     gbTitle: 'Düğününde misafirlerinin sesi kalsın',
     gbDesc:
       'Masalara koyduğun tek QR ile misafirlerin sesli mesaj, video, fotoğraf ve yazılı anı bırakır. Sen onaylarsın, saklarsın, yıllar sonra tekrar dinlersin. Pahalı ses kayıt telefonlarına göre çok daha ekonomik.',
-    gbPoints: ['Uygulama yok, misafir sadece okutur', 'Onay ve PIN ile tam kontrol', 'Yazdırılabilir masa kartları dahil'],
+    gbPoints: ['Uygulama yok, misafir sadece okutur', 'Onay ve PIN ile tam kontrol', 'Yazdırılabilir masa kartları dahil', 'Canlı anı duvarı ve anı filmi'],
     gbCta: 'Anı defterini incele',
     nfcKicker: 'NFC',
     nfcTitle: 'Dokun, dinle.',
@@ -65,6 +83,10 @@ const C = {
         "Evet. QR'ı ilk hazırladığında sana özel bir sahip linki verilir. Bu linkle sesini, videonu ve fotoğraflarını değiştirebilirsin: ilk kayıt dahil 3 içerik kaydı hakkın var, başlık ve iletişim bilgileri ise sınırsız güncellenir. Daha fazlası için bize yazabilirsin.",
       ],
       ['Ses ve video ne kadar süre saklanıyor?', 'İçeriğin sen silmediğin sürece saklanır; QR kodun ve sayfan için yenileme ücreti alınmaz.'],
+      [
+        'Premium üyelik ne sağlıyor?',
+        'Premium (199 TL / yıl) ile tüm QR’larında içerik güncelleme sınırı kalkar ve sesli mesajların için yapay zekâ altyazı ve 8 dilde çeviri açılır. Zaman kapsülü, okutulma bildirimi, cevap, grup hediyesi ve kayıp modu ise tüm QR’larda ücretsizdir.',
+      ],
       [
         'Sahip linkimi kaybedersem ne olur?',
         "İlk kurulumda verilen 8 haneli kurtarma koduyla yeni sahip linki alabilirsin. Kodu da kaybettiysen WhatsApp'tan bize yaz.",
@@ -165,6 +187,24 @@ const C = {
       ['Add your voice', 'Scan the QR, record your voice or add a video, photos or a Spotify song. Takes a minute.'],
       ['Gift it', 'Anyone who scans opens your content instantly. Want to change it later? Update it from your owner link.'],
     ],
+    featKicker: 'New features',
+    featTitle: 'So much more than a QR code',
+    featDesc: 'Your gift keeps living long after it is given. Everything runs in the phone browser, no app needed.',
+    featBadge: { premium: 'Premium', guestbook: 'Guestbook', new: 'New' },
+    features: [
+      ['⏳', 'Time capsule', 'Your content stays locked until the date you choose: “open on her 18th birthday.” Until then, whoever scans sees a countdown.', 'new'],
+      ['🔔', 'Scan alerts', 'Know every time your gift is opened. Alerts arrive in your account and, if you like, on your phone.', 'new'],
+      ['💬', 'Reply', 'The recipient can leave you a voice or written thank-you. Only you can see replies.', 'new'],
+      ['👨‍👩‍👧', 'Group gift', 'With one invite link, family and friends add their own messages to the same QR. Nothing shows until you approve it.', 'new'],
+      ['📍', 'Lost mode', 'If a keychain or pet tag goes missing, the finder can send you their location and a note in one tap, with their permission.', 'new'],
+      ['🌍', 'AI captions & translation', 'Your voice message is transcribed, and listeners can read captions in 8 languages. Perfect for loved ones abroad.', 'premium'],
+      ['🎬', 'Memory film', 'Every memory your guests left turns into a full-screen film. Watch it on the TV with family the day after.', 'guestbook'],
+      ['📺', 'Live memory wall', 'Memories appear live on the venue screen or projector during the event, and the corner QR invites new guests.', 'guestbook'],
+    ],
+    premiumTitle: 'QRNot Premium',
+    premiumDesc: 'Unlimited content updates plus AI captions and translation, for all your QR codes.',
+    premiumPrice: '199 TL / year',
+    premiumCta: 'Explore Premium',
     usesKicker: 'Who is it for?',
     usesTitle: 'Every memory has a voice',
     uses: [
@@ -179,7 +219,7 @@ const C = {
     gbTitle: "Keep your wedding guests' voices forever",
     gbDesc:
       'One QR on your tables lets guests leave voice messages, videos, photos and notes. You approve and keep them, and replay them for years. A fraction of the cost of rental audio-guestbook phones.',
-    gbPoints: ['No app — guests just scan', 'Full control with approval & PIN', 'Printable table cards included'],
+    gbPoints: ['No app — guests just scan', 'Full control with approval & PIN', 'Printable table cards included', 'Live memory wall and memory film'],
     gbCta: 'Explore the guestbook',
     nfcKicker: 'NFC',
     nfcTitle: 'Tap. Listen.',
@@ -195,6 +235,10 @@ const C = {
         'Yes. When you first set up the QR you get a private owner link. Use it to change your voice, video and photos: 3 recordings are included (your first plus 2 updates), and the title and contact details can be edited without limit. Need more? Message us.',
       ],
       ['How long is my content kept?', 'Your content stays until you delete it; there is no renewal fee for your QR code and page.'],
+      [
+        'What does Premium include?',
+        'Premium (199 TL / year) removes the content update limit on all your QR codes and unlocks AI captions and translation in 8 languages for your voice messages. Time capsule, scan alerts, replies, group gifts and lost mode are free on every QR.',
+      ],
       ['What if I lose my owner link?', 'Use the 8-character recovery code from setup to get a new owner link. Lost that too? Message us on WhatsApp.'],
       [
         'Can anyone who scans see my content?',
@@ -398,6 +442,39 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section id="ozellikler" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20">
+        <Kicker>{c.featKicker}</Kicker>
+        <h2 className="font-display mt-2 text-3xl font-semibold sm:text-4xl">{c.featTitle}</h2>
+        <p className="mt-3 max-w-2xl text-ink-2">{c.featDesc}</p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {c.features.map(([icon, title, desc, badge]) => (
+            <div key={title} className="w-card flex flex-col p-5">
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-3xl" aria-hidden="true">
+                  {icon}
+                </span>
+                <span className={`w-chip ${badge === 'premium' ? 'text-coral-2' : ''}`}>{c.featBadge[badge as keyof typeof c.featBadge]}</span>
+              </div>
+              <h3 className="mt-4 font-semibold">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-col gap-4 rounded-4xl bg-ink p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">⭐ {c.premiumTitle}</p>
+            <p className="mt-2 max-w-xl text-white/80">{c.premiumDesc}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-4">
+            <span className="font-display text-2xl font-semibold">{c.premiumPrice}</span>
+            <Link href={withLang('/shop/premium', lang)} className="w-btn w-btn-primary">
+              {c.premiumCta} →
+            </Link>
+          </div>
         </div>
       </section>
 

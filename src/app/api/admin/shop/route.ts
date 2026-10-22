@@ -28,6 +28,42 @@ export async function POST(req: NextRequest) {
 
     const action = String(body.action || '')
 
+    // Genel bakış: yapılacaklar, bu ayın geliri, temel sayılar ve son hareketler (tek istekte)
+    if (action === 'dashboard') {
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' })
+      const { from, to } = await resolveRevenueRange(`${today.slice(0, 8)}01`, today)
+      const [todo, counts, revenue, recentOrders, recentEvents] = await Promise.all([
+        sql`SELECT status, COUNT(*)::int AS count FROM shop_orders WHERE status IN ('paid', 'awaiting_transfer') GROUP BY status`,
+        sql`
+          SELECT
+            (SELECT COUNT(*)::int FROM users) AS users,
+            (SELECT COUNT(*)::int FROM users WHERE premium_until > NOW()) AS premium,
+            (SELECT COUNT(*)::int FROM qr_codes WHERE is_demo = FALSE AND is_claimed = TRUE) AS claimed,
+            (SELECT COUNT(*)::int FROM qr_codes WHERE is_demo = FALSE AND is_claimed = FALSE) AS blank,
+            (SELECT COALESCE(SUM(play_count), 0)::int FROM qr_codes WHERE is_demo = FALSE) AS plays,
+            (SELECT COUNT(*)::int FROM qr_events WHERE kind = 'scan' AND created_at > NOW() - INTERVAL '7 days') AS scans7,
+            (SELECT COUNT(*)::int FROM guestbook_entries WHERE created_at > NOW() - INTERVAL '7 days') AS entries7,
+            (SELECT COUNT(*)::int FROM etsy_activations WHERE created_at > NOW() - INTERVAL '7 days') AS etsy7
+        `,
+        revenueSummary(from, to),
+        sql`SELECT order_no, status, currency, total, full_name, created_at FROM shop_orders ORDER BY created_at DESC LIMIT 6`,
+        sql`
+          SELECT e.kind, e.created_at, q.slug, q.title
+          FROM qr_events e JOIN qr_codes q ON q.id = e.qr_id
+          WHERE e.kind <> 'scan'
+          ORDER BY e.created_at DESC LIMIT 8
+        `,
+      ])
+      const net = (currency: string) => revenue.filter((r) => r.currency === currency).reduce((sum, r) => sum + Number(r.net), 0)
+      return NextResponse.json({
+        todo: Object.fromEntries((todo as Array<{ status: string; count: number }>).map((r) => [r.status, r.count])),
+        counts: counts[0],
+        month: { from, to: today, netTRY: net('TRY'), netUSD: net('USD'), orders: revenue.reduce((sum, r) => sum + Number(r.orders), 0) },
+        recentOrders,
+        recentEvents,
+      })
+    }
+
     if (action === 'orders.list') {
       const status = ORDER_STATUSES.includes(body.status) ? body.status : null
       const q = String(body.q || '').trim()

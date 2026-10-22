@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { applyAuthCookie, createUser, createUserSession, getUserByEmail, normalizeEmail, validatePassword, verifyPassword } from '@/lib/auth'
+import { applyAuthCookie, createUser, createUserSession, getUserByEmail, isValidEmail, normalizeEmail, validatePassword, verifyPassword } from '@/lib/auth'
 import { isLoginLocked, recordLoginFailure } from '@/lib/adminAuth'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const email = normalizeEmail(String(body.email || ''))
     const password = String(body.password || '')
 
-    if (!email || !email.includes('@')) {
+    if (!email || !isValidEmail(email)) {
       return NextResponse.json({ error: 'Geçerli bir e-posta adresi gir' }, { status: 400 })
     }
 
@@ -65,6 +65,10 @@ export async function POST(req: NextRequest) {
 
     return applyAuthCookie(res, token)
   } catch (err) {
+    // Aynı anda gelen iki kayıt isteği: veritabanı tekillik kuralı ikincisini reddeder
+    if (err instanceof Error && err.message === 'EMAIL_ALREADY_EXISTS') {
+      return NextResponse.json({ error: 'Bu e-posta zaten kayıtlı. Şifrenle giriş yapabilirsin.' }, { status: 409 })
+    }
     console.error('[auth/register]', err)
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
   }

@@ -43,6 +43,8 @@ export function ensureDppSchema() {
           created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
       `
+      // Aynı e-posta (büyük/küçük harf fark etmeksizin) ikinci kez kayıt olamaz
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dpp_users_email_ci ON dpp_users (lower(trim(email)))`
       await sql`
         CREATE TABLE IF NOT EXISTS dpp_sessions (
           token_hash VARCHAR(64) PRIMARY KEY,

@@ -25,6 +25,11 @@ export function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
 }
 
+/** Biçim denetimi: tek @, boşluk yok, alan adında nokta, makul uzunluk. (normalizeEmail sonrası çağrılır) */
+export function isValidEmail(email: string) {
+  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && !email.includes('..')
+}
+
 export function validatePassword(password: string) {
   return password.trim().length >= 6
 }
@@ -67,7 +72,7 @@ export async function getUserByEmail(email: string) {
   const rows = (await sql`
     SELECT id, email, password_hash, free_slots, paid_slots, used_slots, created_at, updated_at
     FROM users
-    WHERE email = ${normalizedEmail}
+    WHERE lower(trim(email)) = ${normalizedEmail}
     LIMIT 1
   `) as unknown as UserAccount[]
 

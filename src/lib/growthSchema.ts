@@ -142,6 +142,25 @@ export function ensureGrowthSchema() {
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id)`
 
+      // Aynı e-posta ile ikinci hesap açılamaz: büyük/küçük harf ve baştaki/sondaki boşluk fark etmeksizin, veritabanı düzeyinde.
+      // (Aynı anda gelen iki kayıt isteğinde de ikincisi reddedilir.) Tablo yoksa ya da eski veride tekrar varsa atlanır, uygulama denetimi sürer.
+      const emailIndexes: Array<[string, () => Promise<unknown>]> = [
+        ['users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email_ci ON users (lower(trim(email)))`],
+        ['hotel_users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_hotel_users_email_ci ON hotel_users (lower(trim(email)))`],
+        ['education_users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_education_users_email_ci ON education_users (lower(trim(email)))`],
+        ['health_users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_health_users_email_ci ON health_users (lower(trim(email)))`],
+        ['factory_users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_factory_users_email_ci ON factory_users (lower(trim(email)))`],
+        ['retail_users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_retail_users_email_ci ON retail_users (lower(trim(email)))`],
+        ['logistics_users', () => sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_logistics_users_email_ci ON logistics_users (lower(trim(email)))`],
+      ]
+      for (const [table, create] of emailIndexes) {
+        try {
+          await create()
+        } catch (err) {
+          console.error(`[schema] ${table} e-posta tekillik indeksi oluşturulamadı`, err instanceof Error ? err.message : err)
+        }
+      }
+
       // Gelir tablosu: genel ayarlar (ör. sayım başlangıç tarihi) ve elle girilen satışlar (Etsy, pazaryeri, kurumsal)
       await sql`
         CREATE TABLE IF NOT EXISTS app_settings (

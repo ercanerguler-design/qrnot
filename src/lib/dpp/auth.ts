@@ -4,6 +4,7 @@ import { hashPassword, normalizeEmail, verifyPassword } from '@/lib/auth'
 import { sql } from '@/lib/db'
 import { ensureDppSchema } from './schema'
 import type { DppRole } from './types'
+import { findAdminRealmByEmail, realmLoginPath } from '@/lib/adminRealm'
 import { DppError } from './i18n'
 
 // DPP paneli oturumları: hediye hesaplarından ve sektör panellerinden bağımsız, kendi çerezi ve tablosu.
@@ -40,7 +41,7 @@ export async function findDppUserForLogin(email: string, password: string) {
   const rows = (await sql`
     SELECT u.id, u.password_hash, u.is_active, c.is_active AS company_active
     FROM dpp_users u JOIN dpp_companies c ON c.id = u.company_id
-    WHERE u.email = ${normalizeEmail(email)}
+    WHERE lower(trim(u.email)) = ${normalizeEmail(email)}
   `) as Array<{ id: string; password_hash: string; is_active: boolean; company_active: boolean }>
   const row = rows[0]
   if (!row || !row.is_active || !row.company_active) return null
@@ -102,8 +103,11 @@ export async function getDppUser(req: NextRequest): Promise<DppSessionUser | nul
 export async function createDppUser(companyId: string, email: string, role: DppRole, name = '') {
   const normalized = normalizeEmail(email)
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) throw new DppError('e_valid_email')
-  const exists = (await sql`SELECT 1 FROM dpp_users WHERE email = ${normalized}`) as unknown[]
+  const exists = (await sql`SELECT 1 FROM dpp_users WHERE lower(trim(email)) = ${normalized}`) as unknown[]
   if (exists.length) throw new DppError('e_email_exists')
+  // Bir e-posta sadece bir kurumsal panele ait olabilir (otel, eğitim, sektör panelleri, DPP)
+  const otherRealm = await findAdminRealmByEmail(normalized)
+  if (otherRealm && otherRealm !== 'dpp') throw new DppError('e_email_other_panel', { path: realmLoginPath(otherRealm) })
   const password = generateTempPassword()
   const rows = (await sql`
     INSERT INTO dpp_users (company_id, email, name, password_hash, role, must_change_password)

@@ -1,11 +1,15 @@
 import { Metadata } from 'next'
+import { after } from 'next/server'
 import { notFound } from 'next/navigation'
 import { deactivateExpiredDemoQr, sql } from '@/lib/db'
 import type { QRCode, QRMedia } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 import { publicGuestbookSettings, readGuestbookSettings } from '@/lib/guestbook'
 import { getRequestLang } from '@/lib/i18n.server'
+import { listQrEntries } from '@/lib/qrEntries'
+import { isTimeLocked, loadFeatureQr, recordScan } from '@/lib/qrFeatures'
 import QRClient from './QRClient'
+import type { PlayExtrasData } from './PlayExtras'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -69,12 +73,35 @@ export default async function QRPage({ params, searchParams }: Props) {
     qr.play_count += 1
   }
 
-  const mediaRows = (await sql`
-    SELECT id, qr_id, media_type, source_type, blob_url, external_url, title, sort_order, is_primary, created_at, updated_at
-    FROM qr_media
-    WHERE qr_id = ${qr.id}
-    ORDER BY sort_order ASC, created_at ASC
-  `) as unknown as QRMedia[]
+  // Ek özellikler (zaman kapsülü, kayıp modu, grup mesajları, cevaplar, altyazı) — sadece normal QR'larda
+  const feature = qr.qr_mode === 'guestbook' ? null : await loadFeatureQr(slug)
+  const locked = Boolean(feature && qr.is_claimed && isTimeLocked(feature))
+
+  if (feature && qr.is_claimed && qr.is_active !== false) {
+    // Okutma bildirimi yanıt gönderildikten sonra işlenir; sayfa açılışını yavaşlatmaz
+    after(() => recordScan(feature, query.src === 'nfc' ? 'nfc' : 'qr').catch((error) => console.warn('[scan event]', error)))
+  }
+
+  // Kapsül kilitliyken içerik sayfaya hiç gönderilmez
+  const mediaRows = locked
+    ? []
+    : ((await sql`
+        SELECT id, qr_id, media_type, source_type, blob_url, external_url, title, sort_order, is_primary, created_at, updated_at, transcript
+        FROM qr_media
+        WHERE qr_id = ${qr.id}
+        ORDER BY sort_order ASC, created_at ASC
+      `) as unknown as Array<QRMedia & { transcript: string | null }>)
+
+  const extras: PlayExtrasData | null =
+    feature && qr.is_claimed
+      ? {
+          lockedUntil: locked ? feature.unlock_at : null,
+          lostMode: feature.lost_mode,
+          repliesEnabled: feature.replies_enabled && !locked,
+          groupMessages: locked ? [] : await listQrEntries(qr.id, 'group', true),
+          captionMediaIds: mediaRows.filter((m) => m.transcript).map((m) => m.id),
+        }
+      : null
 
   const mode = qr.qr_mode === 'guestbook' ? 'guestbook' : 'standard'
   const guestbook = mode === 'guestbook' ? publicGuestbookSettings(readGuestbookSettings(qr.guestbook_settings)) : null
@@ -93,8 +120,9 @@ export default async function QRPage({ params, searchParams }: Props) {
     demo_expires_at: qr.demo_expires_at,
     created_at: new Date(qr.created_at).toISOString(),
     updated_at: new Date(qr.updated_at).toISOString(),
-    media_items: mediaRows,
+    // Döküm metni sayfaya gömülmez; altyazı API üzerinden dile göre istenir
+    media_items: mediaRows.map(({ transcript: _transcript, ...item }) => item as QRMedia),
   }
 
-  return <QRClient qr={safeQr} lang={lang} mode={mode} guestbook={guestbook} viaNfc={query.src === 'nfc'} />
+  return <QRClient qr={safeQr} lang={lang} mode={mode} guestbook={guestbook} viaNfc={query.src === 'nfc'} extras={extras} />
 }

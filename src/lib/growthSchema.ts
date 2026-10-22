@@ -100,6 +100,48 @@ export function ensureGrowthSchema() {
       // Aynı misafirin (cihazın) aynı anı defterine tekrar yazmasını engellemek için
       await sql`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS device_hash VARCHAR(64) NOT NULL DEFAULT ''`
 
+      // --- Ek özellikler: zaman kapsülü, kayıp modu, grup hediyesi, cevaplar, bildirimler, altyazı, premium ---
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS unlock_at TIMESTAMP WITH TIME ZONE`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS lost_mode BOOLEAN NOT NULL DEFAULT FALSE`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS notify_scans BOOLEAN NOT NULL DEFAULT TRUE`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS replies_enabled BOOLEAN NOT NULL DEFAULT TRUE`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS group_token VARCHAR(40)`
+      await sql`ALTER TABLE qr_codes ADD COLUMN IF NOT EXISTS last_scan_event_at TIMESTAMP WITH TIME ZONE`
+      // guestbook_entries tablosu grup mesajları ve cevaplar için de kullanılır: kind = guestbook | group | reply
+      await sql`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS kind VARCHAR(12) NOT NULL DEFAULT 'guestbook'`
+      await sql`ALTER TABLE qr_media ADD COLUMN IF NOT EXISTS transcript TEXT`
+      await sql`ALTER TABLE qr_media ADD COLUMN IF NOT EXISTS transcript_lang VARCHAR(12)`
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_until TIMESTAMP WITH TIME ZONE`
+      await sql`
+        CREATE TABLE IF NOT EXISTS media_translations (
+          media_id UUID NOT NULL,
+          lang VARCHAR(12) NOT NULL,
+          text TEXT NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (media_id, lang)
+        )
+      `
+      await sql`
+        CREATE TABLE IF NOT EXISTS qr_events (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          qr_id UUID NOT NULL REFERENCES qr_codes(id) ON DELETE CASCADE,
+          kind VARCHAR(16) NOT NULL,
+          data JSONB,
+          read_at TIMESTAMP WITH TIME ZONE,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_qr_events_qr ON qr_events(qr_id, created_at DESC)`
+      await sql`
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+          endpoint TEXT PRIMARY KEY,
+          user_id UUID NOT NULL,
+          keys JSONB NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id)`
+
       // Gelir tablosu: genel ayarlar (ör. sayım başlangıç tarihi) ve elle girilen satışlar (Etsy, pazaryeri, kurumsal)
       await sql`
         CREATE TABLE IF NOT EXISTS app_settings (

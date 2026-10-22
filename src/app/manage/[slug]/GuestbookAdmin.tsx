@@ -153,6 +153,32 @@ export default function GuestbookAdmin({
 
   return (
     <div className="space-y-6">
+      <section className="w-card space-y-3 p-5 sm:p-6">
+        <h2 className="font-display text-xl font-semibold">✨ {lang === 'en' ? 'Film & live wall' : 'Anı filmi ve canlı duvar'}</h2>
+        <p className="text-sm text-ink-2">
+          {lang === 'en'
+            ? 'Show approved memories on the venue screen during the event, then watch them back as a film.'
+            : 'Etkinlik sırasında onaylı anıları salondaki ekrana yansıt, sonra hepsini bir film gibi izle.'}
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <a
+            href={`/q/${slug}/duvar?token=${encodeURIComponent(token)}${lang === 'en' ? '&lang=en' : ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-btn w-btn-dark"
+          >
+            📺 {lang === 'en' ? 'Open live wall' : 'Canlı duvarı aç'}
+          </a>
+          <a
+            href={`/q/${slug}/film?token=${encodeURIComponent(token)}${lang === 'en' ? '&lang=en' : ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-btn w-btn-primary"
+          >
+            🎬 {lang === 'en' ? 'Watch the memory film' : 'Anı filmini izle'}
+          </a>
+        </div>
+      </section>
       <section className="w-card space-y-4 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-xl font-semibold">⚙️ {t.settings}</h2>

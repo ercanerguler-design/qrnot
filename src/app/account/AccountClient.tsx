@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import AccountExtras from './AccountExtras'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import QrCard from '@/components/warm/QrCard'
@@ -148,6 +149,7 @@ export default function AccountClient({ lang }: { lang: Lang }) {
   const [user, setUser] = useState<AccountUser | null>(null)
   const [items, setItems] = useState<AccountQr[]>([])
   const [orders, setOrders] = useState<AccountOrder[]>([])
+  const [premiumUntil, setPremiumUntil] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
@@ -173,6 +175,7 @@ export default function AccountClient({ lang }: { lang: Lang }) {
       if (!res.ok) throw new Error(data.error || t.error)
       setUser(data.user)
       setItems(data.items || [])
+      setPremiumUntil(data.premiumUntil || null)
       const found: Record<string, string> = {}
       for (const item of (data.items || []) as AccountQr[]) {
         const token = localStorage.getItem(`qrnote_token_${item.slug}`)
@@ -361,6 +364,8 @@ export default function AccountClient({ lang }: { lang: Lang }) {
           </div>
         ))}
       </div>
+
+      <AccountExtras lang={lang} premiumUntil={premiumUntil} />
 
       <section className="w-card grid gap-6 p-6 lg:grid-cols-[1.4fr_1fr] lg:items-center">
         <div>

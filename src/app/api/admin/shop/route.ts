@@ -105,7 +105,15 @@ export async function POST(req: NextRequest) {
         if (before.length && after.length) creditsRemoved = Number(before[0].paid_slots) - Number(after[0].paid_slots)
       }
 
-      // 3) Sipariş kaydı
+      // 3) Premium üyelik: satın alınan yıl kadar geri alınır
+      if (order.user_id && Number(fulfillment.premiumYears || 0) > 0) {
+        await sql`
+          UPDATE users SET premium_until = premium_until - make_interval(years => ${Number(fulfillment.premiumYears)}), updated_at = NOW()
+          WHERE id = ${order.user_id} AND premium_until IS NOT NULL
+        `
+      }
+
+      // 4) Sipariş kaydı
       await sql`DELETE FROM shop_orders WHERE order_no = ${order.order_no}`
 
       return NextResponse.json({ ok: true, deletedQrs, credits, creditsRemoved, creditsAlreadyUsed: Math.max(0, credits - creditsRemoved) })

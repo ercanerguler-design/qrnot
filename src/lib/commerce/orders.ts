@@ -38,7 +38,7 @@ export interface ShopOrder {
   address: OrderAddress | null
   items: PricedLine[]
   consents: Record<string, unknown> | null
-  fulfillment: { credits?: number; guestbookSlugs?: string[]; fulfilledAt?: string } | null
+  fulfillment: { credits?: number; guestbookSlugs?: string[]; premiumYears?: number; fulfilledAt?: string } | null
   customer_note: string
   admin_note: string
   tracking_no: string
@@ -150,6 +150,7 @@ export async function markOrderPaid(orderNo: string, providerRef: string | null,
 async function fulfillDigital(order: ShopOrder): Promise<ShopOrder> {
   const credits = order.items.filter((line) => line.productId === 'dijital-qr').reduce((sum, line) => sum + line.quantity, 0)
   const guestbooks = order.items.filter((line) => line.productId === 'ani-defteri').reduce((sum, line) => sum + line.quantity, 0)
+  const premiumYears = order.items.filter((line) => line.productId === 'premium').reduce((sum, line) => sum + line.quantity, 0)
   const hasPhysical = order.items.some((line) => line.physical)
 
   const fulfillment: NonNullable<ShopOrder['fulfillment']> = { ...(order.fulfillment || {}) }
@@ -178,6 +179,17 @@ async function fulfillDigital(order: ShopOrder): Promise<ShopOrder> {
       `
     }
     fulfillment.guestbookSlugs = created.map((item) => item.slug)
+  }
+
+  if (order.user_id && premiumYears > 0) {
+    // Süre bitmemişse üstüne eklenir; bittiyse bugünden başlar
+    await sql`
+      UPDATE users
+      SET premium_until = GREATEST(COALESCE(premium_until, NOW()), NOW()) + make_interval(years => ${premiumYears}),
+          updated_at = NOW()
+      WHERE id = ${order.user_id}
+    `
+    fulfillment.premiumYears = premiumYears
   }
 
   fulfillment.fulfilledAt = new Date().toISOString()

@@ -28,7 +28,10 @@ export async function GET(req: NextRequest) {
       ORDER BY created_at DESC
     `) as Array<Pick<QRCode, 'slug' | 'order_type' | 'is_claimed' | 'title' | 'play_count' | 'created_at' | 'updated_at'> & { qr_mode: string; nfc_scan_count: number }>
 
+    const premiumRows = (await sql`SELECT premium_until FROM users WHERE id = ${user.id}`) as Array<{ premium_until: string | null }>
+
     return NextResponse.json({
+      premiumUntil: premiumRows[0]?.premium_until || null,
       user: {
         ...user,
         freeSlots: effectiveFreeSlots,

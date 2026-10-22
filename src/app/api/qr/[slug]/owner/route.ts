@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { deactivateExpiredDemoQr, sql, type QRCode, type QRMedia } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 import { publicGuestbookSettings, readGuestbookSettings } from '@/lib/guestbook'
+import { aiCaptionsEnabled } from '@/lib/captions'
+import { isUserPremium } from '@/lib/qrFeatures'
 
 // Sahip token'ını doğrular ve yönetim ekranı için QR bilgilerini döner.
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -14,10 +16,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
       SELECT id, slug, is_demo, order_type, is_active, is_claimed, admin_token, title, play_count,
              recording_count, recording_limit, video_recording_count, video_recording_limit,
              demo_expires_at, created_at, updated_at, qr_mode, guestbook_settings,
-             nfc_scan_count, nfc_encoded_at, nfc_locked
+             nfc_scan_count, nfc_encoded_at, nfc_locked,
+             unlock_at, lost_mode, notify_scans, replies_enabled, group_token, owner_user_id, creator_user_id
       FROM qr_codes WHERE slug = ${slug}
     `) as unknown as Array<
-      QRCode & { qr_mode: string; guestbook_settings: unknown; nfc_scan_count: number; nfc_encoded_at: string | null; nfc_locked: boolean }
+      QRCode & {
+        qr_mode: string
+        guestbook_settings: unknown
+        nfc_scan_count: number
+        nfc_encoded_at: string | null
+        nfc_locked: boolean
+        unlock_at: string | null
+        lost_mode: boolean
+        notify_scans: boolean
+        replies_enabled: boolean
+        group_token: string | null
+        owner_user_id: string | null
+        creator_user_id: string | null
+      }
     >
 
     const row = rows[0]
@@ -27,10 +43,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
     const qr = await deactivateExpiredDemoQr(row)
     const media = (await sql`
-      SELECT id, qr_id, media_type, source_type, blob_url, external_url, title, sort_order, is_primary, created_at, updated_at
+      SELECT id, qr_id, media_type, source_type, blob_url, external_url, title, sort_order, is_primary, created_at, updated_at, transcript, transcript_lang
       FROM qr_media WHERE qr_id = ${qr.id}
       ORDER BY sort_order ASC, created_at ASC
-    `) as unknown as QRMedia[]
+    `) as unknown as Array<QRMedia & { transcript: string | null; transcript_lang: string | null }>
 
     const res = NextResponse.json({
       slug: qr.slug,
@@ -50,6 +66,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
       updatedAt: qr.updated_at,
       mode: qr.qr_mode === 'guestbook' ? 'guestbook' : 'standard',
       guestbook: qr.qr_mode === 'guestbook' ? publicGuestbookSettings(readGuestbookSettings(qr.guestbook_settings)) : null,
+      unlockAt: row.unlock_at,
+      lostMode: Boolean(row.lost_mode),
+      notifyScans: row.notify_scans !== false,
+      repliesEnabled: row.replies_enabled !== false,
+      groupToken: row.group_token,
+      premium: await isUserPremium(row.owner_user_id || row.creator_user_id),
+      aiCaptions: aiCaptionsEnabled(),
       media: media.map((item) => ({
         id: item.id,
         media_type: item.media_type,
@@ -57,6 +80,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         external_url: item.external_url,
         title: item.title,
         is_primary: item.is_primary,
+        transcript: item.transcript,
+        transcript_lang: item.transcript_lang,
       })),
     })
     res.headers.set('Cache-Control', 'no-store')

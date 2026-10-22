@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateAudioFile } from '@/lib/audio'
+import { isUserPremium } from '@/lib/qrFeatures'
 import { deleteBlob, putBlob } from '@/lib/blob'
 import { resolveDirectUpload } from '@/lib/directUpload'
 import { deactivateExpiredDemoQr, ensureQrSchema, sql, QRCode, QRMedia } from '@/lib/db'
@@ -57,9 +58,10 @@ export async function PUT(
     }
 
     const rows = (await sql`
-      SELECT id, slug, is_demo, order_type, is_active, is_claimed, admin_token, audio_url, title, demo_expires_at, recording_count, recording_limit, video_recording_count, video_recording_limit, video_max_seconds
+      SELECT id, slug, is_demo, order_type, is_active, is_claimed, admin_token, audio_url, title, demo_expires_at, recording_count, recording_limit, video_recording_count, video_recording_limit, video_max_seconds,
+             owner_user_id, creator_user_id
       FROM qr_codes WHERE slug = ${slug}
-    `) as unknown as QRCode[]
+    `) as unknown as Array<QRCode & { owner_user_id?: string | null; creator_user_id?: string | null }>
     if (rows.length === 0) {
       return NextResponse.json({ error: 'QR kodu bulunamadı' }, { status: 404 })
     }
@@ -111,16 +113,22 @@ export async function PUT(
 
     let uploadedMediaType: 'audio' | 'video' | 'image' | null = null
     let uploadedMediaBlobUrl: string | null = null
+    // Premium üyelikte içerik güncelleme sınırı yok
+    const premium = await isUserPremium(rows[0].owner_user_id || rows[0].creator_user_id || null)
     const recordingCount = Number(qr.recording_count ?? 0)
     const videoRecordingCount = Number(qr.video_recording_count ?? 0)
     const videoMaxSeconds = Number(qr.video_max_seconds)
     const videoMaxSecondsOverride = Number.isFinite(videoMaxSeconds) && videoMaxSeconds > 0 ? videoMaxSeconds : null
     const maxLimits = getOrderTypeMaxLimits(qr.order_type)
     const isPaidOrder = qr.order_type === 'individual' || qr.order_type === 'corporate'
-    const recordingLimit = isPaidOrder
+    const recordingLimit = premium
+      ? Number.MAX_SAFE_INTEGER
+      : isPaidOrder
       ? maxLimits.recordingLimit
       : Math.min(Number(qr.recording_limit ?? maxLimits.recordingLimit), maxLimits.recordingLimit)
-    const videoRecordingLimit = isPaidOrder
+    const videoRecordingLimit = premium
+      ? Number.MAX_SAFE_INTEGER
+      : isPaidOrder
       ? maxLimits.videoRecordingLimit
       : Math.min(Number(qr.video_recording_limit ?? maxLimits.videoRecordingLimit), maxLimits.videoRecordingLimit)
 

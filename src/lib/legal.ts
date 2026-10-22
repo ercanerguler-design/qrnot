@@ -48,7 +48,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', '5. Cayma Hakkının Kullanılamayacağı Haller'],
       [
         'ul',
-        'Elektronik ortamda anında ifa edilen hizmetler ve tüketiciye anında teslim edilen gayri maddi mallar (hesaba tanımlanmış ve kullanılmaya başlanmış dijital QR hakkı, dijital anı defteri).|Tüketicinin istekleri veya kişisel ihtiyaçları doğrultusunda hazırlanan (kişiye özel kazıma vb.) ürünler.',
+        'Elektronik ortamda anında ifa edilen hizmetler ve tüketiciye anında teslim edilen gayri maddi mallar (hesaba tanımlanmış ve kullanılmaya başlanmış dijital QR hakkı, dijital anı defteri, Premium üyelik).|Tüketicinin istekleri veya kişisel ihtiyaçları doğrultusunda hazırlanan (kişiye özel kazıma vb.) ürünler.',
       ],
       ['h2', '6. Şikâyet ve İtiraz'],
       [
@@ -89,7 +89,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Madde 6 — Cayma Hakkı'],
       [
         'p',
-        "ALICI, fiziksel ürünlerde teslimden itibaren 14 gün içinde cayma hakkını kullanabilir. Cayma bildiriminin SATICI'ya ulaşmasından itibaren 14 gün içinde ürün bedeli iade edilir; ALICI ürünü 10 gün içinde iade etmekle yükümlüdür. Anında ifa edilen dijital hizmetlerde (hesaba tanımlanmış QR hakkı, dijital anı defteri) ALICI'nın onayıyla ifaya başlandığından cayma hakkı bulunmaz.",
+        "ALICI, fiziksel ürünlerde teslimden itibaren 14 gün içinde cayma hakkını kullanabilir. Cayma bildiriminin SATICI'ya ulaşmasından itibaren 14 gün içinde ürün bedeli iade edilir; ALICI ürünü 10 gün içinde iade etmekle yükümlüdür. Anında ifa edilen dijital hizmetlerde (hesaba tanımlanmış QR hakkı, dijital anı defteri, Premium üyelik) ALICI'nın onayıyla ifaya başlandığından cayma hakkı bulunmaz.",
       ],
       ['h2', 'Madde 7 — Uyuşmazlık'],
       [
@@ -113,7 +113,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         'ul',
         'Fiziksel ürünlerde teslimattan itibaren 14 gün içinde koşulsuz iade hakkın vardır.|İade için ' +
           COMPANY.email +
-          ' adresine ya da WhatsApp destek hattına sipariş numaranla yazman yeterli.|Ürün kullanılmamış, hasarsız ve orijinal kutusunda olmalıdır.|İade onaylandığında ücret 14 gün içinde ödeme yaptığın karta / hesaba iade edilir.|Hasarlı veya hatalı ürünlerde kargo ücreti bize aittir.|Hesaba tanımlanmış ve kullanılmaya başlanmış dijital ürünlerde (QR hakkı, anı defteri) cayma hakkı bulunmaz; teknik bir sorun olursa çözüm ya da iade için bize yaz.|Kargoya verilmemiş siparişler ücretsiz iptal edilebilir.',
+          ' adresine ya da WhatsApp destek hattına sipariş numaranla yazman yeterli.|Ürün kullanılmamış, hasarsız ve orijinal kutusunda olmalıdır.|İade onaylandığında ücret 14 gün içinde ödeme yaptığın karta / hesaba iade edilir.|Hasarlı veya hatalı ürünlerde kargo ücreti bize aittir.|Hesaba tanımlanmış ve kullanılmaya başlanmış dijital ürünlerde (QR hakkı, anı defteri, Premium üyelik) cayma hakkı bulunmaz; teknik bir sorun olursa çözüm ya da iade için bize yaz.|Kargoya verilmemiş siparişler ücretsiz iptal edilebilir.',
       ],
     ],
   },
@@ -130,7 +130,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Topladığımız veriler'],
       [
         'ul',
-        'Hesap verileri: e-posta adresi ve şifrenin (geri döndürülemez şekilde) özeti.|Sipariş verileri: ad-soyad, telefon, teslimat adresi, sipariş içeriği.|QR içerikleri: yüklediğin ses, video, fotoğraf, başlık ve bağlantılar.|Anı defteri içerikleri: misafirlerin bıraktığı isim, mesaj ve medya.|Teknik veriler: IP adresi (güvenlik ve kötüye kullanımı önleme), görüntülenme sayıları.',
+        'Hesap verileri: e-posta adresi ve şifrenin (geri döndürülemez şekilde) özeti.|Sipariş verileri: ad-soyad, telefon, teslimat adresi, sipariş içeriği.|QR içerikleri: yüklediğin ses, video, fotoğraf, başlık ve bağlantılar.|Cevaplar ve grup mesajları: QR’ına cevap ya da grup hediyesi mesajı bırakan kişinin adı, mesajı ve yüklediği ses/video/fotoğraf.|Kayıp modu: QR’ı okutan kişi açıkça izin verirse, tarayıcısının bildirdiği tek seferlik konumu ve isteğe bağlı notu/iletişim bilgisi yalnızca QR sahibine iletilir; sürekli konum takibi yapılmaz.|Okutma kayıtları ve bildirimler: QR’ın okutulma zamanı ve kaynağı (QR/NFC); anlık bildirim için tarayıcının oluşturduğu abonelik bilgisi.|Yapay zekâ altyazı (Premium): altyazı istendiğinde ses/video dosyası yazıya dökülmek üzere OpenAI’a, metin çevrilmek üzere Anthropic’e iletilir; bu hizmet sağlayıcılar veriyi yalnızca işlemi gerçekleştirmek için kullanır.|Anı defteri içerikleri: misafirlerin bıraktığı isim, mesaj ve medya.|Teknik veriler: IP adresi (güvenlik ve kötüye kullanımı önleme), görüntülenme sayıları.',
       ],
       ['h2', 'Ödeme bilgileri'],
       ['p', 'Kart bilgilerin QRNot sunucularına ulaşmaz; ödemeler iyzico (Türkiye) veya Stripe (yurt dışı) tarafından işlenir.'],
@@ -222,7 +222,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'What we collect'],
       [
         'ul',
-        'Account data: email address and a one-way hash of your password.|Order data: name, phone, shipping address and order contents.|Content you upload: voice, video, photos, titles and links.|Guestbook content left by guests: name, message and media.|Technical data: IP address (security and abuse prevention), view counts.',
+        'Account data: email address and a one-way hash of your password.|Order data: name, phone, shipping address and order contents.|Content you upload: voice, video, photos, titles and links.|Replies and group messages: the name, message and media of anyone who replies to your QR or adds a group-gift message.|Lost mode: if the person scanning your QR explicitly allows it, their browser’s one-time location and optional note/contact are sent only to the QR owner; there is no continuous tracking.|Scan records and notifications: when and how (QR/NFC) your QR was scanned; the browser push subscription needed for notifications.|AI captions (Premium): when you request captions, the audio/video is sent to OpenAI for transcription and the text to Anthropic for translation; these providers use the data only to perform the request.|Guestbook content left by guests: name, message and media.|Technical data: IP address (security and abuse prevention), view counts.',
       ],
       ['h2', 'Payments'],
       ['p', 'Card details never reach QRNot servers; payments are processed by Stripe or iyzico.'],

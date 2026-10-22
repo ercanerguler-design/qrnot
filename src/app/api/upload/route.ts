@@ -17,6 +17,7 @@ interface UploadPayload {
   scope?: UploadScope
   token?: string
   pin?: string
+  groupKey?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
         }
 
         const slug = String(payload.slug || '').trim()
-        const scope: UploadScope = payload.scope === 'gb' ? 'gb' : 'qr'
+        const scope: UploadScope = payload.scope === 'gb' || payload.scope === 'rp' || payload.scope === 'gp' ? payload.scope : 'qr'
         if (!slug || !pathname.startsWith(uploadPrefix(scope, slug))) {
           throw new Error('Geçersiz dosya yolu')
         }
@@ -50,9 +51,19 @@ export async function POST(req: NextRequest) {
         }
 
         const rows = (await sql`
-          SELECT id, slug, is_demo, is_active, is_claimed, admin_token, order_type, qr_mode, guestbook_settings, creator_user_id
+          SELECT id, slug, is_demo, is_active, is_claimed, admin_token, order_type, qr_mode, guestbook_settings, creator_user_id,
+                 replies_enabled, group_token, unlock_at
           FROM qr_codes WHERE slug = ${slug}
-        `) as unknown as Array<QRCode & { qr_mode?: string; guestbook_settings?: unknown; creator_user_id?: string | null }>
+        `) as unknown as Array<
+          QRCode & {
+            qr_mode?: string
+            guestbook_settings?: unknown
+            creator_user_id?: string | null
+            replies_enabled?: boolean
+            group_token?: string | null
+            unlock_at?: string | null
+          }
+        >
         const qr = rows[0]
         if (!qr || qr.is_active === false) {
           throw new Error('QR kodu bulunamadı')
@@ -67,6 +78,15 @@ export async function POST(req: NextRequest) {
             const user = await getAuthenticatedUser(req)
             if (!user) throw new Error('Devam etmek için giriş yap')
             if (qr.creator_user_id && qr.creator_user_id !== user.id) throw new Error('Bu QR kodu başka bir hesaba ait')
+          }
+        } else if (scope === 'rp') {
+          // Cevap ver: normal QR, cevaplar açık ve zaman kapsülü kilitli değil
+          if (!qr.is_claimed || qr.qr_mode === 'guestbook' || qr.replies_enabled === false) throw new Error('Bu QR şu an cevap kabul etmiyor')
+          if (qr.unlock_at && new Date(qr.unlock_at).getTime() > Date.now()) throw new Error('Bu QR şu an cevap kabul etmiyor')
+        } else if (scope === 'gp') {
+          // Grup hediyesi: geçerli davet anahtarı şart
+          if (!qr.is_claimed || qr.qr_mode === 'guestbook' || !qr.group_token || payload.groupKey !== qr.group_token) {
+            throw new Error('Bu davet linki geçersiz ya da kapatılmış')
           }
         } else {
           const settings = readGuestbookSettings(qr.guestbook_settings)

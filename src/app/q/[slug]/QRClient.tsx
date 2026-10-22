@@ -9,6 +9,7 @@ import type { PublicGuestbookSettings } from '@/lib/guestbook'
 import { withLang, type Lang } from '@/lib/i18n'
 import { getMaxAudioSeconds, getMaxVideoSeconds, spotifyEmbedUrl, youtubeEmbedUrl } from '@/lib/media'
 import { GuestbookSetupView, GuestbookView } from './GuestbookClient'
+import { CaptionPanel, GroupMessages, LostModeCard, ReplyBox, TimeCapsuleCard, type PlayExtrasData } from './PlayExtras'
 import { attachMedia, composeProfileTitle, ErrorBox, OwnerSecrets, parseProfileTitle, QR_T, ScanShell, SignInGate } from './ScanShared'
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
   mode: 'standard' | 'guestbook'
   guestbook: PublicGuestbookSettings | null
   viaNfc?: boolean
+  extras?: PlayExtrasData | null
 }
 
 function MediaTabs({
@@ -226,7 +228,7 @@ function mediaLabel(type: QRMedia['media_type'], lang: Lang) {
   return `🔗 ${t.link}`
 }
 
-function PlayView({ qr, lang, viaNfc }: { qr: QRCode; lang: Lang; viaNfc?: boolean }) {
+function PlayView({ qr, lang, viaNfc, extras }: { qr: QRCode; lang: Lang; viaNfc?: boolean; extras?: PlayExtrasData | null }) {
   const t = QR_T[lang]
   const [manageUrl, setManageUrl] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -276,6 +278,9 @@ function PlayView({ qr, lang, viaNfc }: { qr: QRCode; lang: Lang; viaNfc?: boole
         </p>
       </div>
 
+      {extras?.lockedUntil ? (
+        <TimeCapsuleCard unlockAt={extras.lockedUntil} lang={lang} />
+      ) : (
       <div className="w-card space-y-5 p-5 sm:p-6">
         {items.length > 1 && (
           <div className="flex flex-wrap gap-2">
@@ -344,7 +349,12 @@ function PlayView({ qr, lang, viaNfc }: { qr: QRCode; lang: Lang; viaNfc?: boole
             {t.openLink} ↗
           </a>
         )}
+
+        {active && extras?.captionMediaIds.includes(active.id) && <CaptionPanel slug={qr.slug} mediaId={active.id} lang={lang} />}
       </div>
+      )}
+
+      {extras && <GroupMessages slug={qr.slug} lang={lang} messages={extras.groupMessages} />}
 
       {(profile.phone || profile.location) && (
         <div className="w-card mt-4 space-y-3 p-5">
@@ -362,6 +372,10 @@ function PlayView({ qr, lang, viaNfc }: { qr: QRCode; lang: Lang; viaNfc?: boole
         </div>
       )}
 
+      {extras && (extras.lostMode || profile.phone || profile.location) && <LostModeCard slug={qr.slug} lang={lang} lostMode={extras.lostMode} />}
+
+      {extras?.repliesEnabled && !manageUrl && <ReplyBox slug={qr.slug} lang={lang} />}
+
       {manageUrl && (
         <div className="mt-4 space-y-2 text-center">
           <a href={manageUrl} className="w-btn w-btn-ghost w-btn-block">
@@ -376,7 +390,7 @@ function PlayView({ qr, lang, viaNfc }: { qr: QRCode; lang: Lang; viaNfc?: boole
   )
 }
 
-export default function QRClient({ qr, lang, mode, guestbook, viaNfc }: Props) {
+export default function QRClient({ qr, lang, mode, guestbook, viaNfc, extras }: Props) {
   if (qr.is_demo && qr.is_active === false) return <ExpiredDemoView lang={lang} />
   if (mode === 'guestbook' && guestbook) {
     if (!qr.is_claimed)
@@ -393,5 +407,5 @@ export default function QRClient({ qr, lang, mode, guestbook, viaNfc }: Props) {
         <ClaimView qr={qr} lang={lang} />
       </SignInGate>
     )
-  return <PlayView qr={qr} lang={lang} viaNfc={viaNfc} />
+  return <PlayView qr={qr} lang={lang} viaNfc={viaNfc} extras={extras} />
 }

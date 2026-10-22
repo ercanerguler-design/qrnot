@@ -12,8 +12,9 @@ import { getMaxAudioSeconds, getMaxVideoSeconds } from '@/lib/media'
 import { SITE_URL } from '@/lib/site'
 import { attachMedia, composeProfileTitle, ErrorBox, parseProfileTitle, ScanShell } from '@/app/q/[slug]/ScanShared'
 import GuestbookAdmin from './GuestbookAdmin'
+import ManageExtras, { type ExtrasInfo } from './ManageExtras'
 
-interface OwnerInfo {
+interface OwnerInfo extends Omit<ExtrasInfo, 'media'> {
   slug: string
   title: string
   orderType?: 'trial' | 'individual' | 'corporate' | 'demo'
@@ -26,7 +27,16 @@ interface OwnerInfo {
   createdAt: string
   mode: 'standard' | 'guestbook'
   guestbook: PublicGuestbookSettings | null
-  media: Array<{ id: string; media_type: string; source_type: string; external_url: string | null; title: string; is_primary: boolean }>
+  media: Array<{
+    id: string
+    media_type: string
+    source_type: string
+    external_url: string | null
+    title: string
+    is_primary: boolean
+    transcript?: string | null
+    transcript_lang?: string | null
+  }>
 }
 
 const T = {
@@ -270,7 +280,7 @@ export default function ManageClient({ slug, lang }: { slug: string; lang: Lang 
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-display text-xl font-semibold">{t.content}</h2>
               <span className="w-chip w-chip-ink">
-                {t.remaining}: {remaining}
+                {t.remaining}: {info.premium ? '∞' : remaining}
               </span>
             </div>
 
@@ -345,6 +355,8 @@ export default function ManageClient({ slug, lang }: { slug: string; lang: Lang 
             </button>
           </section>
         )}
+
+        {info.mode !== 'guestbook' && <ManageExtras slug={slug} token={token} lang={lang} info={info} onChanged={() => void load()} />}
 
         <NfcWriter
           slug={slug}

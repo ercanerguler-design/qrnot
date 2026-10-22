@@ -13,6 +13,7 @@ export type ProductId =
   | 'anahtarlik-nfc'
   | 'dijital-qr'
   | 'ani-defteri'
+  | 'premium'
 
 export type ProductKind = 'necklace' | 'keychain' | 'digital' | 'guestbook'
 export type Currency = 'TRY' | 'USD'
@@ -197,6 +198,29 @@ export const PRODUCTS: Product[] = [
       en: ['Added to your account instantly', 'High-res PNG/SVG download', 'Voice, video, photo & links', 'Updatable (3 recordings included)'],
     },
     maxQuantity: 50,
+  },
+  {
+    id: 'premium',
+    kind: 'digital',
+    physical: false,
+    nfc: false,
+    requiresAccount: true,
+    price: { TRY: 19900, USD: 999 },
+    name: { tr: 'QRNot Premium · 1 yıl', en: 'QRNot Premium · 1 year' },
+    tagline: {
+      tr: 'Sınırsız güncelleme ve yapay zekâ altyazı.',
+      en: 'Unlimited updates and AI captions.',
+    },
+    description: {
+      tr: 'Hesabındaki tüm QR’lar için 1 yıl geçerli üyelik. İçeriğini dilediğin kadar güncelle; ses ve videolarına yapay zekâ ile altyazı ekle, okutan kişi kendi dilinde okusun.',
+      en: 'A one-year membership for every QR in your account. Update your content as often as you like and add AI captions to your voice and video messages — viewers read them in their own language.',
+    },
+    features: {
+      tr: ['Hesaptaki tüm QR’larda sınırsız içerik güncelleme', 'Yapay zekâ ile altyazı (sesi yazıya döker)', 'Otomatik çeviri: 8 dil', '1 yıl geçerli, otomatik yenilenmez'],
+      en: ['Unlimited content updates on every QR in your account', 'AI captions (voice to text)', 'Automatic translation: 8 languages', 'Valid for 1 year, no auto-renewal'],
+    },
+    badge: { tr: 'Yeni', en: 'New' },
+    maxQuantity: 3,
   },
 ]
 

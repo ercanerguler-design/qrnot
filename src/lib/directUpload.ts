@@ -6,7 +6,8 @@ import { getMaxImageFileSizeBytes, getMaxVideoFileSizeBytes, type UploadedMediaT
 // Sunucu fonksiyonunun 4.5MB gövde sınırını aşmak için dosya önce Blob'a gider,
 // sonra sadece URL'i claim/update rotalarına gönderilir.
 
-export type UploadScope = 'qr' | 'gb'
+// qr: QR sahibi · gb: anı defteri misafiri · rp: cevap · gp: grup hediyesi katkısı
+export type UploadScope = 'qr' | 'gb' | 'rp' | 'gp'
 
 export function uploadPrefix(scope: UploadScope, slug: string) {
   return `${scope}/${slug}-`

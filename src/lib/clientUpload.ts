@@ -14,19 +14,21 @@ function extensionOf(file: File) {
 
 export async function uploadMediaDirect(options: {
   slug: string
-  scope: 'qr' | 'gb'
+  scope: 'qr' | 'gb' | 'rp' | 'gp'
   file: File
   token?: string
   pin?: string
+  /** grup hediyesi davet anahtarı */
+  groupKey?: string
   onProgress?: (percentage: number) => void
 }) {
-  const { slug, scope, file, token, pin, onProgress } = options
+  const { slug, scope, file, token, pin, groupKey, onProgress } = options
   const pathname = `${scope}/${slug}-${Date.now()}.${extensionOf(file)}`
 
   const blob = await upload(pathname, file, {
     access: 'private',
     handleUploadUrl: '/api/upload',
-    clientPayload: JSON.stringify({ slug, scope, token, pin }),
+    clientPayload: JSON.stringify({ slug, scope, token, pin, groupKey }),
     contentType: file.type || undefined,
     multipart: file.size > 8 * 1024 * 1024,
     onUploadProgress: ({ percentage }) => onProgress?.(percentage),

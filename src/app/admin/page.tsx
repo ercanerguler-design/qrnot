@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { CorporateTab, QrsTab, UsersTab } from './CoreTabs'
+import { DppTab } from './DppTab'
 import { HomeTab, type Go } from './HomeTab'
 import { btn, EtsyTab, input, OrdersTab, ProductionTab, RevenueTab } from './ShopTabs'
 
@@ -29,6 +30,7 @@ const SECTIONS = [
     tabs: [
       { key: 'users', icon: '👤', label: 'Kullanıcılar' },
       { key: 'corporate', icon: '🏢', label: 'Kurumsal paneller' },
+      { key: 'dpp', icon: '🛂', label: 'Ürün pasaportu (DPP)' },
     ],
   },
 ] as const
@@ -188,6 +190,7 @@ export default function AdminConsole() {
         {tab === 'production' && <ProductionTab call={call} />}
         {tab === 'users' && <UsersTab password={password} />}
         {tab === 'corporate' && <CorporateTab password={password} />}
+        {tab === 'dpp' && <DppTab password={password} />}
       </main>
     </div>
   )

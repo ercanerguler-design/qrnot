@@ -160,6 +160,10 @@ const C = {
         uses: ['Teslimat kanıtı ve hasar bildirimi', 'Araç kontrolü, rota devri, soğuk zincir takibi', 'Depo girişi, stok sayımı, gümrük evrakı'],
       },
     ],
+    dppKicker: 'Yeni · AB ihracatı',
+    dppTitle: 'Dijital Ürün Pasaportu (DPP)',
+    dppDesc: 'AB’nin ESPR düzenlemesiyle ürünlere kademeli olarak dijital pasaport zorunlu hale geliyor. Tekstil, mobilya, elektronik ve batarya üreticileri için 8 dilli, sürümlü, QR / NFC ile açılan ürün pasaportları.',
+    dppCta: 'DPP’yi incele',
     b2bCta: 'Kurumsal teklif al',
     bizCatalog: 'Kurumsal katalog',
     partner: 'Pazaryeri ortaklığı',
@@ -306,6 +310,10 @@ const C = {
         uses: ['Proof of delivery and damage reports', 'Vehicle checks, route handoffs, cold-chain tracking', 'Warehouse intake, stock counts, customs documents'],
       },
     ],
+    dppKicker: 'New · EU exports',
+    dppTitle: 'Digital Product Passport (DPP)',
+    dppDesc: 'Under the EU ESPR, digital product passports are being phased in. Versioned passports in 8 languages that open via QR / NFC, for textile, furniture, electronics and battery manufacturers.',
+    dppCta: 'Explore DPP',
     b2bCta: 'Get a business quote',
     bizCatalog: 'Business catalog',
     partner: 'Marketplace partnership',
@@ -598,6 +606,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
               </div>
             ))}
           </div>
+          <Link
+            href={withLang('/dpp', lang)}
+            className="mt-6 flex flex-col gap-4 rounded-2xl bg-ink p-6 text-white transition hover:opacity-95 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">🛂 {c.dppKicker}</p>
+              <p className="font-display mt-2 text-2xl font-semibold">{c.dppTitle}</p>
+              <p className="mt-2 max-w-2xl text-sm text-white/75">{c.dppDesc}</p>
+            </div>
+            <span className="w-btn w-btn-primary shrink-0">{c.dppCta} →</span>
+          </Link>
           <p className="mt-6 text-sm text-ink-2">{c.b2bExtra}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a

@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page('/guestbook', 0.8),
     page('/nfc', 0.7),
     page('/katalog', 0.7),
+    page('/dpp', 0.7),
     page('/etsy', 0.4, 'monthly'),
     page('/partnerlik', 0.4, 'monthly'),
     page('/hotel', 0.4, 'monthly'),

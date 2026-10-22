@@ -11,7 +11,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json(passportJson(view), {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': view.restrictedAccess ? 'no-store' : 'public, max-age=300',
+      // Yeni yayın JSON'a hemen yansısın: CDN'de saklanmaz, tarayıcıda en fazla 60 sn
+      'Cache-Control': view.restrictedAccess ? 'no-store' : 'public, max-age=60',
+      'Vercel-CDN-Cache-Control': 'no-store',
     },
   })
 }

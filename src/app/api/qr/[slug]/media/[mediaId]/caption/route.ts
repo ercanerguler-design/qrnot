@@ -37,7 +37,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     return NextResponse.json({ lang, original: media.transcript_lang, text })
   } catch (err) {
     console.error('[caption GET]', err)
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'Sunucu hatası' }, { status: 500 })
+    // Herkese açık uç: sağlayıcı hata ayrıntısını izleyiciye gösterme
+    return NextResponse.json({ error: 'Altyazı şu an hazırlanamadı, biraz sonra tekrar dene' }, { status: 500 })
   }
 }
 

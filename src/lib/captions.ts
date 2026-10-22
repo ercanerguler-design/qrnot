@@ -63,7 +63,11 @@ export async function transcribeBlob(blobUrl: string): Promise<{ text: string; l
 
 let anthropic: Anthropic | null = null
 function claude() {
-  if (!anthropic) anthropic = new Anthropic()
+  if (!anthropic) {
+    // Workspace'e bağlı olmayan anahtarlar için Anthropic, workspace kimliğini başlıkta ister
+    const workspaceId = String(process.env.ANTHROPIC_WORKSPACE_ID || '').trim()
+    anthropic = new Anthropic(workspaceId ? { defaultHeaders: { 'anthropic-workspace-id': workspaceId } } : {})
+  }
   return anthropic
 }
 

@@ -370,8 +370,10 @@ function claude() {
   return anthropic
 }
 
-async function translateTexts(source: DppTexts, from: DppLang, to: DppLang): Promise<DppTexts> {
-  const filled = Object.fromEntries(DPP_TEXT_KEYS.filter((k) => source[k]).map((k) => [k, source[k]]))
+async function translateTexts(source: DppTexts, materials: string[], from: DppLang, to: DppLang): Promise<DppTexts> {
+  const filled: Record<string, string | string[]> = Object.fromEntries(DPP_TEXT_KEYS.filter((k) => source[k]).map((k) => [k, source[k]]))
+  // Malzeme adları da çevrilir (aynı sırada dizi olarak döner)
+  if (materials.some(Boolean)) filled.materialNames = materials
   if (Object.keys(filled).length === 0) return sanitizeTexts({})
   const response = await claude().beta.messages.create({
     model: 'claude-opus-5-5',
@@ -380,7 +382,7 @@ async function translateTexts(source: DppTexts, from: DppLang, to: DppLang): Pro
     fallbacks: 'default',
     output_config: { effort: 'low' },
     system:
-      'You translate product information for an EU Digital Product Passport. Translate every value of the JSON object from the source language to the target language accurately, using standard technical and regulatory terminology for product safety, materials, care, repair and recycling. Keep brand names, model codes, numbers, units and certificate names unchanged. Return only a JSON object with exactly the same keys, with no notes or code fences.',
+      'You translate product information for an EU Digital Product Passport. Translate every value of the JSON object from the source language to the target language accurately, using standard technical and regulatory terminology for product safety, materials, care, repair and recycling. "materialNames" is an array of material names: return an array of the same length and order. Keep brand names, model codes, numbers, units and certificate names unchanged. Return only a JSON object with exactly the same keys, with no notes or code fences.',
     messages: [{ role: 'user', content: `Source language: ${DPP_LANG_NAMES[from]}\nTarget language: ${DPP_LANG_NAMES[to]}\n\n${JSON.stringify(filled)}` }],
   })
   if (response.stop_reason === 'refusal') throw new Error('Çeviri yapılamadı')
@@ -409,7 +411,8 @@ export async function translateProduct(companyId: string, productId: string, tar
   if (!source?.name) throw new Error('Önce varsayılan dildeki metinleri doldur')
   const langs = (Array.isArray(targets) ? targets : []).filter((l): l is DppLang => isDppLang(l) && l !== from).slice(0, 7)
   if (!langs.length) throw new Error('En az bir hedef dil seç')
-  const results = await Promise.allSettled(langs.map((lang) => translateTexts(source, from, lang)))
+  const materials = readData(product.data).materials.map((m) => m.name)
+  const results = await Promise.allSettled(langs.map((lang) => translateTexts(source, materials, from, lang)))
   const done: DppLang[] = []
   const failed: DppLang[] = []
   results.forEach((r, i) => {

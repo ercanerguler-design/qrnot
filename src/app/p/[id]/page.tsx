@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { after } from 'next/server'
 import { loadPublicPassport, digitalLink, passportUrl, recordPassportScan } from '@/lib/dpp/server'
-import { DPP_LANG_NAMES, DPP_LANGS, isDppLang, type DppLang, type DppTexts } from '@/lib/dpp/types'
+import { DPP_LANG_NAMES, DPP_LANGS, isDppLang, materialName, type DppData, type DppLang, type DppTexts } from '@/lib/dpp/types'
 import { SITE_URL } from '@/lib/site'
 import { PASSPORT_LABELS } from './labels'
 import PrintButton from './PrintButton'
@@ -107,7 +107,7 @@ export default async function PassportPage({ params, searchParams }: Props) {
     model: d.model || undefined,
     gtin14: d.gtin || undefined,
     countryOfOrigin: d.countryOfOrigin || undefined,
-    material: d.materials.map((m) => (m.percent !== null ? `${m.name} ${m.percent}%` : m.name)).join(', ') || undefined,
+    material: d.materials.map((m, i) => { const n = materialName(d as DppData, view.texts, contentLang, view.defaultLang, i); return m.percent !== null ? `${n} ${m.percent}%` : n }).join(', ') || undefined,
     manufacturer: d.manufacturer.name ? { '@type': 'Organization', name: d.manufacturer.name } : undefined,
     url: passportUrl(view.publicId),
   }
@@ -204,7 +204,7 @@ export default async function PassportPage({ params, searchParams }: Props) {
               {d.materials.map((m, i) => (
                 <li key={i}>
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-medium">{m.name}</span>
+                    <span className="font-medium">{materialName(d as DppData, view.texts, contentLang, view.defaultLang, i)}</span>
                     {m.percent !== null && <span className="font-semibold tabular-nums">%{fmt.format(m.percent)}</span>}
                   </div>
                   {m.percent !== null && (

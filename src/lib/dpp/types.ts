@@ -67,8 +67,11 @@ export interface DppTexts {
   repair: string
   endOfLife: string
   safety: string
+  /** Malzeme adlarının bu dildeki karşılıkları (data.materials ile aynı sırada). Ana dilde kullanılmaz; ana dil adı data.materials[i].name'dir. */
+  materialNames: string[]
 }
-export const DPP_TEXT_KEYS: Array<keyof DppTexts> = ['name', 'description', 'care', 'repair', 'endOfLife', 'safety']
+export type DppTextKey = Exclude<keyof DppTexts, 'materialNames'>
+export const DPP_TEXT_KEYS: DppTextKey[] = ['name', 'description', 'care', 'repair', 'endOfLife', 'safety']
 
 export interface DppMaterial {
   name: string
@@ -121,7 +124,7 @@ export interface DppData {
 }
 
 export function emptyTexts(): DppTexts {
-  return { name: '', description: '', care: '', repair: '', endOfLife: '', safety: '' }
+  return { name: '', description: '', care: '', repair: '', endOfLife: '', safety: '', materialNames: [] }
 }
 
 export function emptyParty(): DppParty {
@@ -189,7 +192,15 @@ export function sanitizeTexts(input: unknown): DppTexts {
     repair: str(o.repair, 3000),
     endOfLife: str(o.endOfLife, 3000),
     safety: str(o.safety, 3000),
+    materialNames: (Array.isArray(o.materialNames) ? o.materialNames : []).slice(0, 30).map((n) => str(n, 120)),
   }
+}
+
+/** Malzemenin verilen dildeki adı: ana dilde ya da çevirisi yoksa girilen ad. */
+export function materialName(data: DppData, texts: Partial<Record<DppLang, DppTexts>>, lang: DppLang, defaultLang: DppLang, index: number) {
+  const base = data.materials[index]?.name || ''
+  if (lang === defaultLang) return base
+  return texts[lang]?.materialNames?.[index] || base
 }
 
 /** Panelden gelen veriyi güvenli, sınırlı bir şekle sokar. GTIN geçersizse hata fırlatır. */

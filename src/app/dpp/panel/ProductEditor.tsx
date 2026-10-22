@@ -14,6 +14,7 @@ import {
   type DppLang,
   type DppMaterial,
   type DppParty,
+  type DppTextKey,
   type DppTexts,
 } from '@/lib/dpp/types'
 import ItemsPanel from './ItemsPanel'
@@ -102,8 +103,18 @@ export default function ProductEditor({ productId, go, me }: { productId: string
   }, [dirty])
 
   const t = texts[defaultLang] || emptyTexts()
-  const setText = (lang: DppLang, key: keyof DppTexts, value: string) => {
+  const setText = (lang: DppLang, key: DppTextKey, value: string) => {
     setTexts((cur) => ({ ...cur, [lang]: { ...(cur[lang] || emptyTexts()), [key]: value } }))
+    setDirty(true)
+  }
+  const setMaterialName = (lang: DppLang, index: number, value: string) => {
+    setTexts((cur) => {
+      const base = cur[lang] || emptyTexts()
+      const names = [...(base.materialNames || [])]
+      while (names.length <= index) names.push('')
+      names[index] = value
+      return { ...cur, [lang]: { ...base, materialNames: names } }
+    })
     setDirty(true)
   }
   const patch = (p: Partial<DppData>) => {
@@ -480,6 +491,8 @@ export default function ProductEditor({ productId, go, me }: { productId: string
             texts={texts}
             defaultLang={defaultLang}
             setText={setText}
+            materials={data.materials.map((m) => m.name)}
+            setMaterialName={setMaterialName}
             translation={translation}
             canTranslate={Boolean(bundle) && !readOnly}
             busy={busy === 'translate'}
@@ -645,6 +658,8 @@ function LanguagesEditor({
   texts,
   defaultLang,
   setText,
+  materials,
+  setMaterialName,
   translation,
   canTranslate,
   busy,
@@ -652,7 +667,9 @@ function LanguagesEditor({
 }: {
   texts: Partial<Record<DppLang, DppTexts>>
   defaultLang: DppLang
-  setText: (lang: DppLang, key: keyof DppTexts, value: string) => void
+  setText: (lang: DppLang, key: DppTextKey, value: string) => void
+  materials: string[]
+  setMaterialName: (lang: DppLang, index: number, value: string) => void
   translation: boolean
   canTranslate: boolean
   busy: boolean
@@ -663,7 +680,7 @@ function LanguagesEditor({
   const [selected, setSelected] = useState<DppLang[]>(others.filter((l) => !texts[l]?.name))
   const tt = texts[lang] || emptyTexts()
   const src = texts[defaultLang] || emptyTexts()
-  const fields: Array<[keyof DppTexts, string, boolean]> = [
+  const fields: Array<[DppTextKey, string, boolean]> = [
     ['name', 'Ürün adı', false],
     ['description', 'Açıklama', true],
     ['care', 'Bakım', true],
@@ -728,6 +745,19 @@ function LanguagesEditor({
               </div>
             </div>
           ))}
+          {materials.some(Boolean) && (
+            <div className="grid gap-2 border-t border-slate-100 pt-4">
+              <span className="text-xs font-semibold text-slate-600">Malzeme adları ({DPP_LANG_NAMES[lang]})</span>
+              {materials.map((name, i) =>
+                name ? (
+                  <div key={i} className="grid items-center gap-2 lg:grid-cols-2">
+                    <input className={inputCls} placeholder={name} value={tt.materialNames?.[i] || ''} onChange={(e) => setMaterialName(lang, i, e.target.value)} />
+                    <p className="hidden rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500 lg:block" dir="ltr">{name}</p>
+                  </div>
+                ) : null
+              )}
+            </div>
+          )}
         </div>
       </Card>
     </div>

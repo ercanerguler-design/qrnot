@@ -20,7 +20,7 @@ Audience: **manufacturers, importers and brands selling into the EU** — owners
 | LinkedIn document (carousel) post | `../katalog/QRNot-DPP-Katalog-EN.pdf` | A4 PDF |
 | Sharing the deck on LinkedIn | `../sunum/QRNot-DPP-Sunum-EN.pdf` | 16:9 PDF |
 
-Each folder holds the same 4 posts:
+Each folder holds the same 6 posts:
 
 | No. | Topic | Visual |
 |---|---|---|
@@ -28,6 +28,8 @@ Each folder holds the same 4 posts:
 | **02** | One QR, 8 languages | English · German · Arabic passport |
 | **03** | Print the label once; the QR never changes | Product editor in the company panel |
 | **04** | Pilot programme | QR label sheet |
+| **05** | Supplier data portal | Suppliers tab + supplier form on a phone |
+| **06** | Carbon estimate | Carbon estimate helper in the panel |
 
 > The panel screenshots in these visuals show the English interface. The company panel itself works in 8 languages — each user picks their own.
 
@@ -169,10 +171,56 @@ Add by sector: `#Textiles #Fashion #Furniture #Batteries #Sustainability`
 
 ---
 
+### 05 — "Get the data from your supplier with one link."
+
+**LinkedIn** (`4x5/05.png`)
+> The hardest part of a Digital Product Passport isn't the QR code. It's the data behind it.
+>
+> Fibre composition from the spinner. GOTS or OEKO-TEX certificates from the mill. Facility details from the dyehouse. Usually in three languages, five spreadsheets and a lot of follow-up emails.
+>
+> With QRNot DPP you send each supplier a link. They fill in materials, certificates and facility details in their own language (8 languages, no login) and upload documents. You review and copy what you approve into the passport in one click.
+>
+> How are you collecting supplier data for ESPR today?
+>
+> #DigitalProductPassport #ESPR #Sourcing #Textiles
+
+**Instagram**
+> Send your supplier a link and let them fill in the data. 🤝 Materials, certificates, facility, documents: in their language, no login. It reaches the passport only after you approve.
+> .
+> #dpp #sourcing #textiles #supplychain #sustainability
+
+**Story** (`9x16/05.png`): add a **poll** in the middle: "Where is your supplier data today?" → *Excel / email* · *ERP*
+
+**Alt text:** "Supplier response in the company panel and the supplier data form on a phone."
+
+---
+
+### 06 — "No carbon figure yet? Start with a sourced estimate."
+
+**LinkedIn** (`4x5/06.png`)
+> "We don't have a carbon figure for this product yet." That's the honest answer for most SMEs, and that's fine.
+>
+> In QRNot DPP, a carbon estimate helper calculates a range for the raw-material (fibre) stage from material shares and product weight, with sources for every value. The passport labels it clearly as an estimate.
+>
+> When you have a product-specific LCA, you replace it with your declared value. Transparency beats false precision.
+>
+> #DigitalProductPassport #CarbonFootprint #Sustainability #Textiles
+
+**Instagram**
+> No carbon figure yet? Start with a sourced estimate 🌱 The passport clearly says "estimate"; replace it when your LCA is ready.
+> .
+> #dpp #carbonfootprint #sustainability #textiles #export
+
+**Caution:** Do not call this "carbon calculation" or "LCA"; call it an "estimate helper".
+
+**Alt text:** "Carbon estimate range calculated from material shares in the panel, with an 'estimate' note."
+
+---
+
 ## 4. Extra content ideas
 
 **LinkedIn document post (one of the strongest B2B formats)**
-- Upload `katalog/QRNot-DPP-Katalog-EN.pdf` with "Add a document". Title: "The Digital Product Passport in 7 pages"
+- Upload `katalog/QRNot-DPP-Katalog-EN.pdf` with "Add a document". Title: "The Digital Product Passport in 8 pages"
 - Copy: "Swipe through: what a DPP is, who it affects, what goes into a passport and how to prepare."
 
 **30-second Reels / TikTok video**

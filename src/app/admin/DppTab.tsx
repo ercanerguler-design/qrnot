@@ -25,6 +25,12 @@ interface Company {
   users: Array<{ id: string; email: string; role: string; is_active: boolean; last_login_at: string | null }> | null
 }
 
+interface Safety {
+  backups: Array<{ day: string; status: string; size_bytes: number; counts: Record<string, number>; finished_at: string | null }>
+  trashFiles: number
+  audit30: number
+}
+
 const card = 'rounded-3xl border border-neutral-800 bg-neutral-950/70 p-5'
 const field = input.replace('w-full ', '')
 
@@ -42,10 +48,12 @@ export function DppTab({ password }: { password: string }) {
   const [busy, setBusy] = useState(false)
   const [form, setForm] = useState({ name: '', ownerEmail: '', ownerName: '', phone: '', country: 'TR', plan: 'pilot' as DppPlan, note: '' })
   const [search, setSearch] = useState('')
+  const [safety, setSafety] = useState<Safety | null>(null)
 
   const load = useCallback(async () => {
     try {
       setCompanies((await post<{ companies: Company[] }>(password, 'companies.list')).companies)
+      setSafety(await post<Safety>(password, 'safety.status').catch(() => null))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Liste alınamadı')
     }
@@ -154,6 +162,40 @@ export function DppTab({ password }: { password: string }) {
 
       <section className={`${card} space-y-3`}>
         <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-semibold">🛡️ Veri güvenliği</h3>
+          <button
+            className={`${btn} ml-auto bg-neutral-800`}
+            disabled={busy}
+            onClick={() =>
+              void act(async () => {
+                await post(password, 'backup.run')
+              })
+            }
+          >
+            Şimdi yedekle
+          </button>
+        </div>
+        <p className="text-sm text-neutral-400">
+          Tüm DPP verisi her gün otomatik yedeklenir (30 gün saklanır). Silinen dosyalar 30 gün çöp kutusunda bekler. Her değişiklik işlem kaydına yazılır.
+        </p>
+        {safety && (
+          <div className="grid gap-3 text-sm md:grid-cols-[1fr_auto_auto]">
+            <ul className="space-y-1">
+              {safety.backups.length === 0 && <li className="text-amber-300">Henüz yedek yok</li>}
+              {safety.backups.map((b) => (
+                <li key={b.day} className={b.status === 'ok' ? 'text-emerald-300' : 'text-amber-300'}>
+                  {b.day} · {b.status === 'ok' ? '✓' : b.status} · {(b.size_bytes / 1024).toFixed(0)} KB · {b.counts?.dpp_products ?? 0} ürün, {b.counts?.dpp_companies ?? 0} firma
+                </li>
+              ))}
+            </ul>
+            <p>Çöp kutusu: <b>{safety.trashFiles}</b> dosya</p>
+            <p>İşlem kaydı (30 gün): <b>{safety.audit30}</b></p>
+          </div>
+        )}
+      </section>
+
+      <section className={`${card} space-y-3`}>
+        <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-semibold">Firmalar</h3>
           <input className={`${field} ml-auto w-full max-w-xs`} placeholder="Firma, kod ya da e-posta ara…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -254,9 +296,9 @@ function CompanyRow({
               disabled={busy}
               onClick={() =>
                 void act(async () => {
-                  const typed = window.prompt(`${c.name} ve TÜM ürün pasaportları, belgeleri, seri numaraları KALICI olarak silinecek. Onaylamak için firma kodunu yaz: ${c.code}`)
+                  const typed = window.prompt(`${c.name} ve TÜM ürün pasaportları, belgeleri, seri numaraları silinecek. Silmeden önce tam kopyası alınır, dosyalar 30 gün çöp kutusunda bekler. Yayınlanmış pasaportu olan firma önce pasife alınmalıdır. Onaylamak için firma kodunu yaz: ${c.code}`)
                   if (typed !== c.code) return
-                  await post(password, 'companies.delete', { id: c.id })
+                  await post(password, 'companies.delete', { id: c.id, confirm: typed })
                 })
               }
             >

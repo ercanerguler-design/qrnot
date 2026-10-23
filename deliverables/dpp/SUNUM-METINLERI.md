@@ -9,9 +9,9 @@ Görseller bu klasörde; hepsi `node deliverables/dpp/build-dpp.mjs` ile yeniden
 
 | Klasör | Ne | Nerede kullanılır |
 |---|---|---|
-| `katalog/QRNot-DPP-Katalog-TR.pdf` · `-EN.pdf` | 7 sayfa A4 broşür | Görüşme sonrası e-postayla gönder, fuarda bastır |
+| `katalog/QRNot-DPP-Katalog-TR.pdf` · `-EN.pdf` | 8 sayfa A4 broşür | Görüşme sonrası e-postayla gönder, fuarda bastır |
 | `katalog/tr/` · `katalog/en/` | Katalog sayfaları tek tek (PNG) | Web, WhatsApp, LinkedIn belge gönderisi |
-| `sunum/QRNot-DPP-Sunum-TR.pdf` · `-EN.pdf` | 11 slaytlık sunum (16:9) | Yüz yüze / online toplantı, ekran paylaşımı |
+| `sunum/QRNot-DPP-Sunum-TR.pdf` · `-EN.pdf` | 13 slaytlık sunum (16:9) | Yüz yüze / online toplantı, ekran paylaşımı |
 | `sunum/tr/` · `sunum/en/` | Slaytlar tek tek (PNG) | PowerPoint / Keynote / Canva'ya görsel olarak eklemek için |
 | `sosyal/<tr\|en>/4x5-linkedin-instagram/` | 1080×1350, 4 gönderi | LinkedIn gönderisi, Instagram akış gönderisi |
 | `sosyal/<tr\|en>/1x1-instagram-facebook/` | 1080×1080, 4 gönderi | Instagram kare, Facebook, LinkedIn kare |
@@ -57,7 +57,7 @@ Görseller bu klasörde; hepsi `node deliverables/dpp/build-dpp.mjs` ile yeniden
 
 ---
 
-## 3. Sunum konuşmacı notları (11 slayt)
+## 3. Sunum konuşmacı notları (13 slayt)
 
 **1 · Kapak — "Ürünleriniz Avrupa'ya pasaportuyla gitsin."**
 Kendini tanıt. "Bugün 20 dakikada AB'nin dijital ürün pasaportunu, sizi nasıl etkilediğini ve bunu nasıl kolayca hazırlayabileceğinizi göstereceğim." Telefondaki gerçek pasaport ekranını göster.
@@ -80,16 +80,22 @@ Uygulama yok; 8 dil; Arapça sağdan sola. Tekil üründe seri no, parti, üreti
 **7 · Firma paneli**
 Panel ekranlarını göster: genel bakış, sekmeli düzenleyici, yayın öncesi eksik kontrolü (%100 kuralı). Panelin de 8 dilde kullanılabildiğini söyle: sağ üstteki dil seçiciyle her kullanıcı kendi dilini seçer; AB’deki ithalatçı ya da yabancı ekip kendi dilinde çalışır.
 
-**8 · Üretimden rafa**
+**8 · Tedarikçi veri portalı**
+En güçlü farkımız; burada yavaşla. *"Bu bilgilerin ne kadarı tedarikçilerinizden geliyor?"* diye sor. Canlı göster: panelde talep linki oluştur, telefonunla tedarikçi gibi doldur, panelde "Seçilenleri ürüne aktar". Vurgula: tedarikçi giriş yapmıyor, 8 dilde dolduruyor; firma onaylamadan hiçbir şey ürüne geçmiyor.
+
+**9 · Karbon tahmini ve veri güvenliği**
+Karbon: "LCA değil, kaynaklı bir tahmin; pasaportta açıkça 'tahmin' yazar. LCA'nız gelince değiştirirsiniz." Güvenlik kutusunu oku: işlem kaydı, günlük yedek, çakışma koruması, KVKK/GDPR sözleşmesi. Veri yeri sorulursa: ABD (Neon / AWS, Vercel), AB bölgesi talep üzerine; ayrıntı qrnot.com/dpp/guvenlik.
+
+**10 · Üretimden rafa**
 Seri numarası üretimi (tek seferde 2.000'e kadar), etiket baskısı (25–50 mm) ya da CSV ile lazer / etiket yazılımı. GS1 Digital Link: mevcut barkodlu ürünlerde standart adres de pasaportu açar.
 
-**9 · Güven altyapısı**
-Sürümlü yayın, yetkili erişim, silinmez arşiv, makine okunur veri. "Açık konuşalım" notunu mutlaka oku — dürüstlük güven verir.
+**11 · Güven altyapısı**
+Sürümlü yayın, yetkili erişim, silinmez arşiv, makine okunur veri; her değişiklik kayıt altında, günlük yedek. "Açık konuşalım" notunu mutlaka oku — dürüstlük güven verir.
 
-**10 · Nasıl başlarız / Paketler**
+**12 · Nasıl başlarız / Paketler**
 4 adım: tanışma → pilot → etiket → yaygınlaştırma. Paketler ürün modeli sayısına göre; seri numarası sınırsız. Fiyatı burada verme; "ürün sayınıza göre teklif hazırlıyoruz" de.
 
-**11 · İletişim**
+**13 · İletişim**
 QR'ı okutturup örnek pasaportu açtır. Net bir sonraki adım iste: *"Önümüzdeki hafta 2–3 ürününüzle pilotu başlatalım mı?"*
 
 ---

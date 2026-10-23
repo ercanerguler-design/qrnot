@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { sql } from '@/lib/db'
 import { consumeRateLimit } from '@/lib/growthSchema'
 import { createDppUser, getDppUser, randomKey, resetDppUserPassword, type DppSessionUser } from '@/lib/dpp/auth'
@@ -25,6 +25,7 @@ import {
 } from '@/lib/dpp/server'
 import { DppError, errorText, msg, type MsgKey, type MsgParams } from '@/lib/dpp/i18n'
 import { requestLang } from '@/lib/dpp/requestLang'
+import { audit, runDailyMaintenance } from '@/lib/dpp/safety'
 import {
   applySupplierResponse,
   createSupplierRequest,
@@ -82,10 +83,17 @@ export async function POST(req: NextRequest) {
     if (EDITOR_ACTIONS.has(action) && user.role === 'viewer') throw new HttpError('e_viewer_forbidden', 403)
     if (OWNER_ACTIONS.has(action) && user.role !== 'owner') throw new HttpError('e_owner_only', 403)
 
-    return NextResponse.json(await handle(user, action, body, lang))
+    // Silme işlemlerinde silinecek verinin kopyası işlem kaydına alınır
+    const before = WRITE_ACTIONS.has(action) ? await snapshotBefore(user.companyId, action, body) : null
+    const result = await handle(user, action, body, lang)
+    if (WRITE_ACTIONS.has(action)) await audit(user.companyId, user.email, action, auditTarget(body, result), { request: auditBody(body), ...(before ? { before } : {}) })
+    // Günlük yedek ve çöp temizliği: yanıtı bekletmeden, günde bir kez
+    after(() => runDailyMaintenance().catch((e) => console.error('[dpp maintenance]', e)))
+    return NextResponse.json(result)
   } catch (err) {
     if (!(err instanceof DppError)) console.error('[dpp/panel]', err)
-    return NextResponse.json({ error: errorText(err, lang) }, { status: err instanceof HttpError ? err.status : err instanceof DppError ? 400 : 500 })
+    const status = err instanceof HttpError ? err.status : err instanceof DppError ? (err.key === 'e_conflict' ? 409 : 400) : 500
+    return NextResponse.json({ error: errorText(err, lang) }, { status })
   }
 }
 
@@ -276,6 +284,56 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
     default:
       throw new HttpError('e_invalid_action')
   }
+}
+
+const WRITE_ACTIONS = new Set([...EDITOR_ACTIONS, ...OWNER_ACTIONS])
+
+/** İşlem kaydı için isteğin özeti: büyük metinler kısaltılır, şifre vb. alınmaz */
+function auditBody(body: Record<string, unknown>) {
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'action' || /password/i.test(k)) continue
+    if (k === 'rows' && Array.isArray(v)) out.rows = v.length
+    else out[k] = v
+  }
+  return out
+}
+
+function auditTarget(body: Record<string, unknown>, result: unknown) {
+  const r = (result && typeof result === 'object' ? result : {}) as Record<string, unknown>
+  return String(body.id || body.productId || r.id || '') || null
+}
+
+/** Geri getirilebilsin diye silinmeden önceki tam kayıt */
+async function snapshotBefore(companyId: string, action: string, body: Record<string, unknown>) {
+  const id = String(body.id || '')
+  const uuid = /^[0-9a-f-]{36}$/i.test(id)
+  try {
+    if (action === 'product.delete' && uuid) {
+      const [product, documents] = await Promise.all([
+        sql`SELECT * FROM dpp_products WHERE id = ${id} AND company_id = ${companyId}`,
+        sql`SELECT d.* FROM dpp_documents d JOIN dpp_products p ON p.id = d.product_id WHERE p.id = ${id} AND p.company_id = ${companyId}`,
+      ])
+      return { product: product[0] || null, documents }
+    }
+    if (action === 'docs.delete' && uuid) {
+      return (await sql`SELECT d.* FROM dpp_documents d JOIN dpp_products p ON p.id = d.product_id WHERE d.id = ${id} AND p.company_id = ${companyId}`)[0] || null
+    }
+    if (action === 'items.delete') {
+      const ids = (Array.isArray(body.ids) ? body.ids : []).map(String).filter((x) => /^[0-9a-f-]{36}$/i.test(x)).slice(0, 5000)
+      if (!ids.length) return null
+      return await sql`SELECT i.* FROM dpp_items i JOIN dpp_products p ON p.id = i.product_id WHERE i.id = ANY(${ids}::uuid[]) AND p.company_id = ${companyId}`
+    }
+    if (action === 'users.remove' && uuid) {
+      return (await sql`SELECT id, email, name, role, created_at FROM dpp_users WHERE id = ${id} AND company_id = ${companyId}`)[0] || null
+    }
+    if (action === 'suppliers.delete' && uuid) {
+      return (await sql`SELECT * FROM dpp_supplier_requests WHERE id = ${id} AND company_id = ${companyId}`)[0] || null
+    }
+  } catch (err) {
+    console.error('[dpp snapshot]', err)
+  }
+  return null
 }
 
 function normalizeRole(input: unknown): DppRole {

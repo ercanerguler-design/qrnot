@@ -36,6 +36,7 @@ interface Bundle {
   data: DppData
   hasImage: boolean
   version: number
+  revision: number
   hasChanges: boolean
   publishedAt: string | null
   updatedAt: string
@@ -150,6 +151,8 @@ export default function ProductEditor({ productId, initialTab, go, me }: { produ
       data,
       imageUrl: newImage?.url || undefined,
       removeImage,
+      // Arada başkası kaydettiyse sunucu 409 döner; değişiklik sessizce ezilmez
+      revision: bundle ? bundle.revision : undefined,
     })
     await load(res.id)
     // Yeni ürün: bileşeni yeniden kurmadan adresi güncelle (yenileme / geri tuşu doğru ürüne dönsün)

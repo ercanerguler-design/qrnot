@@ -73,6 +73,8 @@ export function ensureDppSchema() {
         )
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_dpp_products_company ON dpp_products(company_id, updated_at DESC)`
+      // Eşzamanlı düzenlemede sessiz üzerine yazmayı önleyen revizyon sayacı (her içerik değişikliğinde +1)
+      await sql`ALTER TABLE dpp_products ADD COLUMN IF NOT EXISTS revision INTEGER NOT NULL DEFAULT 0`
       await sql`CREATE INDEX IF NOT EXISTS idx_dpp_products_gtin ON dpp_products(gtin) WHERE gtin IS NOT NULL`
       await sql`
         CREATE TABLE IF NOT EXISTS dpp_versions (
@@ -145,6 +147,39 @@ export function ensureDppSchema() {
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_dpp_supplier_requests_product ON dpp_supplier_requests(product_id, created_at DESC)`
       await sql`CREATE INDEX IF NOT EXISTS idx_dpp_supplier_requests_company ON dpp_supplier_requests(company_id, status)`
+      // Veri güvenliği: işlem kaydı (süresiz), silinen dosyalar için çöp kutusu (30 gün), günlük yedek kaydı
+      await sql`
+        CREATE TABLE IF NOT EXISTS dpp_audit (
+          id BIGSERIAL PRIMARY KEY,
+          company_id UUID,
+          actor VARCHAR(255) NOT NULL DEFAULT '',
+          action VARCHAR(60) NOT NULL,
+          target_id VARCHAR(80),
+          detail JSONB NOT NULL DEFAULT '{}'::jsonb,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`CREATE INDEX IF NOT EXISTS idx_dpp_audit_company ON dpp_audit(company_id, created_at DESC)`
+      await sql`
+        CREATE TABLE IF NOT EXISTS dpp_trash (
+          url TEXT PRIMARY KEY,
+          company_id UUID,
+          reason VARCHAR(120) NOT NULL DEFAULT '',
+          purge_after TIMESTAMP WITH TIME ZONE NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`
+        CREATE TABLE IF NOT EXISTS dpp_backups (
+          day DATE PRIMARY KEY,
+          status VARCHAR(12) NOT NULL DEFAULT 'running',
+          url TEXT,
+          size_bytes BIGINT NOT NULL DEFAULT 0,
+          counts JSONB NOT NULL DEFAULT '{}'::jsonb,
+          started_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          finished_at TIMESTAMP WITH TIME ZONE
+        )
+      `
     })().catch((err) => {
       dppSchemaPromise = null
       throw err

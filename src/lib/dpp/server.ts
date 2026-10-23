@@ -1,7 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { head } from '@vercel/blob'
 import { randomBytes } from 'crypto'
-import { deleteBlob } from '@/lib/blob'
 import { sql } from '@/lib/db'
 import { SITE_URL } from '@/lib/site'
 import { ensureDppSchema } from './schema'
@@ -22,6 +21,7 @@ import {
   type DppTexts,
 } from './types'
 import { DppError } from './i18n'
+import { trashBlob } from './safety'
 
 // DPP iş kuralları: ürün kaydı, yayınlama (sürümlü), seri numarası üretimi, belgeler, çeviri ve herkese açık görünüm.
 
@@ -68,6 +68,7 @@ export interface ProductRow {
   published_at: string | null
   created_at: string
   updated_at: string
+  revision: number
 }
 
 export async function listProducts(companyId: string) {
@@ -109,6 +110,7 @@ export async function getProductBundle(companyId: string, productId: string) {
     data: readData(product.data),
     hasImage: Boolean(product.image_url),
     version: product.version,
+    revision: Number(product.revision || 0),
     hasChanges: product.has_changes,
     publishedAt: product.published_at,
     updatedAt: product.updated_at,
@@ -146,7 +148,7 @@ export async function verifyUpload(companyId: string, blobUrl: string, imageOnly
 export async function saveProduct(
   companyId: string,
   productId: string | null,
-  input: { defaultLang?: unknown; texts?: unknown; data?: unknown; imageUrl?: unknown; removeImage?: unknown }
+  input: { defaultLang?: unknown; texts?: unknown; data?: unknown; imageUrl?: unknown; removeImage?: unknown; revision?: unknown }
 ) {
   await ensureDppSchema()
   const defaultLang: DppLang = isDppLang(input.defaultLang) ? input.defaultLang : 'tr'
@@ -173,16 +175,20 @@ export async function saveProduct(
   const current = await getProduct(companyId, productId)
   if (!current) throw new DppError('e_product_not_found')
   const oldImage = current.image_url
-  await sql`
+  // Panel ürünü açtığındaki revizyonu gönderir; arada başka biri (ya da çeviri / tedarikçi aktarımı) kaydettiyse üzerine yazılmaz
+  const expected = input.revision === undefined || input.revision === null ? null : Number(input.revision)
+  const updated = (await sql`
     UPDATE dpp_products
     SET default_lang = ${defaultLang}, texts = ${JSON.stringify(texts)}::jsonb, data = ${JSON.stringify(data)}::jsonb, gtin = ${data.gtin || null},
-        image_url = ${imageUrl === undefined ? oldImage : imageUrl}, has_changes = TRUE, updated_at = NOW()
-    WHERE id = ${productId} AND company_id = ${companyId}
-  `
+        image_url = ${imageUrl === undefined ? oldImage : imageUrl}, has_changes = TRUE, updated_at = NOW(), revision = revision + 1
+    WHERE id = ${productId} AND company_id = ${companyId} AND (${expected}::int IS NULL OR revision = ${expected}::int)
+    RETURNING id
+  `) as unknown[]
+  if (!updated.length) throw new DppError('e_conflict')
   // Eski görsel sadece hiçbir yayınlanmış sürümde kullanılmıyorsa silinir (yayınlanmış pasaport bozulmasın)
   if (imageUrl !== undefined && oldImage && oldImage !== imageUrl) {
     const used = (await sql`SELECT 1 FROM dpp_versions WHERE product_id = ${productId} AND snapshot->>'imageUrl' = ${oldImage} LIMIT 1`) as unknown[]
-    if (used.length === 0) await deleteBlob(oldImage).catch(() => undefined)
+    if (used.length === 0) await trashBlob(oldImage, companyId, 'image-replaced')
   }
   return productId
 }
@@ -229,7 +235,7 @@ export async function deleteDraft(companyId: string, productId: string) {
     WHERE r.product_id = ${product.id} AND COALESCE((f->>'applied')::boolean, FALSE) = FALSE
   `) as Array<{ url: string }>
   await sql`DELETE FROM dpp_products WHERE id = ${product.id}`
-  for (const url of [...docs.map((d) => d.blob_url), ...supplierFiles.map((f) => f.url), product.image_url].filter(Boolean) as string[]) await deleteBlob(url).catch(() => undefined)
+  for (const url of [...docs.map((d) => d.blob_url), ...supplierFiles.map((f) => f.url), product.image_url].filter(Boolean) as string[]) await trashBlob(url, companyId, 'draft-deleted')
 }
 
 export async function duplicateProduct(companyId: string, productId: string) {
@@ -358,7 +364,7 @@ export async function deleteDocument(companyId: string, docId: string) {
     RETURNING d.blob_url
   `) as Array<{ blob_url: string }>
   if (!rows.length) throw new DppError('e_doc_not_found')
-  await deleteBlob(rows[0].blob_url).catch(() => undefined)
+  await trashBlob(rows[0].blob_url, companyId, 'document-deleted')
 }
 
 /* ───────────── Otomatik çeviri (Claude) ───────────── */
@@ -430,8 +436,14 @@ export async function translateProduct(companyId: string, productId: string, tar
       failed.push(langs[i])
     }
   })
-  if (done.length) await sql`UPDATE dpp_products SET texts = ${JSON.stringify(texts)}::jsonb, has_changes = TRUE, updated_at = NOW() WHERE id = ${product.id}`
   if (!done.length) throw new DppError('e_translate_failed')
+  // Çeviri sürerken ürün kaydedildiyse çeviri o kaydı ezmez
+  const written = (await sql`
+    UPDATE dpp_products SET texts = ${JSON.stringify(texts)}::jsonb, has_changes = TRUE, updated_at = NOW(), revision = revision + 1
+    WHERE id = ${product.id} AND revision = ${Number(product.revision || 0)}
+    RETURNING id
+  `) as unknown[]
+  if (!written.length) throw new DppError('e_conflict')
   return { done, failed }
 }
 

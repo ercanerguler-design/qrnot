@@ -523,6 +523,7 @@ const tr = {
   e_contact_required: 'Firma adı ve yetkili adı zorunlu',
   e_files_max: 'En fazla 20 belge yüklenebilir',
   e_requests_max: 'Ürün başına en fazla 50 talep oluşturulabilir',
+  e_conflict: 'Bu ürün siz düzenlerken başka biri tarafından değiştirildi. Değişikliklerinizin üzerine yazılmaması için kaydedilmedi: sayfayı yenileyin ve tekrar deneyin.',
 }
 
 export type MsgKey = keyof typeof tr
@@ -1035,6 +1036,7 @@ const en: Dict = {
   e_contact_required: 'Company name and contact person are required',
   e_files_max: 'Up to 20 documents can be uploaded',
   e_requests_max: 'At most 50 requests per product',
+  e_conflict: 'This product was changed by someone else while you were editing. To avoid overwriting their changes it was not saved: reload the page and try again.',
 }
 
 const de: Dict = {
@@ -1544,6 +1546,7 @@ const de: Dict = {
   e_contact_required: 'Firmenname und Ansprechperson sind erforderlich',
   e_files_max: 'Es können höchstens 20 Dokumente hochgeladen werden',
   e_requests_max: 'Höchstens 50 Anfragen pro Produkt',
+  e_conflict: 'Dieses Produkt wurde während Ihrer Bearbeitung von jemand anderem geändert. Damit nichts überschrieben wird, wurde nicht gespeichert: Seite neu laden und erneut versuchen.',
 }
 
 const fr: Dict = {
@@ -2053,6 +2056,7 @@ const fr: Dict = {
   e_contact_required: 'Le nom de l’entreprise et la personne de contact sont requis',
   e_files_max: '20 documents maximum',
   e_requests_max: '50 demandes maximum par produit',
+  e_conflict: 'Ce produit a été modifié par quelqu’un d’autre pendant votre édition. Pour ne pas écraser ses modifications, rien n’a été enregistré : rechargez la page et réessayez.',
 }
 
 const es: Dict = {
@@ -2562,6 +2566,7 @@ const es: Dict = {
   e_contact_required: 'El nombre de la empresa y la persona de contacto son obligatorios',
   e_files_max: 'Máximo 20 documentos',
   e_requests_max: 'Máximo 50 solicitudes por producto',
+  e_conflict: 'Otra persona modificó este producto mientras lo editabas. Para no sobrescribir sus cambios, no se ha guardado: recarga la página e inténtalo de nuevo.',
 }
 
 const nl: Dict = {
@@ -3071,6 +3076,7 @@ const nl: Dict = {
   e_contact_required: 'Bedrijfsnaam en contactpersoon zijn verplicht',
   e_files_max: 'Maximaal 20 documenten',
   e_requests_max: 'Maximaal 50 aanvragen per product',
+  e_conflict: 'Dit product is door iemand anders gewijzigd terwijl u bewerkte. Om die wijzigingen niet te overschrijven is niet opgeslagen: herlaad de pagina en probeer opnieuw.',
 }
 
 const ar: Dict = {
@@ -3580,6 +3586,7 @@ const ar: Dict = {
   e_contact_required: 'اسم الشركة والشخص المسؤول مطلوبان',
   e_files_max: '20 مستندًا كحد أقصى',
   e_requests_max: '50 طلبًا كحد أقصى لكل منتج',
+  e_conflict: 'عدّل شخص آخر هذا المنتج أثناء تحريرك. لم يُحفظ حتى لا تُستبدل تعديلاته: أعد تحميل الصفحة وحاول مرة أخرى.',
 }
 
 const ru: Dict = {
@@ -4089,6 +4096,7 @@ const ru: Dict = {
   e_contact_required: 'Укажите название компании и контактное лицо',
   e_files_max: 'Не более 20 документов',
   e_requests_max: 'Не более 50 запросов на продукт',
+  e_conflict: 'Пока вы редактировали, продукт изменил другой пользователь. Чтобы не затереть его изменения, сохранение не выполнено: обновите страницу и повторите.',
 }
 
 export const DICTS: Record<DppLang, Dict> = { tr, en, de, fr, es, nl, ar, ru }

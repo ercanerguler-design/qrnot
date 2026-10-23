@@ -44,7 +44,7 @@ const T = {
     coverKicker: 'AB ESPR · Dijital Ürün Pasaportu',
     coverTitle: ['Ürünleriniz', 'Avrupa’ya', 'pasaportuyla gitsin.'],
     coverLead: 'İhracatçı üreticiler için QR / NFC ile açılan, 8 dilli, sürümlü ve denetime hazır dijital ürün pasaportu. Veriyi bir kez girin; etiketleri basın; gerisini QRNot yönetsin.',
-    coverPills: ['8 dil', 'Model ve seri numarası düzeyi', 'GS1 Digital Link', 'Sürümlü yayın', 'Yetkili erişim'],
+    coverPills: ['8 dil', 'Model ve seri numarası düzeyi', 'GS1 Digital Link', 'Tedarikçi veri portalı', 'Karbon tahmini', 'Sürümlü yayın'],
     whatKicker: 'DPP nedir?',
     whatTitle: 'Ürünün dijital kimlik kartı',
     whatLead:
@@ -115,7 +115,7 @@ const T = {
       ['Archive', 'Silinmez, arşivlenir', 'Yayınlanmış pasaport silinemez; ürün üretimden kalksa da “artık üretilmiyor” notuyla erişilebilir kalır.'],
       ['Braces', 'Makine okunur veri', 'Her pasaport JSON olarak da sunulur; denetim yazılımları ve entegrasyonlar doğrudan okur.'],
       ['EyeOff', 'Taslak ve yayın ayrı', 'Taslakta yaptığınız değişiklik, “Yayınla” demeden ziyaretçiye görünmez.'],
-      ['ShieldCheck', 'Güvenli erişim', 'Şifreli bağlantı, rol bazlı yetki, hatalı girişte kilit; okutmalarda kişisel veri tutulmaz.'],
+      ['ShieldCheck', 'Kayıt ve yedek', 'Her değişiklik işlem kaydına yazılır, tüm veri her gün yedeklenir, silinen dosya 30 gün geri alınabilir. Firmalar birbirinin verisini göremez.'],
     ],
     honestTitle: 'Açık konuşalım',
     honest:
@@ -147,6 +147,24 @@ const T = {
         [1, '1 Ekim 2026', 'İlk yayın'],
       ],
     },
+    supKicker: 'Tedarikçi veri portalı',
+    supTitle: 'Veriyi tedarikçiniz doldursun.',
+    supLead: 'Pasaportun en zor kısmı tedarik zincirindeki bilgiyi toplamak. Tedarikçinize bir link gönderin; giriş yapmadan, kendi dilinde malzeme, sertifika, tesis ve SVHC bilgisini girsin, belgelerini yüklesin. Siz inceleyip seçtiğiniz bölümleri tek tıkla ürüne aktarın.',
+    supSteps: [
+      ['Send', 'Link gönderin', 'WhatsApp ya da e-posta ile; süreli ve tahmin edilemez link'],
+      ['ClipboardList', 'Tedarikçi doldursun', '8 dilde form, belge yükleme, doğruluk beyanı'],
+      ['CheckCheck', 'İnceleyin ve aktarın', 'Onayınız olmadan hiçbir şey ürüne geçmez'],
+    ],
+    carbonKicker: 'Karbon tahmini yardımcısı',
+    carbonTitle: 'Karbon değeriniz yok mu? Kaynaklı bir tahminle başlayın.',
+    carbonLead: 'Malzeme oranları ve ürün ağırlığından hammadde (lif) aşaması için bir aralık hesaplanır; her değerin kaynağı gösterilir. Pasaportta açıkça “tahmin” olarak yazılır. LCA’nız varsa kendi değerinizi beyan olarak girersiniz.',
+    safetyKicker: 'Verileriniz güvende',
+    safety: [
+      ['ScrollText', 'İşlem kaydı', 'Kim, neyi, ne zaman değiştirdi; silinen kaydın kopyası dahil'],
+      ['DatabaseBackup', 'Günlük yedek', 'Tüm pasaport verisi her gün otomatik yedeklenir'],
+      ['Users', 'Çakışma koruması', 'İki kişi aynı ürünü düzenlerse değişiklik ezilmez'],
+      ['FileLock', 'KVKK / GDPR', 'Veri işleme sözleşmesi ve açık güvenlik sayfası'],
+    ],
     whyTitle: 'Neden QRNot?',
     why: [
       ['Factory', 'QR / NFC üretim deneyimi', 'Fiziksel QR ve NFC ürünlerini kendimiz üretiyor, etiket baskısını biliyoruz.'],
@@ -173,7 +191,7 @@ const T = {
     s5Kicker: 'Çözüm',
     s5Title: 'QRNot DPP: veriyi girin, yayınlayın, etiketleyin.',
     pillars: [
-      ['PencilRuler', 'Girin', 'Sekmeli panel, CSV ile toplu yükleme, belgeler, ekip rolleri.'],
+      ['PencilRuler', 'Girin', 'Sekmeli panel, CSV ile toplu yükleme, tedarikçiden link ile veri, karbon tahmini.'],
       ['Globe', 'Yayınlayın', '8 dil, sürümlü yayın, yetkili erişim, makine okunur veri.'],
       ['QrCode', 'Etiketleyin', 'Model / seri no QR’ı, etiket baskısı, GS1 Digital Link, NFC.'],
     ],
@@ -185,6 +203,8 @@ const T = {
       { kicker: 'Bir QR, 8 dil', title: 'Okutan herkes ürününüzü kendi dilinde tanır.', lead: 'Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, Felemenkçe, Arapça, Rusça. Uygulama gerekmez.', cta: 'Örnek pasaport: qrnot.com/p/ornekpasaport' },
       { kicker: 'Etiketi bir kez basın', title: 'Bilgi güncellenir, QR hiç değişmez.', lead: 'Her güncelleme yeni bir sürüm olarak yayınlanır; eski sürümler kayıtta kalır. Etiketleri yeniden basmanız gerekmez.', cta: 'qrnot.com/dpp' },
       { kicker: 'Pilot programı', title: 'İlk pasaportlarınızı birlikte hazırlayalım.', lead: 'Birkaç ürünle başlayın: verileri birlikte girelim, etiketleri üretim hattınıza uyarlayalım, AB’deki müşterinize “hazırız” deyin.', cta: `WhatsApp ${COMPANY.whatsapp}` },
+      { kicker: 'Tedarikçi veri portalı', title: 'Bilgiyi tedarikçinizden bir linkle alın.', lead: 'Tedarikçiniz giriş yapmadan, kendi dilinde malzeme, sertifika ve tesis bilgisini doldurur, belgesini yükler. Siz inceleyip tek tıkla ürüne aktarırsınız.', cta: 'qrnot.com/dpp' },
+      { kicker: 'Karbon tahmini', title: 'Karbon değeriniz yoksa kaynaklı bir tahminle başlayın.', lead: 'Malzeme oranı ve ağırlıktan hammadde aşaması için bir aralık hesaplanır; pasaportta açıkça “tahmin” olarak gösterilir.', cta: 'qrnot.com/dpp' },
     ],
   },
   en: {
@@ -197,7 +217,7 @@ const T = {
     coverKicker: 'EU ESPR · Digital Product Passport',
     coverTitle: ['Send your products', 'to Europe with', 'their passport.'],
     coverLead: 'For exporting manufacturers: a versioned, audit-ready digital product passport in 8 languages that opens via QR / NFC. Enter the data once, print the labels and let QRNot handle the rest.',
-    coverPills: ['8 languages', 'Model and serial level', 'GS1 Digital Link', 'Versioned publishing', 'Authorised access'],
+    coverPills: ['8 languages', 'Model and serial level', 'GS1 Digital Link', 'Supplier data portal', 'Carbon estimate', 'Versioned publishing'],
     whatKicker: 'What is a DPP?',
     whatTitle: 'A digital ID card for every product',
     whatLead:
@@ -268,7 +288,7 @@ const T = {
       ['Archive', 'Archived, never deleted', 'Published passports cannot be deleted; discontinued products stay available with a notice.'],
       ['Braces', 'Machine-readable data', 'Every passport is also served as JSON for compliance tools and integrations.'],
       ['EyeOff', 'Draft vs. published', 'Changes in a draft stay invisible to visitors until you press Publish.'],
-      ['ShieldCheck', 'Secure access', 'Encrypted connection, role-based permissions, login lockout; scans store no personal data.'],
+      ['ShieldCheck', 'Audit trail and backups', 'Every change is logged, all data is backed up daily and deleted files can be restored for 30 days. Companies never see each other’s data.'],
     ],
     honestTitle: 'In plain terms',
     honest:
@@ -300,6 +320,24 @@ const T = {
         [1, 'October 1, 2026', 'First publication'],
       ],
     },
+    supKicker: 'Supplier data portal',
+    supTitle: 'Let your suppliers fill in the data.',
+    supLead: 'The hardest part of a passport is collecting information from the supply chain. Send your supplier a link: without logging in, in their own language, they enter materials, certificates, facility and SVHC details and upload documents. You review and copy the sections you choose into the product in one click.',
+    supSteps: [
+      ['Send', 'Send a link', 'Via WhatsApp or email; time-limited and unguessable'],
+      ['ClipboardList', 'Supplier fills it in', 'Form in 8 languages, document upload, declaration'],
+      ['CheckCheck', 'Review and copy', 'Nothing reaches the product without your approval'],
+    ],
+    carbonKicker: 'Carbon estimate helper',
+    carbonTitle: 'No carbon figure yet? Start with a sourced estimate.',
+    carbonLead: 'A range for the raw-material (fibre) stage is calculated from material shares and product weight, with the source of every value shown. The passport clearly labels it as an “estimate”. If you have an LCA, you enter your own value as a declaration.',
+    safetyKicker: 'Your data is safe',
+    safety: [
+      ['ScrollText', 'Audit trail', 'Who changed what and when, including a copy of deleted records'],
+      ['DatabaseBackup', 'Daily backup', 'All passport data is backed up automatically every day'],
+      ['Users', 'Conflict protection', 'If two people edit the same product, no change is overwritten'],
+      ['FileLock', 'GDPR / KVKK', 'Data processing agreement and a transparent security page'],
+    ],
     whyTitle: 'Why QRNot?',
     why: [
       ['Factory', 'QR / NFC production know-how', 'We produce physical QR and NFC products ourselves and know label printing.'],
@@ -325,7 +363,7 @@ const T = {
     s5Kicker: 'Solution',
     s5Title: 'QRNot DPP: enter, publish, label.',
     pillars: [
-      ['PencilRuler', 'Enter', 'Tabbed panel, CSV bulk import, documents, team roles.'],
+      ['PencilRuler', 'Enter', 'Tabbed panel, CSV bulk import, supplier data via link, carbon estimate.'],
       ['Globe', 'Publish', '8 languages, versioning, authorised access, machine-readable data.'],
       ['QrCode', 'Label', 'Model / serial QR codes, label printing, GS1 Digital Link, NFC.'],
     ],
@@ -336,6 +374,8 @@ const T = {
       { kicker: 'One QR, 8 languages', title: 'Everyone gets to know your product in their own language.', lead: 'Turkish, English, German, French, Spanish, Dutch, Arabic, Russian. No app needed.', cta: 'Sample: qrnot.com/p/ornekpasaport' },
       { kicker: 'Print the label once', title: 'The information updates. The QR never changes.', lead: 'Every update is published as a new version and earlier versions stay on record. No reprinting.', cta: 'qrnot.com/dpp' },
       { kicker: 'Pilot programme', title: 'Let’s prepare your first passports together.', lead: 'Start with a few products: we enter the data together, fit the labels to your line, and you tell your EU customers “we are ready”.', cta: `WhatsApp ${COMPANY.whatsapp}` },
+      { kicker: 'Supplier data portal', title: 'Get the data from your supplier with one link.', lead: 'Without logging in, in their own language, your supplier fills in materials, certificates and facility details and uploads documents. You review and copy it into the product in one click.', cta: 'qrnot.com/dpp' },
+      { kicker: 'Carbon estimate', title: 'No carbon figure yet? Start with a sourced estimate.', lead: 'A range for the raw-material stage is calculated from material shares and weight, and the passport clearly shows it as an “estimate”.', cta: 'qrnot.com/dpp' },
     ],
   },
 }
@@ -494,7 +534,29 @@ const catalogPages = (t) => [
     <div style="margin-top:auto;margin-bottom:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
       ${t.panelFeatures.map(([ic, title, desc], i) => `<div class="card" style="padding:18px 20px;display:flex;gap:16px;align-items:center">${ringIcon(ic, [C.sky, C.green, C.navy][i % 3], 48)}<div><div style="font-size:18px;font-weight:700">${title}</div><div class="muted" style="font-size:14px;margin-top:4px;line-height:1.35">${desc}</div></div></div>`).join('')}
     </div>` },
-  // 5 · Üretimden rafa
+  // 5 · Tedarikçi portalı, karbon tahmini, veri güvenliği
+  { slug: 'tedarikci-karbon', body: `
+    ${logo(false)}
+    <div class="kicker" style="font-size:17px;color:${C.green};margin-top:56px">${t.supKicker}</div>
+    <h2 style="font-size:54px;margin-top:14px">${t.supTitle}</h2>
+    <p class="muted" style="font-size:19px;line-height:1.55;margin-top:14px">${t.supLead}</p>
+    <div style="display:grid;grid-template-columns:1fr 250px;gap:26px;margin-top:26px;align-items:start">
+      <div>${browserCrop(PANEL(t, 'suppliers'), 470)}
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px">${t.supSteps.map(([ic, title, desc], i) => `<div class="soft" style="padding:16px 18px"><div style="display:flex;align-items:center;gap:10px">${ringIcon(ic, C.navy, 40, '#fff')}<span class="head" style="font-size:22px;color:${C.line}">0${i + 1}</span></div><div style="font-size:17px;font-weight:700;margin-top:10px">${title}</div><div class="muted" style="font-size:14px;margin-top:4px;line-height:1.35">${desc}</div></div>`).join('')}</div>
+      </div>
+      ${phone(`supplier-${t.lang}-form.png`, 250, 540)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:30px;align-items:start">
+      <div><div class="kicker" style="font-size:15px;color:${C.green}">${t.carbonKicker}</div>
+        <h3 style="font-size:30px;margin-top:8px;line-height:1.15">${t.carbonTitle}</h3>
+        <p class="muted" style="font-size:16px;line-height:1.5;margin-top:10px">${t.carbonLead}</p></div>
+      ${browserCrop(PANEL(t, 'carbon'), 300)}
+    </div>
+    <div class="dark" style="margin-top:auto;margin-bottom:26px;border-radius:24px;padding:24px 28px">
+      <div class="kicker accent" style="font-size:15px">${t.safetyKicker}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:14px">${t.safety.map(([ic, title, desc]) => `<div>${icon(ic, 28, C.mint, 2)}<div style="font-size:17px;font-weight:700;margin-top:8px">${title}</div><div class="muted" style="font-size:13.5px;margin-top:4px;line-height:1.35">${desc}</div></div>`).join('')}</div>
+    </div>` },
+  // 6 · Üretimden rafa
   { slug: 'uretim-etiket', body: `
     ${logo(false)}
     <div class="kicker" style="font-size:17px;color:${C.green};margin-top:64px">${t.prodKicker}</div>
@@ -510,7 +572,7 @@ const catalogPages = (t) => [
         <div class="muted" style="font-size:16px;margin-top:12px">${icon('Nfc', 18, C.mint, 2)} ${t.nfcNote}</div></div>
       ${icon('Barcode', 120, C.mint, 1.4)}
     </div>` },
-  // 6 · Güven
+  // 7 · Güven
   { slug: 'guven', body: `
     ${logo(false)}
     <div class="kicker" style="font-size:17px;color:${C.green};margin-top:64px">${t.trustKicker}</div>
@@ -522,7 +584,7 @@ const catalogPages = (t) => [
       <div class="soft" style="padding:30px 34px"><div class="head" style="font-size:24px">${icon('MessageSquareQuote', 26, C.green, 2)} ${t.honestTitle}</div><p style="font-size:18px;line-height:1.6;margin-top:12px">${t.honest}</p></div>
       ${phone(`passport-${t.lang}-materials.png`, 330, 470)}
     </div>` },
-  // 7 · Paketler ve iletişim
+  // 8 · Paketler ve iletişim
   { slug: 'paketler-iletisim', dark: true, body: `
     ${logo(true)}
     <div class="kicker accent" style="font-size:17px;margin-top:64px">${t.plansKicker}</div>
@@ -625,6 +687,28 @@ const deckSlides = (t) => [
       </div>
       <div style="position:relative">${browser(PANEL(t, 'overview'))}<div style="position:absolute;width:62%;right:-30px;bottom:-10px">${browser(PANEL(t, 'editor'))}</div></div>
     </div>` },
+  { slug: 'tedarikci-portali', body: `
+    <div style="display:grid;grid-template-columns:620px 1fr 300px;gap:44px;flex:1">
+      <div style="display:flex;flex-direction:column">
+        ${sTitle(t, t.supKicker, t.supTitle)}
+        <p class="muted" style="font-size:21px;line-height:1.55;margin-top:22px">${t.supLead}</p>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:auto;margin-bottom:24px">${t.supSteps.map(([ic, title, desc], i) => `<div style="display:flex;gap:16px;align-items:center"><span class="head" style="font-size:28px;color:${C.green};width:44px">0${i + 1}</span>${ringIcon(ic, C.navy, 46)}<div><div style="font-size:20px;font-weight:700">${title}</div><div class="muted" style="font-size:16px">${desc}</div></div></div>`).join('')}</div>
+      </div>
+      <div style="align-self:center">${browserCrop(PANEL(t, 'suppliers'), 560)}</div>
+      <div style="padding-top:60px">${phone(`supplier-${t.lang}-form.png`, 300, 650)}</div>
+    </div>` },
+  { slug: 'karbon-ve-guvenlik', body: `
+    <div style="display:grid;grid-template-columns:640px 1fr;gap:60px;flex:1">
+      <div style="display:flex;flex-direction:column">
+        ${sTitle(t, t.carbonKicker, t.carbonTitle)}
+        <p class="muted" style="font-size:21px;line-height:1.55;margin-top:22px">${t.carbonLead}</p>
+        <div class="dark" style="border-radius:22px;padding:26px 28px;margin-top:auto;margin-bottom:24px">
+          <div class="kicker accent" style="font-size:16px">${t.safetyKicker}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 22px;margin-top:14px">${t.safety.map(([ic, title, desc]) => `<div style="display:flex;gap:12px">${icon(ic, 26, C.mint, 2)}<div><div style="font-size:18px;font-weight:700">${title}</div><div class="muted" style="font-size:14px;margin-top:3px;line-height:1.35">${desc}</div></div></div>`).join('')}</div>
+        </div>
+      </div>
+      <div>${browser(PANEL(t, 'carbon'))}</div>
+    </div>` },
   { slug: 'uretim-etiket', body: `
     <div style="display:grid;grid-template-columns:600px 1fr;gap:60px;flex:1">
       <div style="display:flex;flex-direction:column">
@@ -685,11 +769,18 @@ function socialVisual(i, t, h) {
   const half = Math.round((h - 20) / 2)
   const stack = (a, b) => `<div style="display:flex;flex-direction:column;gap:20px">${a}${b}</div>`
   if (i === 2) return tall ? stack(browserCrop(PANEL(t, 'editor'), half - 40), browserCrop(PANEL(t, 'materials'), half - 40)) : browserCrop(PANEL(t, 'editor'), h - 40)
-  return tall ? stack(browserCrop(PANEL(t, 'labels'), half - 40), browserCrop(PANEL(t, 'items'), half - 40)) : browserCrop(PANEL(t, 'labels'), h - 40)
+  if (i === 3) return tall ? stack(browserCrop(PANEL(t, 'labels'), half - 40), browserCrop(PANEL(t, 'items'), half - 40)) : browserCrop(PANEL(t, 'labels'), h - 40)
+  // 05: tedarikçi paneli + tedarikçinin telefonda gördüğü form
+  if (i === 4) {
+    const ph5 = phone(`supplier-${t.lang}-form.png`, Math.round(Math.min(h * 0.46, 300)), Math.round(h - 22))
+    return tall ? stack(browserCrop(PANEL(t, 'suppliers'), half - 40), `<div style="display:flex;justify-content:center">${phone(`supplier-${t.lang}-form.png`, 300, half - 40)}</div>`) : `<div style="display:grid;grid-template-columns:1fr auto;gap:22px;align-items:center">${browserCrop(PANEL(t, 'suppliers'), Math.min(h - 40, 500))}${ph5}</div>`
+  }
+  // 06: karbon tahmini kartı
+  return browserCrop(PANEL(t, 'carbon'), h - 40)
 }
 
 const socialPost = (p, i, t, fmt) => {
-  const dark = i === 0 || i === 3
+  const dark = i === 0 || i === 3 || i === 5
   return `<section style="position:relative;width:${fmt.w}px;height:${fmt.h}px;overflow:hidden;padding:${fmt.pad}px;display:flex;flex-direction:column" class="${dark ? 'dark' : 'soft'}">
     ${dark ? '<div class="grid-bg"></div>' : ''}
     <div style="position:relative;display:flex;flex-direction:column;flex:1">
@@ -745,6 +836,10 @@ function pdf(html, file) {
   execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--allow-file-access-from-files', '--no-pdf-header-footer', '--virtual-time-budget=15000', `--print-to-pdf=${file}`, pathToFileURL(path).href], { stdio: 'ignore' })
 }
 
+// Önizleme: DPP_ONLY=slug1,slug2 (sosyal için 05,06) → sadece bunlar PNG olarak üretilir, PDF atlanır
+const ONLY = process.env.DPP_ONLY ? process.env.DPP_ONLY.split(',') : null
+const want = (key) => !ONLY || ONLY.includes(key)
+
 for (const lang of ['tr', 'en']) {
   const t = T[lang]
 
@@ -754,11 +849,12 @@ for (const lang of ['tr', 'en']) {
   const catDir = join(HERE, 'katalog', lang)
   mkdirSync(catDir, { recursive: true })
   catSections.forEach((s, i) => {
+    if (!want(pages[i].slug)) return
     const name = `${String(i + 1).padStart(2, '0')}-${pages[i].slug}.png`
     render(doc(s, lang, [AW, AH]), join(catDir, name), AW, AH)
     console.log(`katalog/${lang}/${name}`)
   })
-  pdf(doc(catSections.join('\n'), lang, [AW, AH]), join(HERE, 'katalog', `QRNot-DPP-Katalog-${lang.toUpperCase()}.pdf`))
+  if (!ONLY) pdf(doc(catSections.join('\n'), lang, [AW, AH]), join(HERE, 'katalog', `QRNot-DPP-Katalog-${lang.toUpperCase()}.pdf`))
   console.log(`katalog PDF ${lang}`)
 
   // Sunum
@@ -767,11 +863,12 @@ for (const lang of ['tr', 'en']) {
   const deckDir = join(HERE, 'sunum', lang)
   mkdirSync(deckDir, { recursive: true })
   deckSections.forEach((s, i) => {
+    if (!want(slides[i].slug)) return
     const name = `${String(i + 1).padStart(2, '0')}-${slides[i].slug}.png`
     render(doc(s, lang, [SW, SH]), join(deckDir, name), SW, SH)
     console.log(`sunum/${lang}/${name}`)
   })
-  pdf(doc(deckSections.join('\n'), lang, [SW, SH]), join(HERE, 'sunum', `QRNot-DPP-Sunum-${lang.toUpperCase()}.pdf`))
+  if (!ONLY) pdf(doc(deckSections.join('\n'), lang, [SW, SH]), join(HERE, 'sunum', `QRNot-DPP-Sunum-${lang.toUpperCase()}.pdf`))
   console.log(`sunum PDF ${lang}`)
 
   // Sosyal medya (3 format)
@@ -780,6 +877,7 @@ for (const lang of ['tr', 'en']) {
     mkdirSync(socDir, { recursive: true })
     t.social.forEach((p, i) => {
       const name = `${String(i + 1).padStart(2, '0')}.png`
+      if (!want(String(i + 1).padStart(2, '0'))) return
       render(doc(socialPost(p, i, t, fmt), lang, [fmt.w, fmt.h]), join(socDir, name), fmt.w, fmt.h)
       console.log(`sosyal/${lang}/${fmt.dir}/${name}`)
     })

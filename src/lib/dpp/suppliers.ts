@@ -1,9 +1,9 @@
 import { head } from '@vercel/blob'
 import { randomBytes } from 'crypto'
-import { deleteBlob } from '@/lib/blob'
 import { sql } from '@/lib/db'
 import { SITE_URL } from '@/lib/site'
 import { DppError } from './i18n'
+import { trashBlob } from './safety'
 import { ensureDppSchema } from './schema'
 import { DPP_UPLOAD_MAX_BYTES, DPP_UPLOAD_TYPES, getProduct, uploadPrefixFor } from './server'
 import { isDppLang, readData, readTextsMap, sanitizeData, type DppData, type DppLang, type DppMaterial } from './types'
@@ -182,7 +182,7 @@ export async function setSupplierRequestStatus(companyId: string, requestId: str
 export async function deleteSupplierRequest(companyId: string, requestId: string) {
   const row = await ownRequest(companyId, requestId)
   await sql`DELETE FROM dpp_supplier_requests WHERE id = ${row.id}`
-  await deleteFiles(readResponse(row.response)?.files.filter((f) => !f.applied) || [])
+  await deleteFiles(readResponse(row.response)?.files.filter((f) => !f.applied) || [], row.company_id)
 }
 
 /** Ürün silinirken: aktarılmamış tedarikçi dosyalarını temizler (satırlar CASCADE ile silinir) */
@@ -192,8 +192,8 @@ export async function supplierFilesForProduct(productId: string) {
   return rows.flatMap((r) => readResponse(r.response)?.files.filter((f) => !f.applied).map((f) => f.url) || [])
 }
 
-async function deleteFiles(files: SupplierFile[]) {
-  for (const f of files) await deleteBlob(f.url).catch(() => undefined)
+async function deleteFiles(files: SupplierFile[], companyId: string) {
+  for (const f of files) await trashBlob(f.url, companyId, 'supplier-file-removed')
 }
 
 /** Yanıtın seçilen bölümlerini ürün taslağına aktarır. Yayınlamaz; firma kontrol edip yayınlar. */
@@ -230,7 +230,7 @@ export async function applySupplierResponse(companyId: string, requestId: string
 
   const clean = sanitizeData(data)
   await sql`
-    UPDATE dpp_products SET data = ${JSON.stringify(clean)}::jsonb, has_changes = TRUE, updated_at = NOW()
+    UPDATE dpp_products SET data = ${JSON.stringify(clean)}::jsonb, has_changes = TRUE, updated_at = NOW(), revision = revision + 1
     WHERE id = ${product.id} AND company_id = ${companyId}
   `
 
@@ -374,7 +374,7 @@ export async function submitSupplierResponse(token: string, input: Record<string
     else if (url) files.push(await verifySupplierFile(prefix, url, title))
   }
   response.files = files
-  await deleteFiles(previous.filter((p) => !p.applied && !files.some((f) => f.url === p.url)))
+  await deleteFiles(previous.filter((p) => !p.applied && !files.some((f) => f.url === p.url)), row.company_id)
 
   await sql`
     UPDATE dpp_supplier_requests SET response = ${JSON.stringify(response)}::jsonb, status = 'submitted', submitted_at = NOW(), updated_at = NOW()

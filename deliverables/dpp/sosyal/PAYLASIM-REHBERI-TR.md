@@ -20,7 +20,7 @@ Hedef kitle: **AB'ye ihracat yapan üreticiler** — tekstil, mobilya, elektroni
 | LinkedIn belge (kaydırmalı) gönderisi | `../katalog/QRNot-DPP-Katalog-TR.pdf` | A4 PDF |
 | LinkedIn'de sunum paylaşımı | `../sunum/QRNot-DPP-Sunum-TR.pdf` | 16:9 PDF |
 
-Her klasörde aynı 4 gönderi vardır:
+Her klasörde aynı 6 gönderi vardır:
 
 | No | Konu | Görselde |
 |---|---|---|
@@ -28,6 +28,8 @@ Her klasörde aynı 4 gönderi vardır:
 | **02** | Bir QR, 8 dil | Türkçe · Almanca · Arapça pasaport |
 | **03** | Etiketi bir kez basın, QR değişmez | Panelde ürün düzenleyici |
 | **04** | Pilot programı | QR etiket sayfası |
+| **05** | Tedarikçi veri portalı | Tedarikçiler sekmesi + telefonda tedarikçi formu |
+| **06** | Karbon tahmini | Karbon tahmini yardımcısı (panel) |
 
 **Story / Reels ipucu:** 9:16 görsellerde üst ve alttaki ~250 px alanı uygulamanın kendi yazıları kaplar. Ekleyeceğiniz etiket, anket ve link çıkartmalarını görselin **orta bölümüne** koyun.
 
@@ -167,10 +169,56 @@ Sektöre göre ekleyin: `#Tekstil #HazırGiyim #Mobilya #Batarya #DöngüselEkon
 
 ---
 
+### 05 — "Bilgiyi tedarikçinizden bir linkle alın."
+
+**LinkedIn** (`4x5/05.png`)
+> Dijital Ürün Pasaportunun en zor kısmı QR kod değil, arkasındaki veri.
+>
+> İplikçiden bileşim, kumaşçıdan GOTS / OEKO-TEX sertifikası, boyahaneden tesis bilgisi… Genelde Excel'ler ve bitmeyen e-postalar.
+>
+> QRNot DPP'de tedarikçinize bir link gönderiyorsunuz; giriş yapmadan, kendi dilinde dolduruyor ve belgesini yüklüyor. Siz kontrol edip tek tıkla ürüne aktarıyorsunuz. Onayınız olmadan pasaporta hiçbir şey geçmiyor.
+>
+> Bugün tedarikçi verisini nasıl topluyorsunuz?
+>
+> #DijitalÜrünPasaportu #DPP #ESPR #Tekstil #Tedarik
+
+**Instagram**
+> Tedarikçinize bir link gönderin, bilgiyi o doldursun. 🤝 Malzeme, sertifika, tesis, belge; kendi dilinde, giriş yapmadan. Siz onaylayınca pasaporta geçer.
+> .
+> #dpp #tedarik #tekstil #ihracat #sürdürülebilirlik
+
+**Story** (`9x16/05.png`): ortaya **anket** ekle: "Tedarikçi verisini nasıl topluyorsunuz?" → *Excel / e-posta* · *ERP*
+
+**Alternatif metin:** "Firma panelinde tedarikçi yanıtı ve telefonda tedarikçinin doldurduğu bilgi formu."
+
+---
+
+### 06 — "Karbon değeriniz yoksa kaynaklı bir tahminle başlayın."
+
+**LinkedIn** (`4x5/06.png`)
+> "Bu ürünün karbon değeri elimizde yok." Çoğu KOBİ için dürüst cevap bu ve sorun değil.
+>
+> QRNot DPP'deki karbon tahmini yardımcısı, malzeme oranları ve ürün ağırlığından hammadde (lif) aşaması için bir aralık hesaplıyor; her değerin kaynağı gösteriliyor. Pasaportta açıkça "tahmin" olarak yazıyor.
+>
+> Ürüne özel LCA'nız olduğunda kendi değerinizi beyan olarak girersiniz.
+>
+> #DijitalÜrünPasaportu #KarbonAyakİzi #Sürdürülebilirlik #Tekstil
+
+**Instagram**
+> Karbon değeriniz yok mu? Kaynaklı bir tahminle başlayın 🌱 Pasaportta açıkça "tahmin" yazar; LCA'nız gelince değiştirirsiniz.
+> .
+> #dpp #karbonayakizi #sürdürülebilirlik #tekstil #ihracat
+
+**Uyarı:** Bu gönderide "karbon hesaplıyoruz" ya da "LCA" deme; "tahmin yardımcısı" de.
+
+**Alternatif metin:** "Panelde malzeme oranlarından hesaplanan karbon tahmini aralığı ve 'tahmin' notu."
+
+---
+
 ## 4. Ek içerik fikirleri
 
 **LinkedIn belge gönderisi (en yüksek etkileşim alan B2B formatlarından)**
-- `katalog/QRNot-DPP-Katalog-TR.pdf` dosyasını LinkedIn'de "Belge ekle" ile yükleyin. Başlık: "Dijital Ürün Pasaportu — 7 sayfada"
+- `katalog/QRNot-DPP-Katalog-TR.pdf` dosyasını LinkedIn'de "Belge ekle" ile yükleyin. Başlık: "Dijital Ürün Pasaportu — 8 sayfada"
 - Metin: "Kaydırarak okuyun: DPP nedir, kimleri etkiler, pasaportta neler olur, nasıl hazırlanır."
 
 **30 saniyelik Reels / TikTok videosu**

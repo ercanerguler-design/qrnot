@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
-import { deleteBlob } from '@/lib/blob'
+import { audit, runDailyMaintenance, safetyStatus, snapshotCompany, trashBlob } from '@/lib/dpp/safety'
 import { sql } from '@/lib/db'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 import { createDppUser, randomKey, resetDppUserPassword } from '@/lib/dpp/auth'
@@ -20,6 +20,13 @@ export async function POST(req: NextRequest) {
     const action = String(body.action || '')
     const id = String(body.id || '')
     const validId = /^[0-9a-f-]{36}$/i.test(id)
+    // Günlük yedek / çöp temizliği (günde bir kez) ve yönetici işlemlerinin kaydı — yanıtı bekletmeden
+    after(() => runDailyMaintenance().catch((e) => console.error('[dpp maintenance]', e)))
+    if (!['companies.list', 'safety.status', 'companies.delete'].includes(action)) {
+      const { password: _pw, ...request } = body as Record<string, unknown>
+      void _pw
+      after(() => audit(validId ? id : null, 'admin', action, id || null, { request }))
+    }
 
     if (action === 'companies.list') {
       const companies = await sql`
@@ -80,7 +87,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ email: user.email, password: user.password })
     }
 
+    if (action === 'safety.status') return NextResponse.json(await safetyStatus())
+    if (action === 'backup.run') return NextResponse.json(await runDailyMaintenance(true))
+
     if (action === 'companies.delete' && validId) {
+      // Sunucu tarafında da onay: firma kodu birebir yazılmalı
+      const company = ((await sql`SELECT code, name, is_active FROM dpp_companies WHERE id = ${id}`) as Array<{ code: string; name: string; is_active: boolean }>)[0]
+      if (!company) return NextResponse.json({ error: 'Firma bulunamadı' }, { status: 404 })
+      if (String(body.confirm || '') !== company.code) return NextResponse.json({ error: 'Onay için firma kodunu birebir yazın' }, { status: 400 })
+      const published = ((await sql`SELECT COUNT(*)::int AS n FROM dpp_products WHERE company_id = ${id} AND version > 0`) as Array<{ n: number }>)[0].n
+      if (published > 0 && company.is_active) {
+        return NextResponse.json({ error: 'Yayınlanmış pasaportu olan firma silinemez: önce firmayı pasife alın (pasaportları ürün ömrü boyunca açık kalmalı).' }, { status: 400 })
+      }
+      // Silmeden önce firmanın tam kopyası alınır (süresiz saklanır)
+      const snapshot = await snapshotCompany(id, company.code)
       const blobs = (await sql`
         SELECT d.blob_url AS url FROM dpp_documents d JOIN dpp_products p ON p.id = d.product_id WHERE p.company_id = ${id}
         UNION ALL
@@ -91,8 +111,10 @@ export async function POST(req: NextRequest) {
         SELECT f->>'url' FROM dpp_supplier_requests r, jsonb_array_elements(COALESCE(r.response->'files', '[]'::jsonb)) f WHERE r.company_id = ${id}
       `) as Array<{ url: string }>
       await sql`DELETE FROM dpp_companies WHERE id = ${id}`
-      await Promise.all(blobs.map((b) => deleteBlob(b.url).catch(() => undefined)))
-      return NextResponse.json({ ok: true, deletedFiles: blobs.length })
+      // Dosyalar hemen silinmez: 30 gün çöp kutusunda bekler
+      for (const b of blobs) await trashBlob(b.url, id, 'company-deleted')
+      await audit(id, 'admin', 'companies.delete', id, { company, snapshot: snapshot.url, files: blobs.length })
+      return NextResponse.json({ ok: true, deletedFiles: blobs.length, snapshot: snapshot.url })
     }
 
     return NextResponse.json({ error: 'Geçersiz işlem' }, { status: 400 })

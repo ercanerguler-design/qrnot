@@ -80,6 +80,12 @@ const STATUS_OF: Partial<Record<MsgKey, number>> = {
   e_demo_limit: 402,
 }
 
+/** Karakter kodlaması açıkça yazılır: Windows PowerShell 5.1 gibi istemciler yoksa Türkçe harfleri bozar */
+export function withCharset(res: NextResponse) {
+  res.headers.set('Content-Type', 'application/json; charset=utf-8')
+  return res
+}
+
 /** Her API isteği bundan geçer: anahtar, firma durumu, yetki, istek sınırı; hatayı tek biçimde döner. */
 export async function withApi(req: NextRequest, scope: ApiScope, handler: (caller: ApiCaller, lang: DppLang) => Promise<unknown>, status = 200) {
   const lang = requestLang(req)
@@ -103,14 +109,14 @@ export async function withApi(req: NextRequest, scope: ApiScope, handler: (calle
     // Son kullanım: en fazla dakikada bir yazılır
     await sql`UPDATE dpp_api_keys SET last_used_at = NOW() WHERE id = ${row.id} AND (last_used_at IS NULL OR last_used_at < NOW() - INTERVAL '1 minute')`
     const result = await handler({ keyId: row.id, keyName: row.name, companyId: row.company_id, scopes: row.scopes }, lang)
-    if (result instanceof NextResponse) return result
-    return NextResponse.json(result, { status, headers: { 'Cache-Control': 'no-store' } })
+    if (result instanceof NextResponse) return withCharset(result)
+    return withCharset(NextResponse.json(result, { status, headers: { 'Cache-Control': 'no-store' } }))
   } catch (err) {
     if (!(err instanceof DppError)) console.error('[dpp/api]', err)
     const code = err instanceof DppError ? err.key : 'e_server'
     const httpStatus = err instanceof ApiError ? err.status : err instanceof DppError ? (STATUS_OF[err.key] ?? 400) : 500
     const details = err instanceof DppError && err.list.length ? { details: err.list.map((i) => ({ code: i.key, message: msg(lang, i.key, i.params) })) } : {}
-    return NextResponse.json({ error: { code, message: errorText(err, lang), ...details } }, { status: httpStatus, headers: { 'Cache-Control': 'no-store' } })
+    return withCharset(NextResponse.json({ error: { code, message: errorText(err, lang), ...details } }, { status: httpStatus, headers: { 'Cache-Control': 'no-store' } }))
   }
 }
 

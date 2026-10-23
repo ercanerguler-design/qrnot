@@ -38,6 +38,7 @@ export const QR_T = {
     tooLarge: 'Dosya yüklenemedi. Bağlantını kontrol edip tekrar dene.',
     genericError: 'Bir hata oluştu. Lütfen tekrar dene.',
     whatsappSupport: 'WhatsApp destek',
+    goPremium: '💎 Premium’a geç',
     doneTitle: 'Hazır! 🎉',
     doneDesc: 'Artık bu QR\'ı okutan herkes içeriğini görecek.',
     ownerLink: 'Sahip linkin — mutlaka kaydet',
@@ -95,6 +96,7 @@ export const QR_T = {
     tooLarge: 'Upload failed. Check your connection and try again.',
     genericError: 'Something went wrong. Please try again.',
     whatsappSupport: 'WhatsApp support',
+    goPremium: '💎 Go Premium',
     doneTitle: 'All set! 🎉',
     doneDesc: 'Anyone who scans this QR will now see your content.',
     ownerLink: 'Your owner link — save it',
@@ -206,11 +208,24 @@ export function ScanShell({ lang, children, wide = false }: { lang: Lang; childr
   )
 }
 
+/** Hata metnindeki Premium sayfası adresini ayırır (değişiklik hakkı dolunca sunucu bu adresi verir). */
+export function parsePremiumLink(errorText: string) {
+  const url = errorText.match(/https?:\/\/\S+\/shop\/premium\S*/)?.[0] || null
+  const message = url ? errorText.replace(url, '').replace(/[:\s]+$/, '').trim() : errorText
+  return { message, url }
+}
+
 export function ErrorBox({ text, lang }: { text: string; lang: Lang }) {
-  const parsed = parseWhatsAppSupport(text)
+  const premium = parsePremiumLink(text)
+  const parsed = parseWhatsAppSupport(premium.message)
   return (
     <div className="w-alert w-alert-error">
       <p>{parsed.message}</p>
+      {premium.url && (
+        <Link href={withLang('/shop/premium', lang)} className="w-btn w-btn-primary w-btn-sm mt-3">
+          {QR_T[lang].goPremium}
+        </Link>
+      )}
       {parsed.url && (
         <a href={parsed.url} target="_blank" rel="noopener noreferrer" className="w-btn w-btn-whatsapp w-btn-sm mt-3">
           {QR_T[lang].whatsappSupport}

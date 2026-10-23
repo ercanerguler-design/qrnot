@@ -76,6 +76,7 @@ const T = {
     saved: 'Kaydedildi ✓',
     error: 'Kaydedilemedi. Tekrar dene.',
     remaining: 'Kalan değişiklik hakkı',
+    unlimitedPremium: 'Sınırsız değişiklik için Premium →',
     ownerLink: 'Sahip linkini kopyala',
     copied: 'Kopyalandı ✓',
     lost: 'Link kaybolursa kurtarma kodu ile geri al',
@@ -116,6 +117,7 @@ const T = {
     saved: 'Saved ✓',
     error: 'Could not save. Try again.',
     remaining: 'Changes left',
+    unlimitedPremium: 'Unlimited changes with Premium →',
     ownerLink: 'Copy owner link',
     copied: 'Copied ✓',
     lost: 'Lost the link? Recover it with your code',
@@ -279,8 +281,15 @@ export default function ManageClient({ slug, lang }: { slug: string; lang: Lang 
           <section className="w-card space-y-6 p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-display text-xl font-semibold">{t.content}</h2>
-              <span className="w-chip w-chip-ink">
-                {t.remaining}: {info.premium ? '∞' : remaining}
+              <span className="flex flex-wrap items-center gap-2">
+                <span className={`w-chip ${!info.premium && remaining === 0 ? 'w-chip-gold' : 'w-chip-ink'}`}>
+                  {t.remaining}: {info.premium ? '∞' : remaining}
+                </span>
+                {!info.premium && (
+                  <Link href={withLang('/shop/premium', lang)} className="w-link text-xs font-semibold">
+                    {t.unlimitedPremium}
+                  </Link>
+                )}
               </span>
             </div>
 

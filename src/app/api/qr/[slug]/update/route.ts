@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { SITE_URL } from '@/lib/site'
 import { validateAudioFile } from '@/lib/audio'
 import { isUserPremium } from '@/lib/qrFeatures'
 import { deleteBlob, putBlob } from '@/lib/blob'
@@ -14,7 +15,7 @@ import {
   validateYouTubeUrl,
 } from '@/lib/media'
 
-const WHATSAPP_CONTACT = '905433929230'
+const PREMIUM_URL = `${SITE_URL}/shop/premium`
 
 function getOrderTypeMaxLimits(orderType: 'individual' | 'corporate' | 'demo' | 'trial' | null | undefined) {
   if (orderType === 'individual' || orderType === 'corporate') {
@@ -28,11 +29,10 @@ function getOrderTypeMaxLimits(orderType: 'individual' | 'corporate' | 'demo' | 
   return { recordingLimit: 3, videoRecordingLimit: 2 }
 }
 
-function limitExceededMessage(slug: string, kind: 'recording' | 'video') {
-  const reason = kind === 'video' ? 'video kayıt limitine' : 'içerik güncelleme limitine'
-  const whatsappMessage = encodeURIComponent(`Merhaba QRNote, ${slug} kodu için ${reason} takıldım. Limit artışı satın almak istiyorum.`)
-
-  return `Bu QR kodunda ${reason} ulaştınız. Limit artışı için WhatsApp: https://wa.me/${WHATSAPP_CONTACT}?text=${whatsappMessage}`
+// Limit dolunca tek yol Premium: sınırsız değişiklik + yapay zekâ altyazı (hesaptaki tüm QR'larda geçerli)
+function limitExceededMessage(kind: 'recording' | 'video') {
+  const reason = kind === 'video' ? 'video kayıt hakkını' : 'değişiklik hakkını'
+  return `Bu QR kodunda ${reason} doldurdun. Sınırsız değişiklik için Premium'a geç: ${PREMIUM_URL}`
 }
 
 export async function PUT(
@@ -138,7 +138,7 @@ export async function PUT(
 
     if (shouldIncreaseRecordingCount && recordingCount >= recordingLimit) {
       if (directBlobUrl) await deleteBlob(directBlobUrl).catch(() => undefined)
-      return NextResponse.json({ error: limitExceededMessage(slug, 'recording') }, { status: 429 })
+      return NextResponse.json({ error: limitExceededMessage('recording') }, { status: 429 })
     }
 
     if (directBlobUrl && !(mediaFile && mediaFile.size > 0)) {
@@ -150,7 +150,7 @@ export async function PUT(
       }
       if (resolved.mediaType === 'video' && videoRecordingCount >= videoRecordingLimit) {
         await deleteBlob(resolved.url).catch(() => undefined)
-        return NextResponse.json({ error: limitExceededMessage(slug, 'video') }, { status: 429 })
+        return NextResponse.json({ error: limitExceededMessage('video') }, { status: 429 })
       }
       uploadedMediaType = resolved.mediaType
       uploadedMediaBlobUrl = resolved.url
@@ -163,7 +163,7 @@ export async function PUT(
       }
 
       if (uploadedMediaType === 'video' && videoRecordingCount >= videoRecordingLimit) {
-        return NextResponse.json({ error: limitExceededMessage(slug, 'video') }, { status: 429 })
+        return NextResponse.json({ error: limitExceededMessage('video') }, { status: 429 })
       }
 
       if (uploadedMediaType === 'audio') {

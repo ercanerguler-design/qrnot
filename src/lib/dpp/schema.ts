@@ -120,6 +120,24 @@ export function ensureDppSchema() {
       `
       // Pil başına değişen veriler (Pil Tüzüğü Ek XIII nokta 4: sağlık durumu, statü, çevrim…)
       await sql`ALTER TABLE dpp_items ADD COLUMN IF NOT EXISTS dynamic JSONB NOT NULL DEFAULT '{}'::jsonb`
+      // ERP / PIM ürün kodu: API ile ekle-ya-da-güncelle için (firma içinde benzersiz)
+      await sql`ALTER TABLE dpp_products ADD COLUMN IF NOT EXISTS external_id VARCHAR(100)`
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dpp_products_external ON dpp_products(company_id, external_id) WHERE external_id IS NOT NULL`
+      // Yazma API'si anahtarları: anahtarın kendisi değil SHA-256 özeti saklanır
+      await sql`
+        CREATE TABLE IF NOT EXISTS dpp_api_keys (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          company_id UUID NOT NULL REFERENCES dpp_companies(id) ON DELETE CASCADE,
+          name VARCHAR(80) NOT NULL,
+          prefix VARCHAR(16) NOT NULL,
+          key_hash VARCHAR(64) UNIQUE NOT NULL,
+          scopes JSONB NOT NULL DEFAULT '["read"]'::jsonb,
+          created_by VARCHAR(255) NOT NULL DEFAULT '',
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+          last_used_at TIMESTAMP WITH TIME ZONE,
+          revoked_at TIMESTAMP WITH TIME ZONE
+        )
+      `
       await sql`ALTER TABLE dpp_items ADD COLUMN IF NOT EXISTS dynamic_updated_at TIMESTAMP WITH TIME ZONE`
       // Okutma istatistiği: kişisel veri tutulmaz (IP yok), sadece ülke kodu ve dil.
       await sql`

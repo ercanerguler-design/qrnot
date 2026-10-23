@@ -307,7 +307,7 @@ export async function listItems(companyId: string, productId: string, opts: { q?
   const like = `%${q}%`
   const limit = Math.min(5000, Math.max(1, opts.limit || 200))
   const rows = await sql`
-    SELECT id, public_id, serial, batch, production_date, created_at, dynamic, dynamic_updated_at,
+    SELECT id, public_id, serial, batch, production_date, to_char(production_date, 'YYYY-MM-DD') AS production_day, created_at, dynamic, dynamic_updated_at,
            (SELECT COUNT(*)::int FROM dpp_scans s WHERE s.item_id = i.id) AS scans
     FROM dpp_items i
     WHERE product_id = ${product.id} AND (${q} = '' OR serial ILIKE ${like} OR batch ILIKE ${like})
@@ -546,6 +546,66 @@ export async function updateItemDynamic(companyId: string, productId: string, it
     RETURNING dynamic, dynamic_updated_at
   `) as Array<{ dynamic: SectorData; dynamic_updated_at: string }>
   if (!rows.length) throw new DppError('e_product_not_found')
+  return rows[0]
+}
+
+/** Hazır seri numarası listesi ekler (ERP'den gelen seriler; her birinin kendi partisi ve üretim tarihi olabilir). */
+export async function addItems(companyId: string, productId: string, input: unknown) {
+  const product = await getProduct(companyId, productId)
+  if (!product) throw new DppError('e_product_not_found')
+  const list = (Array.isArray(input) ? input : []).slice(0, 2001) as Array<Record<string, unknown>>
+  if (!list.length || list.length > 2000) throw new DppError('e_items_range')
+  const rows = list
+    .map((r) => ({
+      serial: String(r.serial ?? '').trim().replace(/[^\w.\-/]/g, '').slice(0, 40),
+      batch: String(r.batch ?? '').trim().slice(0, 40),
+      date: /^\d{4}-\d{2}-\d{2}$/.test(String(r.productionDate ?? '')) ? String(r.productionDate) : null,
+    }))
+    .filter((r) => r.serial)
+  // Aynı seri listede iki kez gelirse ilki geçerli
+  const seenSerial = new Set<string>()
+  const unique = rows.filter((r) => !seenSerial.has(r.serial) && seenSerial.add(r.serial))
+  const existing = Number(((await sql`SELECT COUNT(*)::int AS n FROM dpp_items WHERE product_id = ${product.id}`) as Array<{ n: number }>)[0]?.n || 0)
+  if (existing + unique.length > MAX_ITEMS_PER_PRODUCT) throw new DppError('e_items_max', { n: MAX_ITEMS_PER_PRODUCT })
+  await assertDemoLimit(companyId, 'items', { add: unique.length })
+  const taken = new Set(
+    ((await sql`SELECT serial FROM dpp_items WHERE product_id = ${product.id} AND serial = ANY(${unique.map((r) => r.serial)})`) as Array<{ serial: string }>).map((r) => r.serial)
+  )
+  const fresh = unique.filter((r) => !taken.has(r.serial))
+  const ids: string[] = []
+  const seen = new Set<string>()
+  while (ids.length < fresh.length) {
+    const id = randomId(10)
+    if (!seen.has(id)) {
+      seen.add(id)
+      ids.push(id)
+    }
+  }
+  if (ids.length) {
+    const clashes = (await sql`SELECT public_id FROM dpp_items WHERE public_id = ANY(${ids}) UNION SELECT public_id FROM dpp_products WHERE public_id = ANY(${ids})`) as unknown[]
+    if (clashes.length) throw new DppError('e_id_clash')
+    await sql`
+      INSERT INTO dpp_items (product_id, public_id, serial, batch, production_date)
+      SELECT ${product.id}, x.pid, x.serial, x.batch, x.d::date
+      FROM unnest(${ids}::text[], ${fresh.map((r) => r.serial)}::text[], ${fresh.map((r) => r.batch)}::text[], ${fresh.map((r) => r.date)}::text[]) AS x(pid, serial, batch, d)
+      ON CONFLICT (product_id, serial) DO NOTHING
+    `
+  }
+  return { created: fresh.length, skipped: unique.length - fresh.length }
+}
+
+/** Tek bir pilin durumunu seri numarasıyla günceller (BMS / servis yazılımı için). */
+export async function updateItemDynamicBySerial(companyId: string, productId: string, serial: string, input: unknown) {
+  const product = await getProduct(companyId, productId)
+  if (!product) throw new DppError('e_product_not_found')
+  if (sectorFor(readData((product as unknown as { data: unknown }).data).category) !== 'battery') throw new DppError('e_not_battery')
+  const patch = sanitizeItemDynamic(input)
+  const rows = (await sql`
+    UPDATE dpp_items SET dynamic = dynamic || ${JSON.stringify(patch)}::jsonb, dynamic_updated_at = NOW()
+    WHERE product_id = ${product.id} AND serial = ${serial.slice(0, 40)}
+    RETURNING serial, public_id, dynamic, dynamic_updated_at
+  `) as Array<{ serial: string; public_id: string; dynamic: SectorData; dynamic_updated_at: string }>
+  if (!rows.length) throw new DppError('e_item_not_found', { serial: serial.slice(0, 40) })
   return rows[0]
 }
 

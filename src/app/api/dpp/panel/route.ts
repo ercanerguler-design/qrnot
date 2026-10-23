@@ -29,6 +29,7 @@ import { DppError, errorText, msg, type MsgKey, type MsgParams } from '@/lib/dpp
 import { requestLang } from '@/lib/dpp/requestLang'
 import { audit, runDailyMaintenance } from '@/lib/dpp/safety'
 import { assertDemoLimit } from '@/lib/dpp/demoAccount'
+import { createApiKey, listApiKeys, revokeApiKey } from '@/lib/dpp/api'
 import {
   applySupplierResponse,
   createSupplierRequest,
@@ -73,7 +74,7 @@ const EDITOR_ACTIONS = new Set([
   'suppliers.reopen',
   'suppliers.delete',
 ])
-const OWNER_ACTIONS = new Set(['company.save', 'company.rotateKey', 'company.rotateInterestKey', 'users.add', 'users.update', 'users.resetPassword', 'users.remove'])
+const OWNER_ACTIONS = new Set(['company.save', 'company.rotateKey', 'company.rotateInterestKey', 'apikeys.list', 'apikeys.create', 'apikeys.revoke', 'users.add', 'users.update', 'users.resetPassword', 'users.remove'])
 
 export async function POST(req: NextRequest) {
   const lang = requestLang(req)
@@ -260,6 +261,16 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
       await sql`UPDATE dpp_companies SET interest_key = ${key} WHERE id = ${companyId}`
       return { interestKey: key }
     }
+
+    case 'apikeys.list':
+      return { keys: await listApiKeys(companyId) }
+
+    case 'apikeys.create':
+      return createApiKey(companyId, user.email, String(body.name || ''), body.write === true ? ['read', 'write'] : ['read'])
+
+    case 'apikeys.revoke':
+      await revokeApiKey(companyId, id)
+      return { ok: true }
 
     case 'users.list': {
       const users = await sql`

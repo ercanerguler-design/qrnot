@@ -57,9 +57,9 @@ Evet, Türkiye'de rakip var ve sayıları artıyor. Aşağıdaki bilgiler firmal
 |---|---|---|---|
 | 1 | ~~Ücretsiz deneme~~ **Yapıldı:** qrnot.com/dpp/demo — 14 gün, 3 ürün, tüm özellikler gerçek | DPPSkop ve epassportify ücretsiz başlatıyor | Kartla self-servis ödeme hâlâ yok (teklif + fatura ile satıyoruz) |
 | 2 | Referans müşteri | Kurumsal alıcı "kim kullanıyor?" diye sorar | İlk 3–5 pilot firmaya kuruculara özel indirim karşılığında referans izni |
-| 3 | API ve ERP entegrasyonu | Orta-büyük firmalar ERP'den otomatik veri ister | Okuma API'si var (JSON); yazma API'si ve Logo / Mikro / SAP için CSV şablonu |
+| 3 | ~~API ve ERP entegrasyonu~~ **Yapıldı:** yazma API'si (anahtar panelden, ERP koduyla ekle-ya-da-güncelle, seri numarası, pil durumu, OpenAPI, /dpp/api belgesi) | Orta-büyük firmalar ERP'den otomatik veri ister | Logo / Mikro / SAP için hazır bağlayıcı yok: firmanın BT ekibi ya da iş ortağı API'ye bağlar |
 | 4 | AB DPP Kaydı'na gönderim ve CEN standartları (EN 18216 / 18219 / 18222) | Rakipler iddia ediyor; kurumsal alıcı soracak | Standart metinleri incelenip uyum çalışması planlanmalı; o zamana kadar "yol haritamızda" de, "uyumluyuz" deme |
-| 5 | ~~Batarya veri modeli~~ **Yapıldı:** Pil Tüzüğü Ek XIII alanları, her pil için pasaport, üç erişim seviyesi, pil durumu (tek tek / CSV) | Şubat 2027 kesin tarih | AB DPP kaydına gönderim ve pil durumunun otomatik (API) güncellemesi hâlâ yok |
+| 5 | ~~Batarya veri modeli~~ **Yapıldı:** Pil Tüzüğü Ek XIII alanları, her pil için pasaport, üç erişim seviyesi, pil durumu (tek tek / CSV) | Şubat 2027 kesin tarih | Pil durumu artık API ile otomatik güncellenebiliyor; AB DPP kaydına gönderim hâlâ yok |
 | 6 | AB'de veri barındırma | Bazı AB alıcıları şart koşar | Talep gelince Frankfurt'a taşıma |
 | 7 | GS1 Türkiye çözüm ortaklığı | Güven ve yönlendirme kanalı | Başvur |
 

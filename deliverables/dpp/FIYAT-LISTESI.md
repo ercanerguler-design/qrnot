@@ -118,7 +118,7 @@ Kaynak: epassportify.com ana sayfası ve fiyat sayfası (Ekim 2026). Bilgiler fi
 | Seri QR sınırı | 10.000 – 1.000.000 / yıl | **Sınırsız** (ürün başına 100.000) |
 | Sürümlü yayın, silinmez pasaport | Belirtilmemiş | **Var** |
 | Yetkili erişim anahtarı (denetim / geri dönüşüm) | Belirtilmemiş | **Var** |
-| API / ERP entegrasyonu | Yok ("ileride") | Okuma (JSON) var; yazma API'si yok |
+| API / ERP entegrasyonu | Yok ("ileride") | **Var:** okuma + yazma API'si (ürün, ERP koduyla ekle-ya-da-güncelle, yayın, seri numarası, pil durumu), OpenAPI tanımı, qrnot.com/dpp/api |
 | Güvenlik / barındırma bilgisi | Hiç yok | Açık güvenlik sayfası + KVKK/GDPR sözleşmesi |
 | Yedek, işlem kaydı | Belirtilmemiş; "tek arşiviniz olmasın" uyarısı var | Günlük yedek, işlem kaydı, 30 gün çöp kutusu |
 | Fiziksel QR / NFC etiket üretimi | Yok (sadece dosya) | **Var** (kendi üretimimiz) |

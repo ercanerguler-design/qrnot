@@ -180,7 +180,125 @@ function CompanySettings({ me }: { me: Me }) {
           )}
         </div>
       </div>
+      {isOwner && <ApiKeys />}
     </div>
+  )
+}
+
+interface ApiKeyRow {
+  id: string
+  name: string
+  prefix: string
+  scopes: string[]
+  created_by: string
+  created_at: string
+  last_used_at: string | null
+  revoked_at: string | null
+}
+
+/** ERP / PIM / BMS entegrasyonu için API anahtarları: değer sadece oluşturulduğunda bir kez gösterilir. */
+function ApiKeys() {
+  const { t, date } = useT()
+  const [keys, setKeys] = useState<ApiKeyRow[] | null>(null)
+  const [name, setName] = useState('')
+  const [write, setWrite] = useState(true)
+  const [fresh, setFresh] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    try {
+      setKeys((await api<{ keys: ApiKeyRow[] }>('apikeys.list')).keys)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('err_load'))
+    }
+  }, [t])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
+  }, [load])
+
+  return (
+    <Card title={t('api_title')} subtitle={t('api_sub')}>
+      {error && <Alert>{error}</Alert>}
+      {fresh && (
+        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+          <p className="text-sm font-medium text-emerald-900">{t('api_created_once')}</p>
+          <p className="mt-2 break-all rounded-lg bg-white px-3 py-2 font-mono text-xs" dir="ltr">
+            {fresh}
+          </p>
+          <Button size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(fresh)}>
+            {t('copy')}
+          </Button>
+        </div>
+      )}
+      <form
+        className="flex flex-wrap items-end gap-3"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          setBusy(true)
+          setError(null)
+          try {
+            const res = await api<{ key: string }>('apikeys.create', { name, write })
+            setFresh(res.key)
+            setName('')
+            await load()
+          } catch (err) {
+            setError(err instanceof Error ? err.message : t('err_save'))
+          } finally {
+            setBusy(false)
+          }
+        }}
+      >
+        <Field label={t('api_name')} className="min-w-56 flex-1">
+          <input className={inputCls} value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />
+        </Field>
+        <label className="flex items-center gap-2 pb-2 text-sm">
+          <input type="checkbox" checked={write} onChange={(e) => setWrite(e.target.checked)} />
+          {t('api_scope_write')}
+        </label>
+        <Button variant="primary" type="submit" disabled={busy || !name.trim()}>
+          {t('api_create')}
+        </Button>
+      </form>
+      <ul className="mt-4 divide-y divide-slate-100">
+        {keys && keys.length === 0 && <li className="py-2 text-sm text-slate-500">{t('api_none')}</li>}
+        {keys?.map((k) => (
+          <li key={k.id} className={`flex flex-wrap items-center justify-between gap-2 py-2 text-sm ${k.revoked_at ? 'opacity-50' : ''}`}>
+            <div>
+              <p className="font-medium">
+                {k.name} <span className="font-mono text-xs text-slate-500" dir="ltr">{k.prefix}…</span>
+              </p>
+              <p className="text-xs text-slate-500">
+                {k.scopes.includes('write') ? t('api_read_write') : t('api_read_only')} · {date(k.created_at)} · {k.last_used_at ? t('api_last_used', { d: date(k.last_used_at) }) : t('api_never')}
+              </p>
+            </div>
+            {k.revoked_at ? (
+              <span className="text-xs text-slate-500">{t('api_revoked')}</span>
+            ) : (
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={async () => {
+                  if (!window.confirm(t('api_revoke_confirm'))) return
+                  try {
+                    await api('apikeys.revoke', { id: k.id })
+                    await load()
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : t('err_save'))
+                  }
+                }}
+              >
+                {t('api_revoke')}
+              </Button>
+            )}
+          </li>
+        ))}
+      </ul>
+      <a href="/dpp/api" target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm font-medium text-blue-700 hover:underline">
+        {t('api_docs')}
+      </a>
+    </Card>
   )
 }
 

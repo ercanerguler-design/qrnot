@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/auth'
 import { ensureQrSchema, sql } from '@/lib/db'
 import { createBlankQRCodes } from '@/lib/qr'
+import { trackConversion } from '@/lib/analytics'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
     `
 
     const nextState = userRows[0]
+    trackConversion(req, 'qr_create', { props: { count: createCount } })
     const nextEffectiveFreeSlots = Math.min(Number(nextState.free_slots), FREE_TRIAL_LIMIT)
     const remaining = Math.max(0, nextEffectiveFreeSlots + Number(nextState.paid_slots) - Number(nextState.used_slots))
     const freeRemaining = Math.max(0, nextEffectiveFreeSlots - Number(nextState.used_slots))

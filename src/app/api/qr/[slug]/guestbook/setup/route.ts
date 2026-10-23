@@ -4,6 +4,7 @@ import { sql } from '@/lib/db'
 import { readGuestbookSettings } from '@/lib/guestbook'
 import { hashPin, loadGuestbookQr } from '@/lib/guestbookServer'
 import { requireClaimUser } from '@/lib/claimAuth'
+import { trackConversion } from '@/lib/analytics'
 
 // Anı defteri olarak üretilmiş (qr_mode=guestbook) boş bir QR'ı sahiplenir ve ayarlarını kaydeder.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     if (updated.length === 0) return NextResponse.json({ error: 'Bu anı defteri zaten kurulmuş' }, { status: 409 })
 
     const baseUrl = req.nextUrl.origin
+    trackConversion(req, 'guestbook_setup', { path: `/q/${slug}` })
     return NextResponse.json({
       ownerToken,
       recoveryCode,

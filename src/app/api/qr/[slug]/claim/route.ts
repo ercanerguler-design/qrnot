@@ -16,6 +16,7 @@ import {
 import { randomBytes } from 'crypto'
 import { createHash } from 'crypto'
 import { requireClaimUser } from '@/lib/claimAuth'
+import { trackConversion } from '@/lib/analytics'
 
 const PREMIUM_URL = `${SITE_URL}/shop/premium`
 
@@ -230,6 +231,7 @@ export async function POST(
       `
     }
 
+    trackConversion(req, 'qr_activate', { path: `/q/${slug}` })
     return NextResponse.json({
       slug,
       ownerToken,

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { CorporateTab, QrsTab, UsersTab } from './CoreTabs'
+import { AdminPushCard } from './AdminPushCard'
+import { AnalyticsTab } from './AnalyticsTab'
 import { DppTab } from './DppTab'
 import { HomeTab, type Go } from './HomeTab'
 import { btn, EtsyTab, input, OrdersTab, ProductionTab, RevenueTab } from './ShopTabs'
@@ -9,7 +11,13 @@ import { btn, EtsyTab, input, OrdersTab, ProductionTab, RevenueTab } from './Sho
 // Tek admin konsolu: tek giriş, solda menü. Eski /admin/shop adresi buraya yönlenir.
 
 const SECTIONS = [
-  { title: '', tabs: [{ key: 'home', icon: '🏠', label: 'Genel bakış' }] },
+  {
+    title: '',
+    tabs: [
+      { key: 'home', icon: '🏠', label: 'Genel bakış' },
+      { key: 'analytics', icon: '📈', label: 'Ölçüm' },
+    ],
+  },
   {
     title: 'Satış',
     tabs: [
@@ -55,6 +63,10 @@ export default function AdminConsole() {
       const fromUrl = params.get('tab')
       if (isTab(fromUrl)) setTab(fromUrl)
       setOrderStatus(params.get('status') || '')
+      // Yönetici cihazı sitenin ölçümüne girmesin (sahibin kendi gezintisi istatistiği bozmasın)
+      try {
+        localStorage.setItem('qrnot_notrack', '1')
+      } catch {}
       const saved = sessionStorage.getItem(PW_KEY)
       if (saved) {
         setPassword(saved)
@@ -182,7 +194,12 @@ export default function AdminConsole() {
           {current.icon} {current.label}
         </h1>
         {error && <p className="mb-4 rounded-xl border border-red-800 bg-red-950/40 px-4 py-2 text-sm text-red-300">{error}</p>}
-        {tab === 'home' && <HomeTab call={call} go={go} />}
+        {tab === 'home' && (
+          <div className="space-y-6">
+            <AdminPushCard password={password} />
+            <HomeTab call={call} go={go} />
+          </div>
+        )}
         {tab === 'orders' && <OrdersTab key={orderStatus} call={call} initialStatus={orderStatus} />}
         {tab === 'revenue' && <RevenueTab call={call} password={password} />}
         {tab === 'etsy' && <EtsyTab call={call} />}
@@ -191,6 +208,7 @@ export default function AdminConsole() {
         {tab === 'users' && <UsersTab password={password} />}
         {tab === 'corporate' && <CorporateTab password={password} />}
         {tab === 'dpp' && <DppTab password={password} />}
+        {tab === 'analytics' && <AnalyticsTab password={password} />}
       </main>
     </div>
   )

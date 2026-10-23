@@ -1,8 +1,9 @@
+import { notifyAdmin } from '@/lib/adminNotify'
+import { trackPurchase } from '@/lib/analytics'
 import { randomBytes } from 'crypto'
 import { sql } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 import { DEFAULT_GUESTBOOK_LIMIT } from '@/lib/guestbook'
-import { notifyHotelOpsOnWhatsApp } from '@/lib/hotelNotify'
 import { createBlankQRCodes } from '@/lib/qr'
 import { SITE_URL } from '@/lib/site'
 import { formatMoney, type Currency, type PricedLine } from '@/lib/commerce/catalog'
@@ -144,6 +145,7 @@ export async function markOrderPaid(orderNo: string, providerRef: string | null,
 
   const fulfilled = await fulfillDigital(order)
   await notifyNewOrder(fulfilled).catch((error) => console.error('[order notify]', error))
+  if (order.provider !== 'mock') await trackPurchase(order.order_no, Number(order.total), String(order.currency))
   return { order: fulfilled, transitioned: true }
 }
 
@@ -209,7 +211,6 @@ async function fulfillDigital(order: ShopOrder): Promise<ShopOrder> {
 
 async function notifyNewOrder(order: ShopOrder) {
   const target = String(process.env.SHOP_NOTIFY_WHATSAPP || process.env.WHATSAPP_TO_NUMBER || '').trim()
-  if (!target) return
   const lines = order.items.map((line) => `• ${line.quantity}× ${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ''}`).join('\n')
   const text = [
     `🛒 Yeni ödeme alındı — ${order.order_no}`,
@@ -220,5 +221,12 @@ async function notifyNewOrder(order: ShopOrder) {
   ]
     .filter(Boolean)
     .join('\n')
-  await notifyHotelOpsOnWhatsApp(text, target)
+  await notifyAdmin({
+    title: `🛒 Yeni ödeme: ${formatMoney(order.total, order.currency)}`,
+    body: `${order.order_no} · ${order.full_name}
+${order.items.map((line) => `${line.quantity}× ${line.name}`).join(', ')}`,
+    url: `/admin?tab=orders`,
+    whatsappText: text,
+    whatsappTo: target || undefined,
+  })
 }

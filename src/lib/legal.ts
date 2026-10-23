@@ -185,6 +185,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         'ul',
         'qrnote_auth: oturum çerezi — giriş yapmış kalmanı sağlar.|qrnote_lang: dil tercihi.|Tarayıcı depolaması (localStorage): sepet içeriği ve QR sahip anahtarı (içeriğini bu cihazdan yönetebilmen için).',
       ],
+      ['p', 'Site kullanımını ölçmek için kendi sunucumuzda çerezsiz bir ölçüm yapıyoruz: hangi sayfanın açıldığı, ziyaretin hangi siteden ya da reklam bağlantısından geldiği, ülke ve cihaz türü. IP adresin saklanmaz; ziyaretçiler yalnızca aynı gün içinde, her gün değişen anonim bir özetle ayırt edilir. Bu veriler üçüncü taraflarla paylaşılmaz ve 400 gün sonra silinir.'],
       ['p', 'Tarayıcı ayarlarından çerezleri silebilirsin; bu durumda yeniden giriş yapman gerekir.'],
     ],
   },
@@ -264,6 +265,10 @@ export const LEGAL_DOCS: LegalDoc[] = [
       [
         'ul',
         'qrnote_auth: session cookie that keeps you signed in.|qrnote_lang: language preference.|localStorage: cart contents and your QR owner key (so you can manage your content from this device).',
+      ],
+      [
+        'p',
+        'We measure site usage with cookieless analytics on our own servers: which page was opened, which site or ad link the visit came from, country and device type. Your IP address is not stored; visitors are only told apart within the same day by an anonymous digest that changes daily. This data is not shared with third parties and is deleted after 400 days.',
       ],
     ],
   },

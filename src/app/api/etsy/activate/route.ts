@@ -4,6 +4,7 @@ import { clientIp, consumeRateLimit, ensureGrowthSchema } from '@/lib/growthSche
 import { DEFAULT_GUESTBOOK_LIMIT } from '@/lib/guestbook'
 import { createBlankQRCodes } from '@/lib/qr'
 import { SITE_URL } from '@/lib/site'
+import { trackConversion } from '@/lib/analytics'
 
 // Etsy alıcısı sipariş numarası + e-posta ile kendine özel QR üretir.
 // Sadece admin panelinden içe aktarılmış siparişler aktive edilebilir; QR sayısı siparişteki ürün adediyle sınırlıdır.
@@ -98,6 +99,7 @@ export async function POST(req: NextRequest) {
       VALUES (${orderNumber}, ${email}, ${qrRows[0].id}, ${product}, ${ip}, 'verified')
     `
 
+    trackConversion(req, 'etsy_activate', { path: '/etsy', props: { product } })
     return NextResponse.json({
       slug: created.slug,
       qrUrl: `${SITE_URL}/q/${created.slug}`,

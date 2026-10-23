@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { applyAuthCookie, createUser, createUserSession, getUserByEmail, isValidEmail, normalizeEmail, validatePassword, verifyPassword } from '@/lib/auth'
 import { isLoginLocked, recordLoginFailure } from '@/lib/adminAuth'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
+import { trackConversion } from '@/lib/analytics'
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await createUser(email, password)
+    trackConversion(req, 'signup')
     const token = await createUserSession(user.id)
     const res = NextResponse.json({
       user: {

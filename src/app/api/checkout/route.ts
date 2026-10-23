@@ -7,6 +7,7 @@ import { createStripeCheckout } from '@/lib/commerce/stripe'
 import { availableProviders } from '@/lib/commerce/providers'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 import { normalizeLang } from '@/lib/i18n'
+import { trackConversion } from '@/lib/analytics'
 
 // Ödeme başlatır: siparişi oluşturur ve ödeme sağlayıcısının sayfasına yönlendirme adresi döner.
 
@@ -121,6 +122,8 @@ export async function POST(req: NextRequest) {
         .slice(0, 500),
       clientIp: ip,
     })
+
+    if (provider !== 'mock') trackConversion(req, 'checkout_start', { path: '/checkout', value: Number(order.total), currency, props: { orderNo: order.order_no, provider } })
 
     const origin = req.nextUrl.origin
     const orderUrl = `${origin}/order/${order.order_no}?key=${order.access_key}${en ? '&lang=en' : ''}`

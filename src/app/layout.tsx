@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -66,7 +67,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className={`${geistSans.variable} ${displaySerif.variable} h-full`}>
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        {children}
+        <SiteAnalytics />
+      </body>
     </html>
   );
 }

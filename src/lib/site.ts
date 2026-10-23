@@ -1,6 +1,7 @@
 // Sitenin tek kaynaktan yönetilen sabitleri (alan adı, şirket ve iletişim bilgileri).
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://qrnot.com').replace(/\/$/, '')
+// Asıl adres www.qrnot.com: qrnot.com oraya yönlendiriyor. Arama motoruna bildirilen adres (canonical, site haritası) yönlendiren adres olmamalı.
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.qrnot.com').replace(/\/$/, '').replace('://qrnot.com', '://www.qrnot.com')
 export const SITE_NAME = 'QRNot'
 
 export const COMPANY = {

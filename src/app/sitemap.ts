@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency,
     priority,
-    alternates: { languages: { 'tr-TR': `${SITE_URL}${path}`, 'en-US': `${SITE_URL}${path}${path.includes('?') ? '&' : '?'}lang=en` } },
+    alternates: { languages: { 'tr-TR': `${SITE_URL}${path}`, 'en-US': `${SITE_URL}${path}${path.includes('?') ? '&' : '?'}lang=en`, 'x-default': `${SITE_URL}${path}` } },
   })
 
   return [
@@ -26,8 +26,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page('/dpp/guvenlik', 0.4, 'monthly'),
     page('/etsy', 0.4, 'monthly'),
     page('/partnerlik', 0.4, 'monthly'),
-    page('/hotel', 0.4, 'monthly'),
-    page('/education', 0.4, 'monthly'),
     ...LEGAL_DOCS.map((doc) => ({ url: `${SITE_URL}/legal/${doc.slug}`, lastModified: now, changeFrequency: 'yearly' as const, priority: 0.2 })),
   ]
 }

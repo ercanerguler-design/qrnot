@@ -35,10 +35,6 @@ export const metadata: Metadata = {
     "qr code keychain",
   ],
   applicationName: "QRNot",
-  alternates: {
-    canonical: "/",
-    languages: { "tr-TR": "/", "en-US": "/?lang=en" },
-  },
   openGraph: {
     title: "QRNot — Hediyene Bir Ses Ver",
     description: "QR ve NFC'li kolye ve anahtarlıklara sesli mesaj, video ve fotoğraf ekle. Uygulama gerekmez.",

@@ -4,11 +4,13 @@ import ProductArt from '@/components/warm/ProductArt'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { PRODUCTS } from '@/lib/commerce/catalog'
 import { getRequestLang } from '@/lib/i18n.server'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'NFC Kolye ve NFC Anahtarlık — Dokun, Dinle',
-  description: 'NFC çipli sesli kolye ve anahtarlık. Telefonu dokundurmak yeterli; QR yedeği ile her telefonda çalışır.',
-  alternates: { canonical: '/nfc', languages: { 'tr-TR': '/nfc', 'en-US': '/nfc?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/nfc", {
+    tr: { title: "NFC Kolye ve NFC Anahtarlık — Dokun, Dinle", description: "NFC çipli sesli kolye ve anahtarlık. Telefonu dokundurmak yeterli; QR yedeği ile her telefonda çalışır." },
+    en: { title: "NFC Necklace & NFC Keychain — Tap and Listen", description: "Voice message necklace and keychain with an NFC chip. Just tap a phone; the QR backup works on every phone." },
+  })
 }
 
 const T = {

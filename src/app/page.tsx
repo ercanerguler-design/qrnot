@@ -8,9 +8,13 @@ import { PRODUCTS } from '@/lib/commerce/catalog'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
 import { MARKETPLACES, SITE_URL, whatsappHref } from '@/lib/site'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  alternates: { canonical: '/', languages: { 'tr-TR': '/', 'en-US': '/?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/", {
+    tr: { title: "QRNot — Hediyene Bir Ses Ver | Sesli Kolye ve Anahtarlık", description: "QR ve NFC'li kolye ve anahtarlıklara sesli mesaj, video ve fotoğraf ekle. Uygulama gerekmez, mesajını sonradan güncelle. Düğünler için dijital anı defteri." },
+    en: { title: "QRNot — Give Your Gift a Voice | Voice Message Necklace & Keychain", description: "Add voice messages, video and photos to QR and NFC necklaces and keychains. No app needed, update your message anytime. Digital audio guestbook for weddings." },
+  })
 }
 
 const C = {

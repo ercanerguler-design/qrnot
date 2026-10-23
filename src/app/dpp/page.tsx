@@ -5,12 +5,13 @@ import { DEMO_PASSPORT_ID } from '@/lib/dpp/demo'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
 import { whatsappHref } from '@/lib/site'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Dijital Ürün Pasaportu (DPP) — AB ESPR’e hazırlık',
-  description:
-    'Ürünleriniz için AB Dijital Ürün Pasaportu: QR / NFC ile açılan, 8 dilli, sürümlü, GS1 Digital Link uyumlu pasaportlar. Tekstil, mobilya, elektronik ve batarya üreticileri için.',
-  alternates: { canonical: '/dpp', languages: { 'tr-TR': '/dpp', 'en-US': '/dpp?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/dpp", {
+    tr: { title: "Dijital Ürün Pasaportu (DPP) — AB ESPR’e hazırlık", description: "Ürünleriniz için AB Dijital Ürün Pasaportu: QR / NFC ile açılan, 8 dilli, sürümlü, GS1 Digital Link uyumlu pasaportlar. Tekstil, mobilya, elektronik ve batarya üreticileri için." },
+    en: { title: "Digital Product Passport (DPP) Software — Prepare for EU ESPR", description: "Digital product passports for manufacturers exporting to the EU: QR / NFC, 8 languages, versioned, GS1 Digital Link. For textile, furniture, electronics and battery makers." },
+  }, { image: "/dpp/opengraph-image" })
 }
 
 const C = {

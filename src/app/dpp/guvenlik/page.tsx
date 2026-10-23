@@ -4,14 +4,16 @@ import { WarmPage } from '@/components/warm/SiteChrome'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
 import { whatsappHref } from '@/lib/site'
+import { pageMeta } from '@/lib/seo'
 
 // DPP güvenlik ve veri işleme sayfası. Buradaki her bilgi koddaki gerçek uygulamaya ya da altyapı sağlayıcısının
 // yayımladığı belgeye dayanır. Sahip olmadığımız sertifikalar ima edilmez; değişiklikte bu sayfa da güncellenmeli.
 
-export const metadata: Metadata = {
-  title: 'DPP güvenlik ve veri işleme — QRNot',
-  description: 'QRNot Dijital Ürün Pasaportu: verilerin nerede saklandığı, şifreleme, erişim kontrolü, alt işleyenler, KVKK / GDPR ve veri işleme sözleşmesi.',
-  alternates: { canonical: '/dpp/guvenlik', languages: { 'tr-TR': '/dpp/guvenlik', 'en-US': '/dpp/guvenlik?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/dpp/guvenlik", {
+    tr: { title: "DPP Güvenlik ve Veri İşleme", description: "QRNot Dijital Ürün Pasaportu: verilerin nerede saklandığı, şifreleme, erişim kontrolü, alt işleyenler, KVKK / GDPR ve veri işleme sözleşmesi." },
+    en: { title: "DPP Security & Data Processing", description: "QRNot digital product passport: where data is stored, encryption, access control, sub-processors, GDPR and the data processing agreement." },
+  }, { image: "/dpp/opengraph-image" })
 }
 
 type Row = [string, string]

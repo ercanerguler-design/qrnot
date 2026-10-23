@@ -5,11 +5,13 @@ import { API_BASE } from '@/lib/dpp/openapi'
 import { BATTERY_ITEM_FIELDS, fieldLabelKey, SECTOR_FIELDS, type Sector, type SectorField } from '@/lib/dpp/sectors'
 import { getRequestLang } from '@/lib/i18n.server'
 import type { Lang } from '@/lib/i18n'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'DPP API — QRNot Dijital Ürün Pasaportu',
-  description: 'ERP, PIM ve BMS sistemlerinden dijital ürün pasaportu oluşturma ve güncelleme API’si: ürünler, seri numaraları, batarya durumu.',
-  alternates: { canonical: '/dpp/api', languages: { 'tr-TR': '/dpp/api', 'en-US': '/dpp/api?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/dpp/api", {
+    tr: { title: "DPP API — ERP, PIM ve BMS için Dijital Ürün Pasaportu API’si", description: "ERP, PIM ve BMS sistemlerinden dijital ürün pasaportu oluşturma ve güncelleme API’si: ürünler, seri numaraları, batarya durumu. OpenAPI tanımı dahil." },
+    en: { title: "DPP API — Digital Product Passport API for ERP, PIM & BMS", description: "Create and update digital product passports from your ERP, PIM or BMS: products, serial numbers and battery status. OpenAPI specification included." },
+  }, { image: "/dpp/opengraph-image" })
 }
 
 const BASE = API_BASE

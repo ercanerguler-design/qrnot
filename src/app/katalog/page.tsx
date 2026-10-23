@@ -5,12 +5,13 @@ import { withLang, type Lang } from '@/lib/i18n'
 import { getRequestLang } from '@/lib/i18n.server'
 import { MARKETPLACES, whatsappHref } from '@/lib/site'
 import { CatalogImageButton, type CatalogImage } from './CatalogGallery'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Ürün Kataloğu — Neon QR Anahtarlık, Sticker ve Kolye',
-  description:
-    'QRNot neon QR koleksiyonu: sesli mesajlı anahtarlık, yuvarlak / kare / dik dörtgen QR sticker modelleri, kolye ve dijital ürünler. Uygulama gerekmez.',
-  alternates: { canonical: '/katalog', languages: { 'tr-TR': '/katalog', 'en-US': '/katalog?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/katalog", {
+    tr: { title: "Ürün Kataloğu — Neon QR Anahtarlık, Sticker ve Kolye", description: "QRNot neon QR koleksiyonu: sesli mesajlı anahtarlık, yuvarlak / kare / dik dörtgen QR sticker modelleri, kolye ve dijital ürünler. Uygulama gerekmez." },
+    en: { title: "Product Catalog — Neon QR Keychains, Stickers & Necklaces", description: "The QRNot neon QR collection: voice message keychains, round / square / rectangular QR stickers, necklaces and digital products. No app needed." },
+  })
 }
 
 // Tüm katalog görselleri (lightbox bu sırayla gezinir)

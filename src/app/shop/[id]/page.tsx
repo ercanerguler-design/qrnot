@@ -8,19 +8,17 @@ import { getRequestLang } from '@/lib/i18n.server'
 import { withLang } from '@/lib/i18n'
 import { SITE_URL } from '@/lib/site'
 import ProductBuyBox from './AddToCart'
+import { pageMeta } from '@/lib/seo'
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ lang?: string }> }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const product = getProduct((await params).id)
   if (!product) return {}
-  const lang = await getRequestLang((await searchParams).lang)
-  return {
-    title: product.name[lang],
-    description: product.description[lang].slice(0, 160),
-    alternates: { canonical: `/shop/${product.id}`, languages: { 'tr-TR': `/shop/${product.id}`, 'en-US': `/shop/${product.id}?lang=en` } },
-    openGraph: { title: product.name[lang], description: product.tagline[lang], type: 'website' },
-  }
+  return pageMeta((await searchParams).lang, `/shop/${product.id}`, {
+    tr: { title: product.name.tr, description: product.description.tr.slice(0, 160) },
+    en: { title: product.name.en, description: product.description.en.slice(0, 160) },
+  })
 }
 
 const T = {

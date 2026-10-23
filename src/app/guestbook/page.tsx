@@ -5,11 +5,13 @@ import { WarmPage } from '@/components/warm/SiteChrome'
 import { formatMoney, getProduct } from '@/lib/commerce/catalog'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang } from '@/lib/i18n'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Dijital Anı Defteri — Düğün ve Etkinlikler için Sesli Anı Defteri',
-  description: 'Misafirlerin tek QR ile sesli mesaj, video, fotoğraf ve yazılı anı bıraksın. Düğün, nişan, doğum günü ve veda için dijital anı defteri.',
-  alternates: { canonical: '/guestbook', languages: { 'tr-TR': '/guestbook', 'en-US': '/guestbook?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/guestbook", {
+    tr: { title: "Sesli Dijital Anı Defteri — Düğün ve Etkinlikler", description: "Misafirlerin tek QR ile sesli mesaj, video, fotoğraf ve yazılı anı bıraksın. Düğün, nişan, doğum günü ve veda için dijital anı defteri." },
+    en: { title: "Audio Guestbook for Weddings & Events — QR Guestbook", description: "Guests leave voice messages, videos, photos and notes with a single QR code. A digital audio guestbook for weddings, engagements, birthdays and farewells." },
+  })
 }
 
 const T = {

@@ -3,11 +3,13 @@ import ProductCard from '@/components/warm/ProductCard'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { PRODUCTS } from '@/lib/commerce/catalog'
 import { getRequestLang } from '@/lib/i18n.server'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Sesli Kolye, Sesli Anahtarlık ve Anı Defteri',
-  description: "QR ve NFC'li sesli kolye, sesli anahtarlık ve dijital anı defteri. Sevdiklerine sesini hediye et.",
-  alternates: { canonical: '/shop', languages: { 'tr-TR': '/shop', 'en-US': '/shop?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/shop", {
+    tr: { title: "Sesli Kolye, Sesli Anahtarlık ve Anı Defteri", description: "QR ve NFC'li sesli kolye, sesli anahtarlık ve dijital anı defteri. Sevdiklerine sesini hediye et." },
+    en: { title: "Voice Message Necklace, Keychain & Audio Guestbook", description: "QR and NFC voice message necklaces, voice keychains and a digital audio guestbook. Gift your voice to the people you love." },
+  })
 }
 
 const T = {

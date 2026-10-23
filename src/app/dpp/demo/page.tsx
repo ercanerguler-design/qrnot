@@ -4,13 +4,15 @@ import { WarmPage } from '@/components/warm/SiteChrome'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
 import DemoForm from './DemoForm'
+import { pageMeta } from '@/lib/seo'
 
 // Ücretsiz demo talebi: form doldurulunca kısıtlı bir demo firması ve yönetici hesabı anında açılır.
 
-export const metadata: Metadata = {
-  title: 'Ücretsiz DPP demosu — QRNot',
-  description: 'QRNot Dijital Ürün Pasaportu panelini 14 gün ücretsiz deneyin: 3 ürün, 100 seri numarası, tedarikçi portalı ve 8 dil; tüm özellikler gerçek çalışır.',
-  alternates: { canonical: '/dpp/demo', languages: { 'tr-TR': '/dpp/demo', 'en-US': '/dpp/demo?lang=en' } },
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/dpp/demo", {
+    tr: { title: "Ücretsiz DPP Demosu — Dijital Ürün Pasaportu Paneli", description: "QRNot Dijital Ürün Pasaportu panelini 14 gün ücretsiz deneyin: 3 ürün, 100 seri numarası, tedarikçi portalı ve 8 dil; tüm özellikler gerçek çalışır." },
+    en: { title: "Free DPP Demo — Try the Digital Product Passport Panel", description: "Try the QRNot digital product passport panel free for 14 days: 3 products, 100 serial numbers, supplier portal and 8 languages. Every feature really works." },
+  }, { image: "/dpp/opengraph-image" })
 }
 
 const C: Record<Lang, { back: string; kicker: string; title: string; lead: string; includes: string; items: string[]; note: string }> = {

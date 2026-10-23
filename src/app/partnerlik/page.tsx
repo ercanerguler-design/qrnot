@@ -1,14 +1,16 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { pageMeta } from '@/lib/seo'
 
 type Lang = 'tr' | 'en'
 
 const whatsappBase = 'https://wa.me/905433929230?text='
 
-export const metadata: Metadata = {
-  title: 'QRNote Pazaryeri Partnerliği',
-  description:
-    'ÇiçekSepeti, Trendyol, Hepsiburada, N11 ve benzeri platformlar için QRNote büyüme ortaklığı sayfası.',
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
+  return pageMeta((await searchParams).lang, "/partnerlik", {
+    tr: { title: "Pazaryeri Partnerliği", description: "ÇiçekSepeti, Trendyol, Hepsiburada, N11 ve benzeri platformlar için QRNot büyüme ortaklığı: sesli hediye ürünlerini mağazanızda satın." },
+    en: { title: "Marketplace Partnership", description: "A growth partnership with QRNot for marketplaces and online stores: sell voice message gift products in your store." },
+  })
 }
 
 function encodeWhatsApp(text: string) {

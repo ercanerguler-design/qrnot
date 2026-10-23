@@ -24,6 +24,8 @@ import { useT } from './i18n'
 import ItemsPanel from './ItemsPanel'
 import type { Me, View } from './PanelApp'
 import QrBox from './QrBox'
+import SectorEditor from './SectorEditor'
+import { sectorFor } from '@/lib/dpp/sectors'
 import SuppliersPanel from './SuppliersPanel'
 import { Alert, api, Button, Card, Field, FilePicker, inputCls, StatusBadge, uploadFile } from './ui'
 
@@ -47,9 +49,10 @@ interface Bundle {
   digitalLink: string | null
 }
 
-type Tab = 'general' | 'materials' | 'care' | 'compliance' | 'langs' | 'docs' | 'suppliers' | 'items' | 'versions'
+type Tab = 'general' | 'sector' | 'materials' | 'care' | 'compliance' | 'langs' | 'docs' | 'suppliers' | 'items' | 'versions'
 const TABS: Array<[Tab, MsgKey, boolean]> = [
   ['general', 'tab_general', false],
+  ['sector', 'tab_sector_battery', false],
   ['materials', 'tab_materials', false],
   ['care', 'tab_care', false],
   ['compliance', 'tab_compliance', false],
@@ -111,6 +114,8 @@ export default function ProductEditor({ productId, initialTab, go, me }: { produ
   }, [dirty])
 
   const tx = texts[defaultLang] || emptyTexts()
+  // Kategoriye özel pasaport modülü (batarya / tekstil / mobilya)
+  const sector = sectorFor(data.category)
   const setText = (l: DppLang, key: DppTextKey, value: string) => {
     setTexts((cur) => ({ ...cur, [l]: { ...(cur[l] || emptyTexts()), [key]: value } }))
     setDirty(true)
@@ -279,7 +284,7 @@ export default function ProductEditor({ productId, initialTab, go, me }: { produ
 
       {/* Sekmeler */}
       <div className="-mx-4 flex gap-1 overflow-x-auto border-b border-slate-200 px-4">
-        {TABS.map(([key, label, needsSaved]) => (
+        {TABS.filter(([key]) => key !== 'sector' || sector).map(([key, label, needsSaved]) => (
           <button
             key={key}
             type="button"
@@ -290,7 +295,7 @@ export default function ProductEditor({ productId, initialTab, go, me }: { produ
               tab === key ? 'border-[#0f3d5e] text-[#0f3d5e]' : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            {t(label)}
+            {key === 'sector' && sector ? t(`tab_sector_${sector}` as MsgKey) : t(label)}
             {key === 'docs' && bundle ? ` (${bundle.documents.length})` : ''}
             {key === 'items' && bundle ? ` (${bundle.itemCount.toLocaleString()})` : ''}
           </button>
@@ -408,6 +413,8 @@ export default function ProductEditor({ productId, initialTab, go, me }: { produ
             </div>
           </div>
         )}
+
+        {tab === 'sector' && sector && <SectorEditor sector={sector} value={data.sector || {}} onChange={(v) => patch({ sector: v })} />}
 
         {tab === 'materials' && (
           <>
@@ -552,7 +559,9 @@ export default function ProductEditor({ productId, initialTab, go, me }: { produ
         {tab === 'suppliers' && bundle && (
           <SuppliersPanel productId={bundle.id} productName={tx.name} companyName={me.companyName} readOnly={readOnly} dirty={dirty} onApplied={() => load(bundle.id)} />
         )}
-        {tab === 'items' && bundle && <ItemsPanel productId={bundle.id} productName={tx.name} gtin={data.gtin} published={bundle.version > 0} readOnly={readOnly} onChange={() => load(bundle.id)} />}
+        {tab === 'items' && bundle && (
+          <ItemsPanel productId={bundle.id} productName={tx.name} gtin={data.gtin} published={bundle.version > 0} readOnly={readOnly} battery={sector === 'battery'} onChange={() => load(bundle.id)} />
+        )}
         {tab === 'versions' && bundle && (
           <Card title={t('tab_versions')} subtitle={t('ver_sub')}>
             {bundle.versions.length === 0 ? (
@@ -909,7 +918,7 @@ function DocumentsEditor({ bundle, me, readOnly, reload }: { bundle: Bundle; me:
   const { t, labels } = useT()
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<DppDocKind>('certificate')
-  const [visibility, setVisibility] = useState<'public' | 'restricted'>('public')
+  const [visibility, setVisibility] = useState<'public' | 'interest' | 'restricted'>('public')
   const [file, setFile] = useState<File | null>(null)
   const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -954,8 +963,9 @@ function DocumentsEditor({ bundle, me, readOnly, reload }: { bundle: Bundle; me:
                 </select>
               </Field>
               <Field label={t('f_visibility')}>
-                <select className={inputCls} value={visibility} onChange={(e) => setVisibility(e.target.value as 'public' | 'restricted')}>
+                <select className={inputCls} value={visibility} onChange={(e) => setVisibility(e.target.value as 'public' | 'interest' | 'restricted')}>
                   <option value="public">{t('vis_public')}</option>
+                  <option value="interest">{t('vis_interest')}</option>
                   <option value="restricted">{t('vis_restricted')}</option>
                 </select>
               </Field>
@@ -1012,6 +1022,7 @@ function DocRow({ doc, readOnly, reload }: { doc: Bundle['documents'][number]; r
         <div className="flex items-center gap-2">
           <select className={`${inputCls} w-auto py-1 text-xs`} value={doc.visibility} disabled={busy} onChange={(e) => void update({ visibility: e.target.value })}>
             <option value="public">{t('vis_public')}</option>
+            <option value="interest">{t('tier_interest')}</option>
             <option value="restricted">{t('vis_restricted_short')}</option>
           </select>
           <Button

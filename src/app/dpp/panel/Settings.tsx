@@ -21,6 +21,7 @@ interface Company {
   product_limit: number
   used: number
   restricted_key: string | null
+  interest_key: string | null
   created_at: string
 }
 
@@ -147,6 +148,29 @@ function CompanySettings({ me }: { me: Me }) {
                     if (!window.confirm(t('ra_confirm_rotate'))) return
                     const res = await api<{ restrictedKey: string }>('company.rotateKey')
                     setC({ ...c, restricted_key: res.restrictedKey })
+                  }}
+                >
+                  {t('ra_rotate')}
+                </Button>
+              </div>
+            </Card>
+          )}
+          {isOwner && c.interest_key && (
+            <Card title={t('set_interest_title')} subtitle={t('set_interest_sub')}>
+              <p className="break-all rounded-xl bg-violet-50 px-3 py-2 font-mono text-xs" dir="ltr">
+                ?k={c.interest_key}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => void navigator.clipboard.writeText(`?k=${c.interest_key}`)}>
+                  {t('copy')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={async () => {
+                    if (!window.confirm(t('set_interest_rotate_confirm'))) return
+                    const res = await api<{ interestKey: string }>('company.rotateInterestKey')
+                    setC({ ...c, interest_key: res.interestKey })
                   }}
                 >
                   {t('ra_rotate')}

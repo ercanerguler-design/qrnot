@@ -1,8 +1,11 @@
 'use client'
 
 import { QRCodeSVG } from 'qrcode.react'
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
+import type { MsgKey } from '@/lib/dpp/i18n'
+import { BATTERY_ITEM_FIELDS, fieldLabelKey, type SectorData } from '@/lib/dpp/sectors'
 import { useT } from './i18n'
+import { optionLabel, unitLabel } from './SectorEditor'
 import { Alert, api, Button, Card, csvCell, downloadText, Field, inputCls } from './ui'
 
 // Tekil ürün pasaportları: seri numarası üretimi, liste, CSV dışa aktarma ve QR etiket baskısı.
@@ -15,6 +18,8 @@ interface Item {
   production_date: string | null
   created_at: string
   scans: number
+  dynamic: SectorData
+  dynamic_updated_at: string | null
 }
 
 interface ExportRow {
@@ -36,6 +41,7 @@ export default function ItemsPanel({
   gtin,
   published,
   readOnly,
+  battery = false,
   onChange,
 }: {
   productId: string
@@ -43,6 +49,8 @@ export default function ItemsPanel({
   gtin: string
   published: boolean
   readOnly: boolean
+  /** Batarya: her pilin değişen verileri (Pil Tüzüğü Ek XIII nokta 4) */
+  battery?: boolean
   onChange: () => Promise<void>
 }) {
   const { t, date, number } = useT()
@@ -57,6 +65,8 @@ export default function ItemsPanel({
   const [labels, setLabels] = useState<ExportRow[] | null>(null)
   const [labelSize, setLabelSize] = useState<LabelSize>(30)
   const [useDigitalLink, setUseDigitalLink] = useState(false)
+  const [editing, setEditing] = useState<string | null>(null)
+  const [dyn, setDyn] = useState<SectorData>({})
 
   const load = useCallback(
     async (offset = 0) => {
@@ -141,6 +151,35 @@ export default function ItemsPanel({
         </Card>
       )}
 
+      {battery && !readOnly && (
+        <Card title={t('it_dyn_title')} subtitle={t('it_dyn_sub')}>
+          <p className="text-xs text-slate-500" dir="ltr">
+            {t('it_dyn_import_hint')}
+          </p>
+          <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">
+            📄 {t('it_dyn_import')}
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              disabled={busy !== null}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ''
+                if (!file)
+                  return
+                void run('dynimport', async () => {
+                  const rows = parseCsv(await file.text())
+                  const res = await api<{ updated: number; errors: string[] }>('items.dynamicImport', { productId, rows })
+                  setInfo([t('it_dyn_import_done', { n: number(res.updated) }), ...res.errors].join(' · '))
+                  await load()
+                })
+              }}
+            />
+          </label>
+        </Card>
+      )}
+
       <Card
         title={t('it_list_title', { n: number(total) })}
         actions={
@@ -219,12 +258,14 @@ export default function ItemsPanel({
                   <th className="px-3 py-2 text-start">{t('th_batch')}</th>
                   <th className="px-3 py-2 text-start">{t('th_production')}</th>
                   <th className="px-3 py-2 text-end">{t('th_scans')}</th>
+                  {battery && <th className="px-3 py-2 text-start">{t('it_dyn_edit')}</th>}
                   <th className="px-5 py-2 text-end">{t('th_passport')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {items.map((i) => (
-                  <tr key={i.id}>
+                  <Fragment key={i.id}>
+                  <tr>
                     <td className="px-5 py-2">
                       <input
                         type="checkbox"
@@ -245,12 +286,82 @@ export default function ItemsPanel({
                     <td className="px-3 py-2">{i.batch || '—'}</td>
                     <td className="px-3 py-2">{date(i.production_date)}</td>
                     <td className="px-3 py-2 text-end tabular-nums">{number(i.scans)}</td>
+                    {battery && (
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-sky-700 hover:underline"
+                          onClick={() => {
+                            setEditing(editing === i.id ? null : i.id)
+                            setDyn(i.dynamic || {})
+                          }}
+                        >
+                          {i.dynamic?.stateOfHealthPct !== undefined ? `SoH ${i.dynamic.stateOfHealthPct}%` : '—'}
+                          {i.dynamic?.status ? ` · ${optionLabel(t, String(i.dynamic.status))}` : ''} ✎
+                        </button>
+                      </td>
+                    )}
                     <td className="px-5 py-2 text-end">
                       <a href={`/p/${i.public_id}`} target="_blank" rel="noopener noreferrer" className="text-sky-700 hover:underline" dir="ltr">
                         /p/{i.public_id} ↗
                       </a>
                     </td>
                   </tr>
+                  {battery && editing === i.id && (
+                    <tr className="bg-slate-50">
+                      <td colSpan={7} className="px-5 py-4">
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          {BATTERY_ITEM_FIELDS.map((fd) => (
+                            <label key={fd.key} className={`block text-xs font-semibold text-slate-600 ${fd.type === 'longtext' ? 'sm:col-span-3' : ''}`}>
+                              {t(fieldLabelKey('item', fd.key) as MsgKey)}
+                              {fd.unit ? ` (${unitLabel(t, fd.unit)})` : ''}
+                              {fd.type === 'select' ? (
+                                <select className={`${inputCls} mt-1`} disabled={readOnly} value={String(dyn[fd.key] ?? '')} onChange={(e) => setDyn({ ...dyn, [fd.key]: e.target.value || null })}>
+                                  <option value="">—</option>
+                                  {fd.options?.map((o) => (
+                                    <option key={o} value={o}>
+                                      {optionLabel(t, o)}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : fd.type === 'longtext' ? (
+                                <textarea className={`${inputCls} mt-1`} rows={2} disabled={readOnly} value={String(dyn[fd.key] ?? '')} onChange={(e) => setDyn({ ...dyn, [fd.key]: e.target.value })} />
+                              ) : (
+                                <input
+                                  className={`${inputCls} mt-1`}
+                                  inputMode="decimal"
+                                  disabled={readOnly}
+                                  value={dyn[fd.key] === null || dyn[fd.key] === undefined ? '' : String(dyn[fd.key])}
+                                  onChange={(e) => setDyn({ ...dyn, [fd.key]: e.target.value })}
+                                />
+                              )}
+                            </label>
+                          ))}
+                        </div>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          {!readOnly && (
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              disabled={busy !== null}
+                              onClick={() =>
+                                void run('dyn', async () => {
+                                  const res = await api<{ dynamic: SectorData; dynamic_updated_at: string }>('items.dynamic', { productId, itemId: i.id, dynamic: dyn })
+                                  setItems((cur) => cur.map((x) => (x.id === i.id ? { ...x, dynamic: res.dynamic, dynamic_updated_at: res.dynamic_updated_at } : x)))
+                                  setInfo(t('it_dyn_saved'))
+                                  setEditing(null)
+                                })
+                              }
+                            >
+                              {t('it_dyn_save')}
+                            </Button>
+                          )}
+                          {i.dynamic_updated_at && <span className="text-xs text-slate-500">{t('it_dyn_updated', { d: date(i.dynamic_updated_at, true) })}</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -314,4 +425,35 @@ export default function ItemsPanel({
       )}
     </div>
   )
+}
+
+/** Basit CSV ayrıştırıcı: ; ya da , ayraçlı, ilk satır başlık; tırnaklı hücreleri destekler. */
+function parseCsv(text: string): Array<Record<string, string>> {
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((l) => l.trim())
+  if (lines.length < 2) return []
+  const sep = (lines[0].match(/;/g) || []).length >= (lines[0].match(/,/g) || []).length ? ';' : ','
+  const split = (line: string) => {
+    const out: string[] = []
+    let cur = ''
+    let quoted = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"') {
+        if (quoted && line[i + 1] === '"') {
+          cur += '"'
+          i++
+        } else quoted = !quoted
+      } else if (ch === sep && !quoted) {
+        out.push(cur)
+        cur = ''
+      } else cur += ch
+    }
+    out.push(cur)
+    return out.map((c) => c.trim())
+  }
+  const header = split(lines[0])
+  return lines.slice(1, 5001).map((line) => {
+    const cells = split(line)
+    return Object.fromEntries(header.map((h, i) => [h, cells[i] ?? '']))
+  })
 }

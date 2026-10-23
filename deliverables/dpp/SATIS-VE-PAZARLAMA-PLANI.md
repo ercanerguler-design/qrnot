@@ -59,7 +59,7 @@ Evet, Türkiye'de rakip var ve sayıları artıyor. Aşağıdaki bilgiler firmal
 | 2 | Referans müşteri | Kurumsal alıcı "kim kullanıyor?" diye sorar | İlk 3–5 pilot firmaya kuruculara özel indirim karşılığında referans izni |
 | 3 | API ve ERP entegrasyonu | Orta-büyük firmalar ERP'den otomatik veri ister | Okuma API'si var (JSON); yazma API'si ve Logo / Mikro / SAP için CSV şablonu |
 | 4 | AB DPP Kaydı'na gönderim ve CEN standartları (EN 18216 / 18219 / 18222) | Rakipler iddia ediyor; kurumsal alıcı soracak | Standart metinleri incelenip uyum çalışması planlanmalı; o zamana kadar "yol haritamızda" de, "uyumluyuz" deme |
-| 5 | Batarya pasaportuna özel veri modeli | Şubat 2027 kesin tarih, en sıcak pazar | Batarya alanlarını ekle ya da şimdilik tekstil / mobilya / ev tekstiline odaklan |
+| 5 | ~~Batarya veri modeli~~ **Yapıldı:** Pil Tüzüğü Ek XIII alanları, her pil için pasaport, üç erişim seviyesi, pil durumu (tek tek / CSV) | Şubat 2027 kesin tarih | AB DPP kaydına gönderim ve pil durumunun otomatik (API) güncellemesi hâlâ yok |
 | 6 | AB'de veri barındırma | Bazı AB alıcıları şart koşar | Talep gelince Frankfurt'a taşıma |
 | 7 | GS1 Türkiye çözüm ortaklığı | Güven ve yönlendirme kanalı | Başvur |
 

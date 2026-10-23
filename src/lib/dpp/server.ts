@@ -23,6 +23,7 @@ import {
 import { DppError } from './i18n'
 import { trashBlob } from './safety'
 import { assertDemoLimit } from './demoAccount'
+import { canSee, sanitizeItemDynamic, SECTOR_FIELDS, sectorFor, type SectorData, type Tier } from './sectors'
 
 // DPP iş kuralları: ürün kaydı, yayınlama (sürümlü), seri numarası üretimi, belgeler, çeviri ve herkese açık görünüm.
 
@@ -306,7 +307,7 @@ export async function listItems(companyId: string, productId: string, opts: { q?
   const like = `%${q}%`
   const limit = Math.min(5000, Math.max(1, opts.limit || 200))
   const rows = await sql`
-    SELECT id, public_id, serial, batch, production_date, created_at,
+    SELECT id, public_id, serial, batch, production_date, created_at, dynamic, dynamic_updated_at,
            (SELECT COUNT(*)::int FROM dpp_scans s WHERE s.item_id = i.id) AS scans
     FROM dpp_items i
     WHERE product_id = ${product.id} AND (${q} = '' OR serial ILIKE ${like} OR batch ILIKE ${like})
@@ -338,7 +339,7 @@ export async function addDocument(companyId: string, productId: string, input: {
   const title = String(input.title || '').trim().slice(0, 200)
   if (!title) throw new DppError('e_doc_title_required')
   const kind = (String(input.kind) in DPP_DOC_KINDS ? String(input.kind) : 'other') as DppDocKind
-  const visibility = input.visibility === 'restricted' ? 'restricted' : 'public'
+  const visibility = input.visibility === 'restricted' || input.visibility === 'interest' ? input.visibility : 'public'
   await sql`
     INSERT INTO dpp_documents (product_id, title, kind, visibility, blob_url, content_type, size_bytes)
     VALUES (${product.id}, ${title}, ${kind}, ${visibility}, ${file.url}, ${file.contentType}, ${file.size})
@@ -350,7 +351,7 @@ export async function updateDocument(companyId: string, docId: string, input: { 
   const title = String(input.title || '').trim().slice(0, 200)
   if (!title) throw new DppError('e_doc_title_required')
   const kind = String(input.kind) in DPP_DOC_KINDS ? String(input.kind) : 'other'
-  const visibility = input.visibility === 'restricted' ? 'restricted' : 'public'
+  const visibility = input.visibility === 'restricted' || input.visibility === 'interest' ? input.visibility : 'public'
   const rows = (await sql`
     UPDATE dpp_documents d SET title = ${title}, kind = ${kind}, visibility = ${visibility}
     FROM dpp_products p WHERE d.id = ${docId} AND p.id = d.product_id AND p.company_id = ${companyId}
@@ -466,9 +467,9 @@ export async function resolvePassport(publicId: string) {
   await ensureDppSchema()
   const rows = (await sql`
     SELECT p.id AS product_id, p.status, p.published, p.published_at, p.public_id AS product_public_id,
-           c.name AS company_name, c.country AS company_country, c.website AS company_website, c.restricted_key, c.is_active AS company_active,
+           c.name AS company_name, c.country AS company_country, c.website AS company_website, c.restricted_key, c.interest_key, c.is_active AS company_active,
            c.plan AS company_plan, c.demo_expires_at,
-           i.id AS item_id, i.serial, i.batch, i.production_date
+           i.id AS item_id, i.serial, i.batch, i.production_date, i.dynamic AS item_dynamic, i.dynamic_updated_at AS item_dynamic_updated_at
     FROM dpp_products p
     JOIN dpp_companies c ON c.id = p.company_id
     LEFT JOIN dpp_items i ON i.public_id = ${publicId} AND i.product_id = p.id
@@ -486,14 +487,16 @@ export async function loadPublicPassport(publicId: string, key: string | null): 
   const r = await resolvePassport(publicId)
   if (!r) return null
   const snap = r.published as Snapshot
-  const restrictedAccess = Boolean(key && String(r.restricted_key) === key)
+  // Erişim seviyesi: yetkili erişim anahtarı (denetim) > meşru ilgi anahtarı (tamir / geri dönüşüm) > herkese açık
+  const access: Tier = key && String(r.restricted_key) === key ? 'authority' : key && r.interest_key && String(r.interest_key) === key ? 'interest' : 'public'
+  const restrictedAccess = access === 'authority'
   const texts = readTextsMap(snap.texts)
   const langs = (Object.keys(texts) as DppLang[]).filter((l) => texts[l]?.name)
   const data = readData(snap.data)
   const { restricted, ...open } = data
   const docs = (await sql`
     SELECT id, title, kind, visibility, content_type, size_bytes FROM dpp_documents
-    WHERE product_id = ${String(r.product_id)} AND (${restrictedAccess} OR visibility = 'public')
+    WHERE product_id = ${String(r.product_id)} AND (${access === 'authority'} OR visibility = 'public' OR (${access === 'interest'} AND visibility = 'interest'))
     ORDER BY created_at
   `) as Array<{ id: string; title: string; kind: DppDocKind; visibility: string; content_type: string; size_bytes: number }>
   return {
@@ -506,16 +509,67 @@ export async function loadPublicPassport(publicId: string, key: string | null): 
     defaultLang: isDppLang(snap.defaultLang) ? snap.defaultLang : 'tr',
     langs,
     texts,
-    data: restrictedAccess ? { ...open, restricted } : open,
+    data: { ...(restrictedAccess ? { ...open, restricted } : open), sector: visibleSectorData(data.category, data.sector, access) },
     hasImage: Boolean(snap.imageUrl),
     company: { name: String(r.company_name), country: String(r.company_country || ''), website: String(r.company_website || '') },
     item: r.item_id
       ? { serial: String(r.serial), batch: String(r.batch || ''), productionDate: r.production_date ? new Date(String(r.production_date)).toISOString().slice(0, 10) : null }
       : null,
-    documents: docs.map((d) => ({ id: d.id, title: d.title, kind: d.kind, restricted: d.visibility === 'restricted', contentType: d.content_type, sizeBytes: d.size_bytes })),
+    documents: docs.map((d) => ({ id: d.id, title: d.title, kind: d.kind, restricted: d.visibility !== 'public', contentType: d.content_type, sizeBytes: d.size_bytes })),
     restrictedAccess,
+    access,
+    itemDynamic: r.item_id && access !== 'public' && sectorFor(data.category) === 'battery' ? (r.item_dynamic as SectorData) || {} : null,
+    itemDynamicUpdatedAt: r.item_id && access !== 'public' && r.item_dynamic_updated_at ? new Date(String(r.item_dynamic_updated_at)).toISOString() : null,
     demo: r.company_plan === 'demo',
   }
+}
+
+/** Sektör verisinden görüntüleyenin göremeyeceği alanları çıkarır. */
+function visibleSectorData(category: string, data: SectorData, access: Tier): SectorData {
+  const sector = sectorFor(category)
+  if (!sector) return {}
+  const out: SectorData = {}
+  for (const f of SECTOR_FIELDS[sector]) if (canSee(f, access) && data[f.key] !== undefined) out[f.key] = data[f.key]
+  return out
+}
+
+/** Pil Tüzüğü Ek XIII nokta 4: seri numaralı pilin değişen verilerini günceller (boş alan mevcut değeri korur). */
+export async function updateItemDynamic(companyId: string, productId: string, itemId: string, input: unknown) {
+  const product = await getProduct(companyId, productId)
+  if (!product) throw new DppError('e_product_not_found')
+  if (sectorFor(readData((product as unknown as { data: unknown }).data).category) !== 'battery') throw new DppError('e_not_battery')
+  if (!/^[0-9a-f-]{36}$/i.test(itemId)) throw new DppError('e_product_not_found')
+  const patch = sanitizeItemDynamic(input)
+  const rows = (await sql`
+    UPDATE dpp_items SET dynamic = dynamic || ${JSON.stringify(patch)}::jsonb, dynamic_updated_at = NOW()
+    WHERE id = ${itemId} AND product_id = ${product.id}
+    RETURNING dynamic, dynamic_updated_at
+  `) as Array<{ dynamic: SectorData; dynamic_updated_at: string }>
+  if (!rows.length) throw new DppError('e_product_not_found')
+  return rows[0]
+}
+
+/** CSV'den toplu pil durumu güncellemesi: satır başına seri numarası. */
+export async function importItemDynamic(companyId: string, productId: string, input: unknown) {
+  const product = await getProduct(companyId, productId)
+  if (!product) throw new DppError('e_product_not_found')
+  if (sectorFor(readData((product as unknown as { data: unknown }).data).category) !== 'battery') throw new DppError('e_not_battery')
+  const rows = (Array.isArray(input) ? input : []).slice(0, 5000) as Array<Record<string, unknown>>
+  if (!rows.length) throw new DppError('e_no_rows')
+  let updated = 0
+  const errors: Array<{ key: 'e_dyn_unknown_serial'; params: { line: number; serial: string } }> = []
+  for (const [index, row] of rows.entries()) {
+    const serial = String(row.serial ?? '').trim()
+    const patch = sanitizeItemDynamic(row)
+    if (!serial || !Object.keys(patch).length) continue
+    const done = (await sql`
+      UPDATE dpp_items SET dynamic = dynamic || ${JSON.stringify(patch)}::jsonb, dynamic_updated_at = NOW()
+      WHERE product_id = ${product.id} AND serial = ${serial} RETURNING id
+    `) as unknown[]
+    if (done.length) updated++
+    else if (errors.length < 50) errors.push({ key: 'e_dyn_unknown_serial', params: { line: index + 2, serial: serial.slice(0, 40) } })
+  }
+  return { updated, errors }
 }
 
 export async function recordPassportScan(productId: string, itemId: string | null, country: string, lang: string) {
@@ -523,6 +577,15 @@ export async function recordPassportScan(productId: string, itemId: string | nul
     INSERT INTO dpp_scans (product_id, item_id, country, lang)
     VALUES (${productId}, ${itemId}, ${country.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2)}, ${lang.slice(0, 4)})
   `
+}
+
+function sectorJson(category: string, data: SectorData | undefined) {
+  const sector = sectorFor(category)
+  if (!sector || !data) return undefined
+  const fields = SECTOR_FIELDS[sector]
+    .filter((f) => data[f.key] !== undefined)
+    .map((f) => ({ key: f.key, value: data[f.key], unit: f.unit || undefined, ref: f.ref || undefined, access: f.tier }))
+  return { type: sector, fields }
 }
 
 /** Makinenin okuyabileceği biçim (JSON). Alan adları sabittir; şema sürümü "qrnot-dpp/1". */
@@ -533,6 +596,7 @@ export function passportJson(view: DppPublicView) {
     version: view.version,
     publishedAt: view.publishedAt,
     status: view.restrictedAccess ? 'restricted-view' : 'public-view',
+    accessLevel: view.access,
     ...(view.demo ? { demo: true } : {}),
     product: {
       gtin: view.data.gtin || null,
@@ -555,6 +619,9 @@ export function passportJson(view: DppPublicView) {
     defaultLanguage: view.defaultLang,
     documents: view.documents.map((d) => ({ title: d.title, kind: d.kind, url: `${SITE_URL}/api/dpp/doc/${d.id}`, contentType: d.contentType })),
     restricted: view.restrictedAccess ? view.data.restricted : undefined,
+    // Sektör modülü: her alan değeri ve dayandığı düzenleme maddesi (ör. batarya için Pil Tüzüğü Ek XIII)
+    sector: sectorJson(view.data.category, view.data.sector),
+    itemStatus: view.itemDynamic ? { ...view.itemDynamic, updatedAt: view.itemDynamicUpdatedAt } : undefined,
   }
 }
 

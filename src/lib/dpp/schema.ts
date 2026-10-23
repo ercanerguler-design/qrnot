@@ -47,6 +47,8 @@ export function ensureDppSchema() {
       await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS demo_expires_at TIMESTAMP WITH TIME ZONE`
       // Panel kilidi: ödeme gecikmesi / sözleşme sonu — panel kapanır, yayınlanmış pasaportlar açık kalır
       await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS panel_access BOOLEAN NOT NULL DEFAULT TRUE`
+      // Meşru ilgi anahtarı (Pil Tüzüğü Ek XIII nokta 2 ve 4: tamir, yeniden kullanım, geri dönüşüm); her firmaya ayrı rastgele değer
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS interest_key VARCHAR(64) NOT NULL DEFAULT (md5(random()::text || clock_timestamp()::text) || md5(random()::text))`
       // Aynı e-posta (büyük/küçük harf fark etmeksizin) ikinci kez kayıt olamaz
       await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dpp_users_email_ci ON dpp_users (lower(trim(email)))`
       await sql`
@@ -116,6 +118,9 @@ export function ensureDppSchema() {
           created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
       `
+      // Pil başına değişen veriler (Pil Tüzüğü Ek XIII nokta 4: sağlık durumu, statü, çevrim…)
+      await sql`ALTER TABLE dpp_items ADD COLUMN IF NOT EXISTS dynamic JSONB NOT NULL DEFAULT '{}'::jsonb`
+      await sql`ALTER TABLE dpp_items ADD COLUMN IF NOT EXISTS dynamic_updated_at TIMESTAMP WITH TIME ZONE`
       // Okutma istatistiği: kişisel veri tutulmaz (IP yok), sadece ülke kodu ve dil.
       await sql`
         CREATE TABLE IF NOT EXISTS dpp_scans (

@@ -12,10 +12,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ docI
   if (!/^[0-9a-f-]{36}$/i.test(docId)) return NextResponse.json({ error: 'Belge bulunamadı' }, { status: 404 })
   await ensureDppSchema()
   const rows = (await sql`
-    SELECT d.blob_url, d.visibility, d.title, d.content_type, p.company_id, p.published IS NOT NULL AS published, c.restricted_key, c.is_active
+    SELECT d.blob_url, d.visibility, d.title, d.content_type, p.company_id, p.published IS NOT NULL AS published, c.restricted_key, c.interest_key, c.is_active
     FROM dpp_documents d JOIN dpp_products p ON p.id = d.product_id JOIN dpp_companies c ON c.id = p.company_id
     WHERE d.id = ${docId}
-  `) as Array<{ blob_url: string; visibility: string; title: string; content_type: string; company_id: string; published: boolean; restricted_key: string; is_active: boolean }>
+  `) as Array<{ blob_url: string; visibility: string; title: string; content_type: string; company_id: string; published: boolean; restricted_key: string; interest_key: string | null; is_active: boolean }>
   const doc = rows[0]
   if (!doc) return NextResponse.json({ error: 'Belge bulunamadı' }, { status: 404 })
 
@@ -23,7 +23,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ docI
   const panelUser = await getDppUser(req)
   const isOwnCompany = panelUser?.companyId === doc.company_id
   const publicOk = doc.is_active && doc.published && doc.visibility === 'public'
-  const restrictedOk = doc.is_active && doc.published && Boolean(key) && key === doc.restricted_key
+  // Yetkili erişim anahtarı tüm belgeleri, meşru ilgi anahtarı "meşru ilgi" belgelerini açar
+  const restrictedOk = doc.is_active && doc.published && Boolean(key) && (key === doc.restricted_key || (doc.visibility === 'interest' && Boolean(doc.interest_key) && key === doc.interest_key))
   if (!isOwnCompany && !publicOk && !restrictedOk) return NextResponse.json({ error: 'Bu belgeye erişim yetkin yok' }, { status: 403 })
 
   const res = await streamPrivateBlob(doc.blob_url, req.headers.get('range'))

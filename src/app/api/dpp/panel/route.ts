@@ -13,6 +13,8 @@ import {
   generateItems,
   getProduct,
   getProductBundle,
+  importItemDynamic,
+  updateItemDynamic,
   listItems,
   listProducts,
   passportUrl,
@@ -59,6 +61,8 @@ const EDITOR_ACTIONS = new Set([
   'product.translate',
   'items.generate',
   'items.delete',
+  'items.dynamic',
+  'items.dynamicImport',
   'docs.add',
   'docs.update',
   'docs.delete',
@@ -69,7 +73,7 @@ const EDITOR_ACTIONS = new Set([
   'suppliers.reopen',
   'suppliers.delete',
 ])
-const OWNER_ACTIONS = new Set(['company.save', 'company.rotateKey', 'users.add', 'users.update', 'users.resetPassword', 'users.remove'])
+const OWNER_ACTIONS = new Set(['company.save', 'company.rotateKey', 'company.rotateInterestKey', 'users.add', 'users.update', 'users.resetPassword', 'users.remove'])
 
 export async function POST(req: NextRequest) {
   const lang = requestLang(req)
@@ -151,6 +155,14 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
     case 'items.delete':
       return { deleted: await deleteItems(companyId, String(body.productId || ''), Array.isArray(body.ids) ? body.ids.map(String) : []) }
 
+    case 'items.dynamic':
+      return updateItemDynamic(companyId, String(body.productId || ''), String(body.itemId || ''), body.dynamic)
+
+    case 'items.dynamicImport': {
+      const res = await importItemDynamic(companyId, String(body.productId || ''), body.rows)
+      return { updated: res.updated, errors: res.errors.map((e) => msg(lang, e.key, e.params)) }
+    }
+
     case 'items.export': {
       const product = await getProduct(companyId, String(body.productId || ''))
       if (!product) throw new HttpError('e_product_not_found', 404)
@@ -207,7 +219,7 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
 
     case 'company.get': {
       const rows = (await sql`
-        SELECT name, code, country, address, website, email, phone, tax_id, plan, product_limit, restricted_key, created_at,
+        SELECT name, code, country, address, website, email, phone, tax_id, plan, product_limit, restricted_key, interest_key, created_at,
                (SELECT COUNT(*)::int FROM dpp_products p WHERE p.company_id = c.id AND p.status <> 'archived') AS used
         FROM dpp_companies c WHERE id = ${companyId}
       `) as Array<Record<string, unknown>>
@@ -217,6 +229,7 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
           ...c,
           planLabel: DPP_PLANS[String(c.plan) as keyof typeof DPP_PLANS]?.label || String(c.plan),
           restricted_key: user.role === 'owner' ? c.restricted_key : null,
+          interest_key: user.role === 'owner' ? c.interest_key : null,
         },
       }
     }
@@ -240,6 +253,12 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
       const key = randomKey()
       await sql`UPDATE dpp_companies SET restricted_key = ${key} WHERE id = ${companyId}`
       return { restrictedKey: key }
+    }
+
+    case 'company.rotateInterestKey': {
+      const key = randomKey()
+      await sql`UPDATE dpp_companies SET interest_key = ${key} WHERE id = ${companyId}`
+      return { interestKey: key }
     }
 
     case 'users.list': {

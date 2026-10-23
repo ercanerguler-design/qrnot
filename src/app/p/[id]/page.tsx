@@ -6,6 +6,8 @@ import { loadPublicPassport, digitalLink, passportUrl, recordPassportScan } from
 import { DPP_LANG_NAMES, DPP_LANGS, isDppLang, materialName, type DppData, type DppLang, type DppTexts } from '@/lib/dpp/types'
 import { SITE_URL } from '@/lib/site'
 import { PASSPORT_LABELS } from '@/lib/dpp/passportLabels'
+import { msg, type MsgKey } from '@/lib/dpp/i18n'
+import { BATTERY_ITEM_FIELDS, fieldLabelKey, groupLabelKey, optionLabelKey, SECTOR_FIELDS, SECTOR_GROUPS, sectorFor, type SectorField, type SectorValue } from '@/lib/dpp/sectors'
 import PrintButton from './PrintButton'
 
 // Herkese açık Dijital Ürün Pasaportu. Ürün QR'ı / NFC'si / GS1 Digital Link bu sayfayı açar.
@@ -61,8 +63,22 @@ export default async function PassportPage({ params, searchParams }: Props) {
   // Yüzde biçimi dile göre: TR "%95", EN/DE "95%", FR "95 %"
   const pct = (value: number) => new Intl.NumberFormat(uiLang, { style: "percent", maximumFractionDigits: 1 }).format(value / 100)
   const date = (iso: string) => new Date(iso).toLocaleDateString(uiLang, { year: 'numeric', month: 'long', day: 'numeric' })
-  const keyParam = view.restrictedAccess && k ? `?k=${encodeURIComponent(k)}` : ''
-  const langHref = (l: DppLang) => `/p/${id}?lang=${l}${view.restrictedAccess && k ? `&k=${encodeURIComponent(k)}` : ''}`
+  // Anahtarla gelen (yetkili erişim ya da meşru ilgi) kişi dil değiştirince ve belge açınca erişimini korur
+  const keyParam = view.access !== 'public' && k ? `?k=${encodeURIComponent(k)}` : ''
+  const langHref = (l: DppLang) => `/p/${id}?lang=${l}${view.access !== 'public' && k ? `&k=${encodeURIComponent(k)}` : ''}`
+  // Sektör modülü (batarya / tekstil / mobilya): alan etiketleri panel sözlüğünden, arayüz dilinde
+  const m = (key: string, params = {}) => msg(uiLang, key as MsgKey, params)
+  const sector = sectorFor(d.category)
+  const sectorData = d.sector || {}
+  const showValue = (fd: SectorField, v: SectorValue): string => {
+    if (v === null || v === undefined) return ''
+    const unit = fd.unit ? (fd.unit === 'cycles' || fd.unit === 'years' ? m(`su_${fd.unit}`) : fd.unit) : ''
+    if (fd.type === 'number') return `${fmt.format(Number(v))}${unit ? ` ${unit}` : ''}`
+    if (fd.type === 'select') return String(v).length === 1 ? String(v) : m(optionLabelKey(String(v)))
+    if (fd.type === 'multi') return (Array.isArray(v) ? v : []).map((o) => m(optionLabelKey(o))).join(', ')
+    if (fd.type === 'country') return country(String(v))
+    return String(v)
+  }
 
   const h = await headers()
   const ua = h.get('user-agent') || ''
@@ -304,6 +320,59 @@ export default async function PassportPage({ params, searchParams }: Props) {
               ))}
             </ul>
           </Card>
+        )}
+
+        {sector && Object.keys(sectorData).length > 0 && (
+          <Card title={m(`tab_sector_${sector}`)} icon={sector === 'battery' ? '🔋' : sector === 'textile' ? '🧵' : '🪑'}>
+            <div className="space-y-5">
+              {SECTOR_GROUPS[sector].map((group) => {
+                const fields = SECTOR_FIELDS[sector].filter((fd) => fd.group === group && sectorData[fd.key] !== undefined)
+                if (!fields.length) return null
+                return (
+                  <div key={group}>
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-[#6b7b8f]">{m(groupLabelKey(sector, group))}</h3>
+                    <dl className="mt-2 divide-y divide-[#eef2f6]">
+                      {fields.map((fd) => (
+                        <div key={fd.key} className={fd.type === 'longtext' || fd.type === 'url' ? 'py-2' : 'flex items-baseline justify-between gap-4 py-2'}>
+                          <dt className="text-sm text-[#4a5b70]">
+                            {m(fieldLabelKey(sector, fd.key))}
+                            {fd.tier !== 'public' && <span className="ms-2 rounded-full bg-[#fff1d6] px-2 py-0.5 text-[10px] font-semibold text-[#8a5a00]">🔒 {m(`tier_${fd.tier}`)}</span>}
+                          </dt>
+                          <dd className={fd.type === 'longtext' ? 'mt-1 whitespace-pre-line text-sm' : fd.type === 'url' ? 'mt-1 break-all text-sm' : 'text-end text-sm font-semibold'}>
+                            {fd.type === 'url' ? (
+                              <a href={String(sectorData[fd.key])} target="_blank" rel="noopener noreferrer" className="text-[#0f5f94] underline">
+                                {String(sectorData[fd.key])}
+                              </a>
+                            ) : (
+                              showValue(fd, sectorData[fd.key])
+                            )}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
+        )}
+
+        {view.itemDynamic && Object.keys(view.itemDynamic).length > 0 && (
+          <section className="rounded-3xl border-2 border-dashed border-[#7c5cc4] bg-[#f6f2ff] p-5">
+            <h2 className="font-bold">🔋 {m('pp_item_status_title')}</h2>
+            <p className="mt-1 text-xs text-[#5b4a8a]">
+              {m('pp_access_note')}
+              {view.itemDynamicUpdatedAt ? ` · ${m('it_dyn_updated', { d: date(view.itemDynamicUpdatedAt) })}` : ''}
+            </p>
+            <dl className="mt-3 divide-y divide-[#e4dcf7]">
+              {BATTERY_ITEM_FIELDS.filter((fd) => view.itemDynamic?.[fd.key] !== undefined).map((fd) => (
+                <div key={fd.key} className={fd.type === 'longtext' ? 'py-2' : 'flex items-baseline justify-between gap-4 py-2'}>
+                  <dt className="text-sm text-[#4a3f6b]">{m(fieldLabelKey('item', fd.key))}</dt>
+                  <dd className={fd.type === 'longtext' ? 'mt-1 whitespace-pre-line text-sm' : 'text-sm font-semibold'}>{showValue(fd, view.itemDynamic?.[fd.key] ?? null)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         )}
 
         {view.documents.length > 0 && (

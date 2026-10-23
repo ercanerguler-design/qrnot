@@ -2,6 +2,7 @@
 // Sunucuya özel import yok: panel bileşenleri de bu dosyayı kullanır.
 
 import { isMaterialTypeChoice, type MaterialTypeChoice } from './carbon'
+import { fieldLabelKey, missingSectorFields, sanitizeSector, sectorFor, type SectorData, type Tier } from './sectors'
 import { DppError, type MsgKey, type MsgParams } from './i18n'
 
 export const DPP_LANGS = ['tr', 'en', 'de', 'fr', 'es', 'nl', 'ar', 'ru'] as const
@@ -126,6 +127,8 @@ export interface DppData {
   }
   compliance: Array<{ name: string; reference: string }>
   substancesOfConcern: string
+  /** Sektöre özel modül (batarya / tekstil / mobilya): sectors.ts'teki alanlar */
+  sector: SectorData
   /** Sadece yetkili erişim (denetim, geri dönüşüm) ile görünür */
   restricted: {
     suppliers: string
@@ -158,6 +161,7 @@ export function emptyData(): DppData {
     repairability: { warrantyMonths: null, sparePartsYears: null, repairScore: null, serviceUrl: '' },
     compliance: [],
     substancesOfConcern: '',
+    sector: {},
     restricted: { suppliers: '', facility: '', notes: '' },
   }
 }
@@ -222,12 +226,13 @@ export function sanitizeData(input: unknown): DppData {
   const res = (o.restricted && typeof o.restricted === 'object' ? o.restricted : {}) as Record<string, unknown>
   const gtin = normalizeGtin(o.gtin)
   if (gtin === null) throw new DppError('e_gtin_invalid')
-  const category = str(o.category, 24)
+  const categoryRaw = str(o.category, 24)
+  const category = (categoryRaw in DPP_CATEGORIES ? categoryRaw : 'other') as DppCategory
   return {
     brand: str(o.brand, 120),
     model: str(o.model, 120),
     gtin,
-    category: (category in DPP_CATEGORIES ? category : 'other') as DppCategory,
+    category,
     countryOfOrigin: str(o.countryOfOrigin, 2).toUpperCase().replace(/[^A-Z]/g, ''),
     manufacturer: party(o.manufacturer),
     euOperator: party(o.euOperator),
@@ -266,6 +271,7 @@ export function sanitizeData(input: unknown): DppData {
       })
       .filter((c) => c.name),
     substancesOfConcern: str(o.substancesOfConcern, 3000),
+    sector: sanitizeSector(category, o.sector),
     restricted: { suppliers: str(res.suppliers, 4000), facility: str(res.facility, 2000), notes: str(res.notes, 4000) },
   }
 }
@@ -297,6 +303,9 @@ export function publishIssues(texts: Partial<Record<DppLang, DppTexts>>, default
   if (data.materials.length === 0) issues.push({ key: 'iss_material' })
   const total = data.materials.reduce((sum, m) => sum + (m.percent || 0), 0)
   if (data.materials.some((m) => m.percent !== null) && Math.abs(total - 100) > 0.5) issues.push({ key: 'iss_material_sum', params: { n: Math.round(total * 10) / 10 } })
+  // Sektör modülünün zorunlu alanları (ör. batarya: kimya, kapasite, voltaj… — Pil Tüzüğü Ek XIII)
+  const sector = sectorFor(data.category)
+  if (sector) for (const f of missingSectorFields(data.category, data.sector || {})) issues.push({ key: fieldLabelKey(sector, f.key) as MsgKey })
   return issues
 }
 
@@ -314,6 +323,11 @@ export interface DppPublicView {
   item: { serial: string; batch: string; productionDate: string | null } | null
   documents: Array<{ id: string; title: string; kind: DppDocKind; restricted: boolean; contentType: string; sizeBytes: number }>
   restrictedAccess: boolean
+  /** Görüntüleyenin erişim seviyesi: herkese açık, meşru ilgi anahtarı, yetkili erişim anahtarı */
+  access: Tier
+  /** Seri numaralı pilin değişen verileri (Ek XIII nokta 4); sadece meşru ilgi / yetkili erişimde */
+  itemDynamic: SectorData | null
+  itemDynamicUpdatedAt: string | null
   /** Demo firmasının pasaportu: sayfada ve JSON'da "demo" olarak işaretlenir */
   demo: boolean
 }

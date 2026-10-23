@@ -7,7 +7,7 @@
 **Provider (“QRNot”):**
 - SCE INNOVATION LTD. ŞTİ.
 - Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye
-- Tax office / no.: Ankara Yıldırım Beyazıt / 7571071832 · MERSIS no.: 075710718320001 · sce@scegrup.com · WhatsApp +90 543 392 92 30
+- Tax office / no.: Ankara Yıldırım Beyazıt / 7571071832 · MERSIS no.: 0757107183200001 · sce@scegrup.com · WhatsApp +90 543 392 92 30
 
 **Customer:**
 - [Company name], [address], [registration / VAT no.]

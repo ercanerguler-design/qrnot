@@ -7,7 +7,7 @@
 **Hizmet Sağlayıcı (“QRNot”):**
 - Unvan: SCE INNOVATION LTD. ŞTİ.
 - Adres: Çetin Emeç Bulvarı 25/3, Çankaya / Ankara
-- Vergi dairesi / no: Ankara Yıldırım Beyazıt V.D. / 7571071832 · MERSİS: 075710718320001
+- Vergi dairesi / no: Ankara Yıldırım Beyazıt V.D. / 7571071832 · MERSİS: 0757107183200001
 - E-posta: sce@scegrup.com · Destek: 0850 888 1 889 · WhatsApp: +90 543 392 92 30
 
 **Müşteri:**

@@ -8,7 +8,7 @@
 
 **Veri Sorumlusu (“Müşteri”):** [Firma unvanı], [adres], [vergi dairesi / no], [MERSİS no]
 
-**Veri İşleyen (“QRNot”):** SCE INNOVATION LTD. ŞTİ., Çetin Emeç Bulvarı 25/3, Çankaya / Ankara, Ankara Yıldırım Beyazıt V.D. / 7571071832, MERSİS: 075710718320001
+**Veri İşleyen (“QRNot”):** SCE INNOVATION LTD. ŞTİ., Çetin Emeç Bulvarı 25/3, Çankaya / Ankara, Ankara Yıldırım Beyazıt V.D. / 7571071832, MERSİS: 0757107183200001
 
 Bu sözleşme, taraflar arasındaki [tarih] tarihli QRNot DPP hizmet sözleşmesinin (“Ana Sözleşme”) ekidir. Çelişki halinde kişisel verilerin korunmasına ilişkin konularda bu sözleşme uygulanır.
 

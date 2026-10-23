@@ -66,6 +66,7 @@ const C = {
     plans: [
       ['Pilot', '10 ürün modeline kadar', 'İlk ürünlerle başlayın, süreci deneyin.'],
       ['Başlangıç', '50 ürün modeline kadar', 'Küçük ve orta ölçekli üreticiler için.'],
+      ['Büyüme', '200 ürün modeline kadar', 'Büyüyen koleksiyonlar ve çok tedarikçili üretim için.'],
       ['İşletme', '500 ürün modeline kadar', 'Geniş koleksiyonlu markalar için.'],
       ['Kurumsal', 'Sınırsız', 'Entegrasyon, özel alan adı ve öncelikli destek.'],
     ],
@@ -74,6 +75,7 @@ const C = {
     honest:
       'QRNot DPP, pasaport verinizi bugünden toplamanız, yayınlamanız ve ürünlerinize uygulamanız için hazır bir altyapıdır. AB’nin teknik standartları ve ürün grubu kuralları kesinleştikçe veri modelini güncelliyoruz. Ürününüzün ilgili mevzuata uygunluğunun sorumluluğu üreticidedir; biz bu süreci kolaylaştırıyoruz.',
     securityLink: 'Güvenlik ve veri işleme (KVKK / GDPR) →',
+    ctaTrial: 'Ücretsiz demo (14 gün)',
     faqKicker: 'Sık sorulan sorular',
     faq: [
       ['Ürün başına ayrı QR mı gerekiyor?', 'İkisi de mümkün. Bazı ürün grupları model düzeyinde, bazıları parti ya da tekil ürün düzeyinde pasaport isteyecek. Panelden model QR’ı ya da her ürün için seri numaralı QR üretebilirsiniz.'],
@@ -136,6 +138,7 @@ const C = {
     plans: [
       ['Pilot', 'Up to 10 product models', 'Start with your first products and try the process.'],
       ['Starter', 'Up to 50 product models', 'For small and mid-sized manufacturers.'],
+      ['Growth', 'Up to 200 product models', 'For growing collections and multi-supplier production.'],
       ['Business', 'Up to 500 product models', 'For brands with large collections.'],
       ['Enterprise', 'Unlimited', 'Integrations, custom domain and priority support.'],
     ],
@@ -144,6 +147,7 @@ const C = {
     honest:
       'QRNot DPP is ready-made infrastructure to collect, publish and apply your passport data today. We update the data model as EU technical standards and product-group rules are finalised. The manufacturer remains responsible for the product’s compliance; we make the process easier.',
     securityLink: 'Security and data processing (GDPR / KVKK) →',
+    ctaTrial: 'Free demo (14 days)',
     faqKicker: 'FAQ',
     faq: [
       ['Do I need a separate QR per item?', 'Both are possible. Some product groups will require model-level passports, others batch or item level. Generate a model QR or serialised QR codes per item from the panel.'],
@@ -188,6 +192,9 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
             <a href={whatsappHref(c.quoteMsg)} target="_blank" rel="noopener noreferrer" className="w-btn w-btn-dark px-7 py-4 text-base">
               {c.ctaQuote}
             </a>
+            <Link href={withLang('/dpp/demo', lang)} className="w-btn w-btn-ghost px-7 py-4 text-base">
+              🧪 {c.ctaTrial}
+            </Link>
             <Link href="/dpp/panel" className="w-btn w-btn-ghost px-7 py-4 text-base">
               {c.ctaPanel}
             </Link>
@@ -261,7 +268,7 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
       <section className="mx-auto max-w-6xl px-4 py-20">
         <Kicker>{c.plansKicker}</Kicker>
         <h2 className="font-display mt-2 text-3xl font-semibold sm:text-4xl">{c.plansTitle}</h2>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {c.plans.map(([name, limit, desc], i) => (
             <div key={name} className={`w-card flex flex-col p-6 ${i === 1 ? 'ring-2 ring-coral' : ''}`}>
               <h3 className="font-display text-2xl font-semibold">{name}</h3>
@@ -274,6 +281,9 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
           ))}
         </div>
         <p className="mt-5 text-sm text-ink-2">{c.plansNote}</p>
+        <Link href={withLang('/dpp/demo', lang)} className="w-btn w-btn-primary mt-5 inline-flex px-6 py-3">
+          🧪 {c.ctaTrial} →
+        </Link>
         <div className="mt-10 rounded-3xl border border-line bg-paper p-6">
           <h3 className="font-semibold">{c.honestTitle}</h3>
           <p className="mt-2 text-sm leading-relaxed text-ink-2">{c.honest}</p>

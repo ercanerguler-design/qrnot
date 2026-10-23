@@ -4,6 +4,7 @@ import { sql } from '@/lib/db'
 import { SITE_URL } from '@/lib/site'
 import { DppError } from './i18n'
 import { trashBlob } from './safety'
+import { assertDemoLimit } from './demoAccount'
 import { ensureDppSchema } from './schema'
 import { DPP_UPLOAD_MAX_BYTES, DPP_UPLOAD_TYPES, getProduct, uploadPrefixFor } from './server'
 import { isDppLang, readData, readTextsMap, sanitizeData, type DppData, type DppLang, type DppMaterial } from './types'
@@ -147,6 +148,7 @@ export async function createSupplierRequest(companyId: string, byEmail: string, 
   if (!fields.length) throw new DppError('e_fields_required')
   const count = Number(((await sql`SELECT COUNT(*)::int AS n FROM dpp_supplier_requests WHERE product_id = ${product.id}`) as Array<{ n: number }>)[0]?.n || 0)
   if (count >= MAX_REQUESTS_PER_PRODUCT) throw new DppError('e_requests_max')
+  await assertDemoLimit(companyId, 'suppliers')
   const days = Math.min(90, Math.max(1, Math.round(Number(input.days) || 30)))
   const lang: DppLang = isDppLang(input.lang) ? input.lang : 'tr'
   const token = randomBytes(24).toString('base64url')

@@ -50,8 +50,10 @@ export const DPP_DOC_KINDS = {
 export type DppDocKind = keyof typeof DPP_DOC_KINDS
 
 export const DPP_PLANS = {
+  demo: { label: 'Demo', productLimit: 3 },
   pilot: { label: 'Pilot', productLimit: 10 },
   starter: { label: 'Başlangıç', productLimit: 50 },
+  growth: { label: 'Büyüme', productLimit: 200 },
   business: { label: 'İşletme', productLimit: 500 },
   enterprise: { label: 'Kurumsal', productLimit: 100000 },
 } as const
@@ -312,4 +314,6 @@ export interface DppPublicView {
   item: { serial: string; batch: string; productionDate: string | null } | null
   documents: Array<{ id: string; title: string; kind: DppDocKind; restricted: boolean; contentType: string; sizeBytes: number }>
   restrictedAccess: boolean
+  /** Demo firmasının pasaportu: sayfada ve JSON'da "demo" olarak işaretlenir */
+  demo: boolean
 }

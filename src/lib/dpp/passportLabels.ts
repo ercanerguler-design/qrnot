@@ -23,6 +23,7 @@ export interface PassportLabels {
   carbon: string
   /** {min} {max} yer tutucuları */
   carbonEstimate: string
+  demoNotice: string
   water: string
   energy: string
   recycledContent: string
@@ -83,6 +84,7 @@ const tr: PassportLabels = {
   environment: 'Çevresel etki',
   carbon: 'Karbon ayak izi',
   carbonEstimate: 'tahmin · hammadde aşaması, aralık {min}–{max}',
+  demoNotice: 'DEMO — Bu pasaport bir deneme hesabıyla oluşturulmuştur; gerçek bir ürünü temsil etmeyebilir.',
   water: 'Su kullanımı',
   energy: 'Üretim enerjisi',
   recycledContent: 'Geri dönüştürülmüş içerik',
@@ -146,6 +148,7 @@ const en: PassportLabels = {
   environment: 'Environmental impact',
   carbon: 'Carbon footprint',
   carbonEstimate: 'estimate · raw-material stage, range {min}–{max}',
+  demoNotice: 'DEMO — This passport was created with a trial account and may not represent a real product.',
   water: 'Water use',
   energy: 'Production energy',
   recycledContent: 'Recycled content',
@@ -210,6 +213,7 @@ const de: PassportLabels = {
   environment: 'Umweltauswirkungen',
   carbon: 'CO₂-Fußabdruck',
   carbonEstimate: 'Schätzung · Rohstoffphase, Spanne {min}–{max}',
+  demoNotice: 'DEMO — Dieser Pass wurde mit einem Testkonto erstellt und stellt möglicherweise kein echtes Produkt dar.',
   water: 'Wasserverbrauch',
   energy: 'Produktionsenergie',
   recycledContent: 'Recyclinganteil',
@@ -274,6 +278,7 @@ const fr: PassportLabels = {
   environment: 'Impact environnemental',
   carbon: 'Empreinte carbone',
   carbonEstimate: 'estimation · étape matière première, fourchette {min}–{max}',
+  demoNotice: 'DÉMO — Ce passeport a été créé avec un compte d’essai et peut ne pas représenter un produit réel.',
   water: "Consommation d'eau",
   energy: 'Énergie de production',
   recycledContent: 'Contenu recyclé',
@@ -338,6 +343,7 @@ const es: PassportLabels = {
   environment: 'Impacto ambiental',
   carbon: 'Huella de carbono',
   carbonEstimate: 'estimación · etapa de materia prima, rango {min}–{max}',
+  demoNotice: 'DEMO — Este pasaporte se creó con una cuenta de prueba y puede no representar un producto real.',
   water: 'Consumo de agua',
   energy: 'Energía de producción',
   recycledContent: 'Contenido reciclado',
@@ -402,6 +408,7 @@ const nl: PassportLabels = {
   environment: 'Milieu-impact',
   carbon: 'CO₂-voetafdruk',
   carbonEstimate: 'schatting · grondstoffase, bandbreedte {min}–{max}',
+  demoNotice: 'DEMO — Dit paspoort is gemaakt met een proefaccount en vertegenwoordigt mogelijk geen echt product.',
   water: 'Waterverbruik',
   energy: 'Productie-energie',
   recycledContent: 'Gerecycled gehalte',
@@ -466,6 +473,7 @@ const ar: PassportLabels = {
   environment: 'الأثر البيئي',
   carbon: 'البصمة الكربونية',
   carbonEstimate: 'تقدير · مرحلة المواد الخام، النطاق {min}–{max}',
+  demoNotice: 'تجريبي — أُنشئ هذا الجواز بحساب تجريبي وقد لا يمثل منتجًا حقيقيًا.',
   water: 'استهلاك المياه',
   energy: 'طاقة الإنتاج',
   recycledContent: 'المحتوى المعاد تدويره',
@@ -530,6 +538,7 @@ const ru: PassportLabels = {
   environment: 'Воздействие на окружающую среду',
   carbon: 'Углеродный след',
   carbonEstimate: 'оценка · стадия сырья, диапазон {min}–{max}',
+  demoNotice: 'ДЕМО — Этот паспорт создан в тестовом аккаунте и может не относиться к реальному продукту.',
   water: 'Расход воды',
   energy: 'Энергия производства',
   recycledContent: 'Доля переработанного сырья',

@@ -524,6 +524,13 @@ const tr = {
   e_files_max: 'En fazla 20 belge yüklenebilir',
   e_requests_max: 'Ürün başına en fazla 50 talep oluşturulabilir',
   e_conflict: 'Bu ürün siz düzenlerken başka biri tarafından değiştirildi. Değişikliklerinizin üzerine yazılmaması için kaydedilmedi: sayfayı yenileyin ve tekrar deneyin.',
+  e_panel_locked: 'Panel erişiminiz askıya alındı. Yayınlanmış pasaportlarınız açık ve verileriniz duruyor; bilgi için: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Demo süreniz doldu. Verileriniz duruyor; devam etmek için bizimle iletişime geçin: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'Demo hesabının sınırına ulaştınız (en fazla {n}). Sınırsız kullanım için ücretli pakete geçin: WhatsApp +90 543 392 92 30',
+  demo_banner: 'Demo hesabı · {days} gün kaldı · En fazla 3 ürün, 100 seri no, 3 tedarikçi talebi, 2 kullanıcı. Tüm özellikler gerçek çalışır.',
+  demo_upgrade: 'Ücretli pakete geç',
+  plan_demo: 'Demo',
+  plan_growth: 'Büyüme',
 }
 
 export type MsgKey = keyof typeof tr
@@ -1037,6 +1044,13 @@ const en: Dict = {
   e_files_max: 'Up to 20 documents can be uploaded',
   e_requests_max: 'At most 50 requests per product',
   e_conflict: 'This product was changed by someone else while you were editing. To avoid overwriting their changes it was not saved: reload the page and try again.',
+  e_panel_locked: 'Your panel access is suspended. Your published passports remain online and your data is kept; contact: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Your demo has expired. Your data is kept; contact us to continue: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'You have reached the demo limit (max. {n}). Upgrade to a paid plan for full use: WhatsApp +90 543 392 92 30',
+  demo_banner: 'Demo account · {days} days left · Up to 3 products, 100 serials, 3 supplier requests, 2 users. Every feature works for real.',
+  demo_upgrade: 'Upgrade',
+  plan_demo: 'Demo',
+  plan_growth: 'Growth',
 }
 
 const de: Dict = {
@@ -1547,6 +1561,13 @@ const de: Dict = {
   e_files_max: 'Es können höchstens 20 Dokumente hochgeladen werden',
   e_requests_max: 'Höchstens 50 Anfragen pro Produkt',
   e_conflict: 'Dieses Produkt wurde während Ihrer Bearbeitung von jemand anderem geändert. Damit nichts überschrieben wird, wurde nicht gespeichert: Seite neu laden und erneut versuchen.',
+  e_panel_locked: 'Ihr Panelzugang ist gesperrt. Ihre veröffentlichten Pässe bleiben online und Ihre Daten erhalten; Kontakt: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Ihre Demo ist abgelaufen. Ihre Daten bleiben erhalten; kontaktieren Sie uns, um fortzufahren: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'Sie haben das Demo-Limit erreicht (max. {n}). Für die volle Nutzung auf ein kostenpflichtiges Paket wechseln: WhatsApp +90 543 392 92 30',
+  demo_banner: 'Demo-Konto · noch {days} Tage · Bis zu 3 Produkte, 100 Seriennummern, 3 Lieferantenanfragen, 2 Nutzer. Alle Funktionen sind echt.',
+  demo_upgrade: 'Upgrade',
+  plan_demo: 'Demo',
+  plan_growth: 'Wachstum',
 }
 
 const fr: Dict = {
@@ -2057,6 +2078,13 @@ const fr: Dict = {
   e_files_max: '20 documents maximum',
   e_requests_max: '50 demandes maximum par produit',
   e_conflict: 'Ce produit a été modifié par quelqu’un d’autre pendant votre édition. Pour ne pas écraser ses modifications, rien n’a été enregistré : rechargez la page et réessayez.',
+  e_panel_locked: 'Votre accès au panneau est suspendu. Vos passeports publiés restent en ligne et vos données sont conservées ; contact : WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Votre démo a expiré. Vos données sont conservées ; contactez-nous pour continuer : WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'Vous avez atteint la limite de la démo (max. {n}). Passez à une offre payante pour un usage complet : WhatsApp +90 543 392 92 30',
+  demo_banner: 'Compte démo · {days} jours restants · Jusqu’à 3 produits, 100 numéros de série, 3 demandes fournisseurs, 2 utilisateurs. Toutes les fonctions sont réelles.',
+  demo_upgrade: 'Passer à l’offre payante',
+  plan_demo: 'Démo',
+  plan_growth: 'Croissance',
 }
 
 const es: Dict = {
@@ -2567,6 +2595,13 @@ const es: Dict = {
   e_files_max: 'Máximo 20 documentos',
   e_requests_max: 'Máximo 50 solicitudes por producto',
   e_conflict: 'Otra persona modificó este producto mientras lo editabas. Para no sobrescribir sus cambios, no se ha guardado: recarga la página e inténtalo de nuevo.',
+  e_panel_locked: 'Tu acceso al panel está suspendido. Tus pasaportes publicados siguen en línea y tus datos se conservan; contacto: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Tu demo ha caducado. Tus datos se conservan; contáctanos para continuar: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'Has alcanzado el límite de la demo (máx. {n}). Pasa a un plan de pago para un uso completo: WhatsApp +90 543 392 92 30',
+  demo_banner: 'Cuenta demo · quedan {days} días · Hasta 3 productos, 100 números de serie, 3 solicitudes a proveedores, 2 usuarios. Todas las funciones son reales.',
+  demo_upgrade: 'Pasar a plan de pago',
+  plan_demo: 'Demo',
+  plan_growth: 'Crecimiento',
 }
 
 const nl: Dict = {
@@ -3077,6 +3112,13 @@ const nl: Dict = {
   e_files_max: 'Maximaal 20 documenten',
   e_requests_max: 'Maximaal 50 aanvragen per product',
   e_conflict: 'Dit product is door iemand anders gewijzigd terwijl u bewerkte. Om die wijzigingen niet te overschrijven is niet opgeslagen: herlaad de pagina en probeer opnieuw.',
+  e_panel_locked: 'Uw paneltoegang is opgeschort. Uw gepubliceerde paspoorten blijven online en uw gegevens bewaard; contact: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Uw demo is verlopen. Uw gegevens blijven bewaard; neem contact op om verder te gaan: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'U hebt de demolimiet bereikt (max. {n}). Stap over op een betaald pakket voor volledig gebruik: WhatsApp +90 543 392 92 30',
+  demo_banner: 'Demoaccount · nog {days} dagen · Max. 3 producten, 100 serienummers, 3 leveranciersaanvragen, 2 gebruikers. Alle functies werken echt.',
+  demo_upgrade: 'Upgraden',
+  plan_demo: 'Demo',
+  plan_growth: 'Groei',
 }
 
 const ar: Dict = {
@@ -3587,6 +3629,13 @@ const ar: Dict = {
   e_files_max: '20 مستندًا كحد أقصى',
   e_requests_max: '50 طلبًا كحد أقصى لكل منتج',
   e_conflict: 'عدّل شخص آخر هذا المنتج أثناء تحريرك. لم يُحفظ حتى لا تُستبدل تعديلاته: أعد تحميل الصفحة وحاول مرة أخرى.',
+  e_panel_locked: 'تم تعليق وصولك إلى اللوحة. تبقى جوازاتك المنشورة متاحة وبياناتك محفوظة؛ للتواصل: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'انتهت فترة العرض التجريبي. بياناتك محفوظة؛ تواصل معنا للمتابعة: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'وصلت إلى حد الحساب التجريبي (بحد أقصى {n}). انتقل إلى باقة مدفوعة للاستخدام الكامل: WhatsApp +90 543 392 92 30',
+  demo_banner: 'حساب تجريبي · متبقٍ {days} يوم · حتى 3 منتجات و100 رقم تسلسلي و3 طلبات موردين ومستخدمان. جميع الميزات تعمل فعليًا.',
+  demo_upgrade: 'الترقية',
+  plan_demo: 'تجريبي',
+  plan_growth: 'النمو',
 }
 
 const ru: Dict = {
@@ -4097,6 +4146,13 @@ const ru: Dict = {
   e_files_max: 'Не более 20 документов',
   e_requests_max: 'Не более 50 запросов на продукт',
   e_conflict: 'Пока вы редактировали, продукт изменил другой пользователь. Чтобы не затереть его изменения, сохранение не выполнено: обновите страницу и повторите.',
+  e_panel_locked: 'Доступ к панели приостановлен. Опубликованные паспорта доступны, данные сохранены; связь: WhatsApp +90 543 392 92 30',
+  e_demo_expired: 'Срок демо-доступа истёк. Ваши данные сохранены; свяжитесь с нами, чтобы продолжить: WhatsApp +90 543 392 92 30',
+  e_demo_limit: 'Достигнут лимит демо-доступа (не более {n}). Для полного использования перейдите на платный тариф: WhatsApp +90 543 392 92 30',
+  demo_banner: 'Демо-аккаунт · осталось {days} дн. · До 3 продуктов, 100 серийных номеров, 3 запросов поставщикам, 2 пользователей. Все функции работают по-настоящему.',
+  demo_upgrade: 'Перейти на платный тариф',
+  plan_demo: 'Демо',
+  plan_growth: 'Рост',
 }
 
 export const DICTS: Record<DppLang, Dict> = { tr, en, de, fr, es, nl, ar, ru }

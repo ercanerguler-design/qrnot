@@ -55,7 +55,7 @@ Evet, Türkiye'de rakip var ve sayıları artıyor. Aşağıdaki bilgiler firmal
 
 | # | Eksik | Neden önemli | Öneri |
 |---|---|---|---|
-| 1 | Ücretsiz deneme / self-servis kayıt | DPPSkop ve epassportify ücretsiz başlatıyor; KOBİ önce denemek istiyor | "3 ürün, 30 gün ücretsiz" deneme |
+| 1 | ~~Ücretsiz deneme~~ **Yapıldı:** qrnot.com/dpp/demo — 14 gün, 3 ürün, tüm özellikler gerçek | DPPSkop ve epassportify ücretsiz başlatıyor | Kartla self-servis ödeme hâlâ yok (teklif + fatura ile satıyoruz) |
 | 2 | Referans müşteri | Kurumsal alıcı "kim kullanıyor?" diye sorar | İlk 3–5 pilot firmaya kuruculara özel indirim karşılığında referans izni |
 | 3 | API ve ERP entegrasyonu | Orta-büyük firmalar ERP'den otomatik veri ister | Okuma API'si var (JSON); yazma API'si ve Logo / Mikro / SAP için CSV şablonu |
 | 4 | AB DPP Kaydı'na gönderim ve CEN standartları (EN 18216 / 18219 / 18222) | Rakipler iddia ediyor; kurumsal alıcı soracak | Standart metinleri incelenip uyum çalışması planlanmalı; o zamana kadar "yol haritamızda" de, "uyumluyuz" deme |
@@ -221,13 +221,15 @@ Aşamalar: `Araştırıldı → Temas → Cevap → Demo → Pilot teklifi → P
 - Etiketleri hattına uyarlıyoruz.
 - Ücretli pakete geçerse pilot ücreti ilk faturadan düşülür.
 
-Fiyatlar teklifle verilir. Önerdiğimiz fiyat bandı daha önce konuşuldu:
+Fiyatlar teklifle verilir. Güncel tablo, rakip karşılaştırması ve pazarlık kuralları `FIYAT-LISTESI.md` dosyasında. Özet (yıllık ödemede aylık karşılığı, KDV hariç):
 
-| Paket | Fiyat (öneri) |
+| Paket | Fiyat |
 |---|---|
-| Pilot | €390 |
-| Başlangıç | €79 / ay |
-| İşletme | €290 / ay |
+| Demo (3 model, 14 gün) | Ücretsiz — qrnot.com/dpp/demo |
+| Pilot (10 model, 3 ay) | €390 tek sefer |
+| Başlangıç (50) | €59 / ay |
+| Büyüme (200) ⭐ | €149 / ay |
+| İşletme (500) | €349 / ay |
 | Kurumsal | €790 / ay'dan |
 
 İlk 10 müşteriye kurucu müşteri indirimi (%30) karşılığında referans izni iste.
@@ -276,6 +278,7 @@ AB, Ekotasarım Tüzüğü (ESPR) ile ürünlere kademeli olarak dijital ürün 
 QRNot DPP ile pasaportu bir kez giriyorsunuz; 8 dilde yayınlanıyor, QR/NFC etiketi hattınızda basılıyor. Malzeme ve sertifika bilgisini tedarikçinizden bir linkle alabiliyorsunuz.
 
 Telefonunuzdan 30 saniyede bakabilirsiniz: qrnot.com/p/ornekpasaport
+Kendi ürününüzle 14 gün ücretsiz denemek isterseniz: qrnot.com/dpp/demo
 
 AB'deki müşterilerinizden bu konuda bir talep geldi mi?
 
@@ -316,6 +319,7 @@ Most brands I speak to say the hardest part of the Digital Product Passport is n
 QRNot DPP solves exactly that. You send each supplier a link; they fill in the data in their own language (8 languages, no login) and upload their certificates. You review, approve and publish a versioned passport that opens from a QR or NFC label.
 
 Here's a live sample you can open on your phone: qrnot.com/p/ornekpasaport?lang=en
+Or try it with your own product, free for 14 days: qrnot.com/dpp/demo?lang=en
 
 Would it be useful to try it with two or three of your Turkish suppliers?
 
@@ -712,5 +716,7 @@ Bugün tedarikçi verisini nasıl topluyorsunuz?
 - `sosyal/<tr|en>/<format>/01–06.png` (6 gönderi × 3 format × 2 dil)
 - `sosyal/PAYLASIM-REHBERI-TR.md`, `sosyal/SHARING-GUIDE-EN.md`
 - `SUNUM-METINLERI.md` (konuşma metni, itiraz–cevap)
-- `sozlesme/` (KVKK/GDPR veri işleme sözleşmesi taslakları)
+- `sozlesme/` (hizmet satış ve abonelik sözleşmesi, teknik destek / SLA, KVKK/GDPR veri işleme sözleşmesi; TR + EN taslaklar ve PDF)
+- `FIYAT-LISTESI.md` (fiyat tablosu, ek hizmetler, indirimler, epassportify karşılaştırması)
+- Ücretsiz demo: qrnot.com/dpp/demo
 - Güvenlik sayfası: qrnot.com/dpp/guvenlik

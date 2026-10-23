@@ -148,6 +148,7 @@ export default async function PassportPage({ params, searchParams }: Props) {
       </header>
 
       <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+        {view.demo && <Notice tone="amber">{L.demoNotice}</Notice>}
         {view.status === 'archived' && <Notice tone="amber">{L.archived}</Notice>}
         {contentLang !== uiLang && (
           <Notice tone="slate">

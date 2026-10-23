@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page('/nfc', 0.7),
     page('/katalog', 0.7),
     page('/dpp', 0.7),
+    page('/dpp/demo', 0.6),
     page('/dpp/guvenlik', 0.4, 'monthly'),
     page('/etsy', 0.4, 'monthly'),
     page('/partnerlik', 0.4, 'monthly'),

@@ -10,6 +10,10 @@ const dir = dirname(fileURLToPath(import.meta.url))
 const DOCS = [
   ['VERI-ISLEME-SOZLESMESI-TR.md', 'tr', 'TASLAK'],
   ['DATA-PROCESSING-AGREEMENT-EN.md', 'en', 'DRAFT'],
+  ['HIZMET-SATIS-SOZLESMESI-TR.md', 'tr', 'TASLAK'],
+  ['TEKNIK-DESTEK-SOZLESMESI-TR.md', 'tr', 'TASLAK'],
+  ['SERVICE-AGREEMENT-EN.md', 'en', 'DRAFT'],
+  ['SUPPORT-SLA-EN.md', 'en', 'DRAFT'],
 ]
 const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
 const browser = BROWSERS.find((b) => existsSync(b))
@@ -36,11 +40,19 @@ function md(src) {
       const cells = (r) => r.slice(1, -1).split('|').map((c) => c.trim())
       const body = rows.slice(2).map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')
       out.push(`<table><thead><tr>${cells(rows[0]).map((c) => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`)
-    } else if (/^\d+\. /.test(l)) {
+    } else if (/^\d+\. /.test(l) || /^- /.test(l)) {
+      // Numaralı ya da madde işaretli liste; altındaki girintili "- " satırları iç içe liste olur
+      const ordered = /^\d+\. /.test(l)
+      const top = ordered ? /^\d+\. / : /^- /
       const items = []
-      while (i < lines.length && /^\d+\. /.test(lines[i])) items.push(lines[i++].replace(/^\d+\. /, ''))
+      while (i < lines.length && (top.test(lines[i]) || /^\s{2,}- /.test(lines[i]))) {
+        if (top.test(lines[i])) items.push({ text: lines[i].replace(top, ''), sub: [] })
+        else if (items.length) items[items.length - 1].sub.push(lines[i].replace(/^\s+- /, ''))
+        i++
+      }
       i--
-      out.push(`<ol>${items.map((x) => `<li>${inline(x)}</li>`).join('')}</ol>`)
+      const tag = ordered ? 'ol' : 'ul'
+      out.push(`<${tag}>${items.map((x) => `<li>${inline(x.text)}${x.sub.length ? `<ul>${x.sub.map((y) => `<li>${inline(y)}</li>`).join('')}</ul>` : ''}</li>`).join('')}</${tag}>`)
     } else out.push(`<p>${inline(l)}</p>`)
   }
   return out.join('\n')
@@ -58,7 +70,7 @@ table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9
 th, td { border: 1px solid #d5dde6; padding: 5pt 7pt; text-align: left; vertical-align: top; }
 th { background: #eef3f8; }
 tr { break-inside: avoid; }
-ol { padding-left: 18pt; } li { margin: 3pt 0; }
+ol, ul { padding-left: 18pt; } li { margin: 3pt 0; } li ul { margin: 2pt 0; }
 hr { border: 0; border-top: 1px solid #d5dde6; margin: 14pt 0; }
 `
 

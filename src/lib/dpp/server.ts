@@ -22,6 +22,7 @@ import {
 } from './types'
 import { DppError } from './i18n'
 import { trashBlob } from './safety'
+import { assertDemoLimit } from './demoAccount'
 
 // DPP iş kuralları: ürün kaydı, yayınlama (sürümlü), seri numarası üretimi, belgeler, çeviri ve herkese açık görünüm.
 
@@ -266,6 +267,7 @@ export async function generateItems(
   const date = /^\d{4}-\d{2}-\d{2}$/.test(String(input.productionDate || '')) ? String(input.productionDate) : null
   const existing = Number(((await sql`SELECT COUNT(*)::int AS n FROM dpp_items WHERE product_id = ${product.id}`) as Array<{ n: number }>)[0]?.n || 0)
   if (existing + count > MAX_ITEMS_PER_PRODUCT) throw new DppError('e_items_max', { n: MAX_ITEMS_PER_PRODUCT })
+  await assertDemoLimit(companyId, 'items', { add: count })
 
   const width = Math.max(6, String(start + count - 1).length)
   const serials = Array.from({ length: count }, (_, i) => `${prefix}${String(start + i).padStart(width, '0')}`)
@@ -331,6 +333,7 @@ export async function addDocument(companyId: string, productId: string, input: {
   if (!product) throw new DppError('e_product_not_found')
   const count = Number(((await sql`SELECT COUNT(*)::int AS n FROM dpp_documents WHERE product_id = ${product.id}`) as Array<{ n: number }>)[0]?.n || 0)
   if (count >= 40) throw new DppError('e_docs_max')
+  await assertDemoLimit(companyId, 'docs', { productId: product.id })
   const file = await verifyUpload(companyId, String(input.blobUrl || ''), false)
   const title = String(input.title || '').trim().slice(0, 200)
   if (!title) throw new DppError('e_doc_title_required')
@@ -423,6 +426,7 @@ export async function translateProduct(companyId: string, productId: string, tar
   if (!source?.name) throw new DppError('e_fill_default_first')
   const langs = (Array.isArray(targets) ? targets : []).filter((l): l is DppLang => isDppLang(l) && l !== from).slice(0, 7)
   if (!langs.length) throw new DppError('e_choose_lang')
+  await assertDemoLimit(companyId, 'translate')
   const materials = readData(product.data).materials.map((m) => m.name)
   const results = await Promise.allSettled(langs.map((lang) => translateTexts(source, materials, from, lang)))
   const done: DppLang[] = []
@@ -463,6 +467,7 @@ export async function resolvePassport(publicId: string) {
   const rows = (await sql`
     SELECT p.id AS product_id, p.status, p.published, p.published_at, p.public_id AS product_public_id,
            c.name AS company_name, c.country AS company_country, c.website AS company_website, c.restricted_key, c.is_active AS company_active,
+           c.plan AS company_plan, c.demo_expires_at,
            i.id AS item_id, i.serial, i.batch, i.production_date
     FROM dpp_products p
     JOIN dpp_companies c ON c.id = p.company_id
@@ -472,6 +477,8 @@ export async function resolvePassport(publicId: string) {
   `) as Array<Record<string, unknown>>
   const r = rows[0]
   if (!r || !r.published || r.company_active === false) return null
+  // Süresi dolmuş demo firmasının pasaportları kapanır
+  if (r.demo_expires_at && new Date(String(r.demo_expires_at)).getTime() < Date.now()) return null
   return r
 }
 
@@ -507,6 +514,7 @@ export async function loadPublicPassport(publicId: string, key: string | null): 
       : null,
     documents: docs.map((d) => ({ id: d.id, title: d.title, kind: d.kind, restricted: d.visibility === 'restricted', contentType: d.content_type, sizeBytes: d.size_bytes })),
     restrictedAccess,
+    demo: r.company_plan === 'demo',
   }
 }
 
@@ -525,6 +533,7 @@ export function passportJson(view: DppPublicView) {
     version: view.version,
     publishedAt: view.publishedAt,
     status: view.restrictedAccess ? 'restricted-view' : 'public-view',
+    ...(view.demo ? { demo: true } : {}),
     product: {
       gtin: view.data.gtin || null,
       digitalLink: view.data.gtin ? digitalLink(view.data.gtin, view.item?.serial) : null,

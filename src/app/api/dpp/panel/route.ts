@@ -26,6 +26,7 @@ import {
 import { DppError, errorText, msg, type MsgKey, type MsgParams } from '@/lib/dpp/i18n'
 import { requestLang } from '@/lib/dpp/requestLang'
 import { audit, runDailyMaintenance } from '@/lib/dpp/safety'
+import { assertDemoLimit } from '@/lib/dpp/demoAccount'
 import {
   applySupplierResponse,
   createSupplierRequest,
@@ -251,6 +252,7 @@ async function handle(user: DppSessionUser, action: string, body: Record<string,
 
     case 'users.add': {
       const role = normalizeRole(body.role)
+      await assertDemoLimit(companyId, 'users')
       const created = await createDppUser(companyId, String(body.email || ''), role, String(body.name || ''))
       return { email: created.email, password: created.password }
     }

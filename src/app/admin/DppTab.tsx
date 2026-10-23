@@ -23,6 +23,10 @@ interface Company {
   items: number
   scans30: number
   users: Array<{ id: string; email: string; role: string; is_active: boolean; last_login_at: string | null }> | null
+  demo_expires_at: string | null
+  demo_days_left: number | null
+  panel_access: boolean
+  demo_request: { name: string; email: string; phone: string; sector: string; products: string; message: string; created_at: string } | null
 }
 
 interface Safety {
@@ -240,6 +244,12 @@ function CompanyRow({
         <span className="font-mono text-xs text-neutral-500">{c.code}</span>
         <span className="rounded-full border border-sky-800 px-2 py-0.5 text-[11px] text-sky-300">{DPP_PLANS[c.plan]?.label || c.plan}</span>
         {!c.is_active && <span className="rounded-full border border-red-800 px-2 py-0.5 text-[11px] text-red-300">Pasif</span>}
+        {c.is_active && !c.panel_access && <span className="rounded-full border border-orange-700 px-2 py-0.5 text-[11px] text-orange-300">🔒 Panel kilitli · pasaportlar açık</span>}
+        {c.demo_expires_at && (
+          <span className={`rounded-full border px-2 py-0.5 text-[11px] ${(c.demo_days_left ?? 0) <= 0 ? 'border-red-800 text-red-300' : 'border-amber-700 text-amber-300'}`}>
+            🧪 {(c.demo_days_left ?? 0) <= 0 ? 'Demo süresi doldu' : `Demo · ${c.demo_days_left} gün`}
+          </span>
+        )}
         <span className="ml-auto text-xs text-neutral-400">
           {c.products}/{c.product_limit >= 100000 ? '∞' : c.product_limit} ürün · {c.published} yayında · {c.items.toLocaleString('tr-TR')} seri · {c.scans30} okutma
         </span>
@@ -250,6 +260,27 @@ function CompanyRow({
           <p className="text-neutral-400">
             {c.email || '—'} · {c.phone || '—'} · {c.country} · açılış {new Date(c.created_at).toLocaleDateString('tr-TR')}
           </p>
+          {c.demo_request && (
+            <div className="rounded-xl border border-amber-800/60 bg-amber-950/20 p-3 text-xs text-amber-100">
+              <p className="font-semibold text-amber-300">🧪 Web sitesinden demo talebi · {new Date(c.demo_request.created_at).toLocaleString('tr-TR')}</p>
+              <p className="mt-1">
+                {c.demo_request.name} · {c.demo_request.email} · {c.demo_request.phone || 'telefon yok'} · sektör: {c.demo_request.sector} · ürün: {c.demo_request.products}
+              </p>
+              {c.demo_request.message && <p className="mt-1 text-amber-200/80">“{c.demo_request.message}”</p>}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {c.demo_request.phone && (
+                  <a className={`${btn} bg-emerald-700`} href={`https://wa.me/${c.demo_request.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Merhaba ${c.demo_request.name}, QRNot DPP demonuz için yazıyorum.`)}`} target="_blank" rel="noopener noreferrer">
+                    WhatsApp
+                  </a>
+                )}
+                {c.demo_expires_at && (
+                  <button className={`${btn} bg-neutral-800`} disabled={busy} onClick={() => void act(() => post(password, 'demo.extend', { id: c.id, days: 7 }))}>
+                    Demoyu 7 gün uzat
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap items-end gap-2">
             <label className="text-xs text-neutral-500">
               Paket
@@ -290,6 +321,19 @@ function CompanyRow({
               }
             >
               {c.is_active ? 'Pasifleştir' : 'Aktifleştir'}
+            </button>
+            <button
+              className={`${btn} border border-orange-800 text-orange-300`}
+              disabled={busy || !c.is_active}
+              title="Ödeme gecikmesi ya da sözleşme sonu: panel girişi kapanır, yayınlanmış pasaportlar açık kalır"
+              onClick={() =>
+                void act(async () => {
+                  if (c.panel_access && !window.confirm(`${c.name} paneli kilitlensin mi? Kullanıcılar giriş yapamaz; yayınlanmış pasaportlar açık kalır.`)) return
+                  await post(password, 'companies.update', { id: c.id, plan, productLimit: Number(limit), note, isActive: true, panelAccess: !c.panel_access })
+                })
+              }
+            >
+              {c.panel_access ? '🔒 Paneli kilitle' : '🔓 Panel kilidini aç'}
             </button>
             <button
               className={`${btn} border border-red-800 text-red-300`}

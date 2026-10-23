@@ -30,7 +30,10 @@ export async function POST(req: NextRequest) {
 
     if (action === 'companies.list') {
       const companies = await sql`
-        SELECT c.id, c.code, c.name, c.country, c.email, c.phone, c.plan, c.product_limit, c.is_active, c.admin_note, c.created_at,
+        SELECT c.id, c.code, c.name, c.country, c.email, c.phone, c.plan, c.product_limit, c.is_active, c.admin_note, c.created_at, c.demo_expires_at, c.panel_access,
+               CEIL(EXTRACT(EPOCH FROM (c.demo_expires_at - NOW())) / 86400)::int AS demo_days_left,
+               (SELECT json_build_object('name', d.name, 'email', d.email, 'phone', d.phone, 'sector', d.sector, 'products', d.products_estimate, 'message', d.message, 'created_at', d.created_at)
+                  FROM dpp_demo_requests d WHERE d.company_id = c.id ORDER BY d.created_at DESC LIMIT 1) AS demo_request,
                (SELECT COUNT(*)::int FROM dpp_products p WHERE p.company_id = c.id AND p.status <> 'archived') AS products,
                (SELECT COUNT(*)::int FROM dpp_products p WHERE p.company_id = c.id AND p.status = 'published') AS published,
                (SELECT COUNT(*)::int FROM dpp_items i JOIN dpp_products p ON p.id = i.product_id WHERE p.company_id = c.id) AS items,
@@ -71,10 +74,13 @@ export async function POST(req: NextRequest) {
       const plan = (String(body.plan) in DPP_PLANS ? String(body.plan) : 'pilot') as DppPlan
       const limit = Math.max(1, Math.min(100000, Math.floor(Number(body.productLimit) || DPP_PLANS[plan].productLimit)))
       await sql`
-        UPDATE dpp_companies SET plan = ${plan}, product_limit = ${limit}, is_active = ${body.isActive !== false}, admin_note = ${String(body.note ?? '').slice(0, 2000)}
+        UPDATE dpp_companies SET plan = ${plan}, product_limit = ${limit}, is_active = ${body.isActive !== false}, admin_note = ${String(body.note ?? '').slice(0, 2000)},
+               -- Ücretli pakete geçen demo firmasının süre sınırı kalkar
+               demo_expires_at = CASE WHEN ${plan} = 'demo' THEN COALESCE(demo_expires_at, NOW() + INTERVAL '14 days') ELSE NULL END,
+               panel_access = COALESCE(${typeof body.panelAccess === 'boolean' ? body.panelAccess : null}::boolean, panel_access)
         WHERE id = ${id}
       `
-      if (body.isActive === false) await sql`DELETE FROM dpp_sessions WHERE user_id IN (SELECT id FROM dpp_users WHERE company_id = ${id})`
+      if (body.isActive === false || body.panelAccess === false) await sql`DELETE FROM dpp_sessions WHERE user_id IN (SELECT id FROM dpp_users WHERE company_id = ${id})`
       return NextResponse.json({ ok: true })
     }
 
@@ -88,6 +94,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'safety.status') return NextResponse.json(await safetyStatus())
+    if (action === 'demo.extend' && validId) {
+      const days = Math.min(60, Math.max(1, Math.round(Number(body.days) || 7)))
+      const rows = (await sql`
+        UPDATE dpp_companies SET demo_expires_at = GREATEST(NOW(), demo_expires_at) + make_interval(days => ${days}), is_active = TRUE
+        WHERE id = ${id} AND plan = 'demo' RETURNING demo_expires_at
+      `) as Array<{ demo_expires_at: string }>
+      if (!rows.length) return NextResponse.json({ error: 'Demo firması bulunamadı' }, { status: 404 })
+      return NextResponse.json({ ok: true, demoExpiresAt: rows[0].demo_expires_at })
+    }
     if (action === 'backup.run') return NextResponse.json(await runDailyMaintenance(true))
 
     if (action === 'companies.delete' && validId) {

@@ -21,6 +21,11 @@ export interface DppSessionUser {
   companyId: string
   companyName: string
   companyCode: string
+  plan: string
+  /** Demo hesabının bitiş zamanı (demo değilse null) */
+  demoEndsAt: string | null
+  /** Demo için kalan gün (sunucuda hesaplanır) */
+  demoDaysLeft: number | null
 }
 
 const hashToken = (token: string) => createHash('sha256').update(token).digest('hex')
@@ -39,13 +44,16 @@ export function randomKey(bytes = 24) {
 export async function findDppUserForLogin(email: string, password: string) {
   await ensureDppSchema()
   const rows = (await sql`
-    SELECT u.id, u.password_hash, u.is_active, c.is_active AS company_active
+    SELECT u.id, u.password_hash, u.is_active, c.is_active AS company_active, c.demo_expires_at, c.panel_access
     FROM dpp_users u JOIN dpp_companies c ON c.id = u.company_id
     WHERE lower(trim(u.email)) = ${normalizeEmail(email)}
-  `) as Array<{ id: string; password_hash: string; is_active: boolean; company_active: boolean }>
+  `) as Array<{ id: string; password_hash: string; is_active: boolean; company_active: boolean; demo_expires_at: string | null; panel_access: boolean }>
   const row = rows[0]
   if (!row || !row.is_active || !row.company_active) return null
   if (!verifyPassword(password, row.password_hash)) return null
+  // Şifre doğruysa ve demo süresi dolduysa açıklayıcı mesaj (veri durur, yönetici uzatabilir)
+  if (row.demo_expires_at && new Date(row.demo_expires_at).getTime() < Date.now()) throw new DppError('e_demo_expired')
+  if (row.panel_access === false) throw new DppError('e_panel_locked')
   return row.id
 }
 
@@ -79,11 +87,14 @@ export async function getDppUser(req: NextRequest): Promise<DppSessionUser | nul
   if (!token) return null
   await ensureDppSchema()
   const rows = (await sql`
-    SELECT u.id, u.email, u.name, u.role, u.must_change_password, c.id AS company_id, c.name AS company_name, c.code AS company_code
+    SELECT u.id, u.email, u.name, u.role, u.must_change_password, c.id AS company_id, c.name AS company_name, c.code AS company_code,
+           c.plan, c.demo_expires_at,
+           CEIL(EXTRACT(EPOCH FROM (c.demo_expires_at - NOW())) / 86400)::int AS demo_days_left
     FROM dpp_sessions s
     JOIN dpp_users u ON u.id = s.user_id
     JOIN dpp_companies c ON c.id = u.company_id
     WHERE s.token_hash = ${hashToken(token)} AND s.expires_at > NOW() AND u.is_active = TRUE AND c.is_active = TRUE
+      AND (c.demo_expires_at IS NULL OR c.demo_expires_at > NOW()) AND c.panel_access = TRUE
   `) as Array<Record<string, string | boolean>>
   const r = rows[0]
   if (!r) return null
@@ -96,6 +107,9 @@ export async function getDppUser(req: NextRequest): Promise<DppSessionUser | nul
     companyId: String(r.company_id),
     companyName: String(r.company_name),
     companyCode: String(r.company_code),
+    plan: String(r.plan || ''),
+    demoEndsAt: r.demo_expires_at ? new Date(String(r.demo_expires_at)).toISOString() : null,
+    demoDaysLeft: r.demo_expires_at ? Math.max(0, Number(r.demo_days_left)) : null,
   }
 }
 

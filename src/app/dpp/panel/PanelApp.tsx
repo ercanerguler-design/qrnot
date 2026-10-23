@@ -20,6 +20,9 @@ export interface Me {
   companyId: string
   companyName: string
   companyCode: string
+  plan: string
+  demoEndsAt: string | null
+  demoDaysLeft: number | null
 }
 
 export type View = { page: 'overview' } | { page: 'products' } | { page: 'product'; id: string | null; tab?: string } | { page: 'company' } | { page: 'users' } | { page: 'account' }
@@ -119,6 +122,22 @@ function Shell() {
           </div>
         </div>
       </header>
+
+      {me.demoEndsAt && (
+        <div className="border-b border-amber-200 bg-amber-50">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm text-amber-950">
+            <span>🧪 {t('demo_banner', { days: me.demoDaysLeft ?? 0 })}</span>
+            <a
+              href={`https://wa.me/905433929230?text=${encodeURIComponent(`QRNot DPP demo: ${me.companyName} (${me.companyCode})`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-amber-500 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-600"
+            >
+              {t('demo_upgrade')}
+            </a>
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto max-w-7xl px-4 py-6 lg:grid lg:grid-cols-[14rem_1fr] lg:gap-8">
         <nav className="-mx-4 mb-5 flex gap-1 overflow-x-auto px-4 lg:sticky lg:top-24 lg:mx-0 lg:mb-0 lg:block lg:space-y-1 lg:self-start lg:px-0">

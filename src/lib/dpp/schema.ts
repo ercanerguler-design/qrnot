@@ -43,6 +43,10 @@ export function ensureDppSchema() {
           created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
       `
+      // Demo firmaları: süre dolunca giriş ve pasaportlar kapanır (veri silinmez)
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS demo_expires_at TIMESTAMP WITH TIME ZONE`
+      // Panel kilidi: ödeme gecikmesi / sözleşme sonu — panel kapanır, yayınlanmış pasaportlar açık kalır
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS panel_access BOOLEAN NOT NULL DEFAULT TRUE`
       // Aynı e-posta (büyük/küçük harf fark etmeksizin) ikinci kez kayıt olamaz
       await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dpp_users_email_ci ON dpp_users (lower(trim(email)))`
       await sql`
@@ -160,6 +164,24 @@ export function ensureDppSchema() {
         )
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_dpp_audit_company ON dpp_audit(company_id, created_at DESC)`
+      // Web sitesinden gelen demo talepleri (satış takibi için); firma silinse de talep kaydı kalır
+      await sql`
+        CREATE TABLE IF NOT EXISTS dpp_demo_requests (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          company_id UUID REFERENCES dpp_companies(id) ON DELETE SET NULL,
+          company_name VARCHAR(200) NOT NULL,
+          name VARCHAR(120) NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          phone VARCHAR(40) NOT NULL DEFAULT '',
+          country VARCHAR(2) NOT NULL DEFAULT 'TR',
+          sector VARCHAR(30) NOT NULL DEFAULT 'other',
+          products_estimate VARCHAR(20) NOT NULL DEFAULT '',
+          message TEXT NOT NULL DEFAULT '',
+          lang VARCHAR(4) NOT NULL DEFAULT 'tr',
+          consent_at TIMESTAMP WITH TIME ZONE NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        )
+      `
       await sql`
         CREATE TABLE IF NOT EXISTS dpp_trash (
           url TEXT PRIMARY KEY,

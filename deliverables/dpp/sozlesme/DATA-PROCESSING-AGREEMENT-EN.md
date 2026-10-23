@@ -10,7 +10,7 @@
 
 **Controller (“Customer”):** [Company name], [address], [registration / VAT number]
 
-**Processor (“QRNot”):** SCE INNOVATION LTD. ŞTİ., Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye, [tax / registration number]
+**Processor (“QRNot”):** SCE INNOVATION LTD. ŞTİ., Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye, tax office / no.: Ankara Yıldırım Beyazıt / 7571071832
 
 This agreement is an annex to the QRNot DPP service agreement between the parties dated [date] (the “Main Agreement”). In case of conflict on matters of personal data protection, this agreement prevails.
 

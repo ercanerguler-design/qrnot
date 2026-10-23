@@ -46,6 +46,7 @@ Pilot sonunda ücretli pakete geçilirse €390, ilk faturadan düşülür.
 | Eğitim | €60 / saat · €400 / gün |
 | QR etiket baskısı | maliyet + %40–60 |
 | NFC etiket (kodlanmış) | maliyet + %50 |
+| Arşiv paketi (sözleşme bitiminden 6 ay sonra pasaportları yayında tutmak; panel kapalı, pasaportlar açık) | €29 / ay, yıllık peşin (€348) |
 | AB bölgesinde barındırma (Frankfurt) | Kurumsal pakete dahil; diğer paketlere teklifle |
 | Özel geliştirme / entegrasyon | €60 / saat, proje teklifi |
 

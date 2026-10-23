@@ -9,7 +9,7 @@
 **Provider (“QRNot”):**
 - SCE INNOVATION LTD. ŞTİ.
 - Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye
-- Tax no. [ ] · sce@scegrup.com · WhatsApp +90 543 392 92 30
+- Tax office / no.: Ankara Yıldırım Beyazıt / 7571071832 · sce@scegrup.com · WhatsApp +90 543 392 92 30
 
 **Customer:**
 - [Company name], [address], [registration / VAT no.]
@@ -54,7 +54,7 @@ This agreement governs QRNot's provision of the Platform on a subscription basis
 ## 6. Fees, invoicing and payment
 
 1. Fees are stated in euros (€) in the Order Form, exclusive of VAT and other applicable taxes. For customers outside Türkiye, invoices are issued in euros; the Customer bears its own bank charges.
-2. Annual fees are invoiced in advance at the start of the term; monthly fees at the start of each month. Payment is due within **[14]** days of the invoice date.
+2. Annual fees are invoiced in advance at the start of the term; monthly fees at the start of each month. Payment is due within **28** days of the invoice date.
 3. If payment is overdue, QRNot will give written notice. If payment is not made within 15 days of that notice, QRNot may suspend panel access.
    - During suspension **Published Passports remain available**, and Customer Data is not deleted.
    - Statutory default interest for commercial transactions applies to overdue amounts.
@@ -84,9 +84,9 @@ This agreement governs QRNot's provision of the Platform on a subscription basis
 ## 9. Continuity of Published Passports
 
 1. Published Passports may need to remain available while products are on the market. They are therefore **archived, not deleted**, and their QR / NFC address never changes.
-2. Whatever the reason for termination, QRNot keeps Published Passports publicly available for **[12] months** after the end date. Panel access is closed during this period.
+2. Whatever the reason for termination, QRNot keeps Published Passports publicly available for **6 months** after the end date. Panel access is closed during this period.
 3. At the end of that period the Customer may choose one of the following:
-   - **(a) Archive plan:** keep the passports online for [€ ] per year.
+   - **(a) Archive plan:** keep the passports online for **€29 per month** (excl. VAT), billed annually in advance (€348). Panel access is closed under the archive plan; to change passports, the Customer moves to a paid plan.
    - **(b) Migration:** guidance for migrating to the Customer's own infrastructure. Redirecting QR addresses to a new address is quoted separately, where technically possible.
    - **(c) Deletion:** subject to statutory retention obligations.
 

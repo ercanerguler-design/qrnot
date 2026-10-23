@@ -9,7 +9,7 @@
 **Hizmet Sağlayıcı (“QRNot”):**
 - Unvan: SCE INNOVATION LTD. ŞTİ.
 - Adres: Çetin Emeç Bulvarı 25/3, Çankaya / Ankara
-- Vergi dairesi / no: [ ] · MERSİS: [ ]
+- Vergi dairesi / no: Ankara Yıldırım Beyazıt V.D. / 7571071832 · MERSİS: [ ]
 - E-posta: sce@scegrup.com · Destek: 0850 888 1 889 · WhatsApp: +90 543 392 92 30
 
 **Müşteri:**
@@ -57,7 +57,7 @@ Bu sözleşme, QRNot'un Platform'u Müşteri'ye abonelik esasıyla kullandırmas
 ## Madde 6 — Ücret, faturalama ve ödeme
 
 1. Ücretler Sipariş Formu'nda euro (€) olarak belirtilir ve KDV hariçtir. Türkiye'de yerleşik Müşteri'ye fatura, fatura tarihindeki T.C. Merkez Bankası döviz satış kuru üzerinden Türk lirası olarak düzenlenir.
-2. Yıllık abonelik ücreti dönem başında peşin, aylık abonelik ücreti her ay başında faturalanır. Fatura bedeli, fatura tarihinden itibaren **[10]** gün içinde ödenir.
+2. Yıllık abonelik ücreti dönem başında peşin, aylık abonelik ücreti her ay başında faturalanır. Fatura bedeli, fatura tarihinden itibaren **28** gün içinde ödenir.
 3. Ödeme gecikirse QRNot yazılı bildirimde bulunur. Bildirimden itibaren 15 gün içinde ödeme yapılmazsa QRNot panel erişimini askıya alabilir.
    - Askı süresince **Yayınlanmış Pasaportlar erişilebilir kalır**; Müşteri Verisi silinmez.
    - Geciken tutara ticari işlerde uygulanan yasal temerrüt faizi işler.
@@ -87,9 +87,9 @@ Bu sözleşme, QRNot'un Platform'u Müşteri'ye abonelik esasıyla kullandırmas
 ## Madde 9 — Yayınlanmış pasaportların sürekliliği
 
 1. Yayınlanmış Pasaportlar, ürünün piyasada bulunduğu süre boyunca erişilebilir kalması gerekebileceğinden **silinmez, arşivlenir**. Aynı QR / NFC adresi değişmez.
-2. Sözleşme hangi nedenle sona ererse ersin, QRNot Yayınlanmış Pasaportları sona erme tarihinden itibaren **[12] ay** daha herkese açık tutar. Bu sürede panel erişimi kapalıdır.
+2. Sözleşme hangi nedenle sona ererse ersin, QRNot Yayınlanmış Pasaportları sona erme tarihinden itibaren **6 ay** daha herkese açık tutar. Bu sürede panel erişimi kapalıdır.
 3. Müşteri bu süre sonunda aşağıdakilerden birini seçebilir:
-   - **(a) Arşiv paketi:** Pasaportların yayında kalması için yıllık arşiv paketi, [€ ] / yıl.
+   - **(a) Arşiv paketi:** Pasaportların yayında kalması için arşiv paketi: aylık **€29** (KDV hariç), yıllık peşin ödenir (€348). Arşiv paketinde panel erişimi kapalıdır; pasaportlarda değişiklik gerekirse ücretli pakete geçilir.
    - **(b) Taşıma:** Müşteri'nin kendi altyapısına taşıma için yönlendirme. QR adreslerinin yeni adrese yönlendirilmesi, teknik olarak mümkün olduğu ölçüde teklifle yapılır.
    - **(c) Silme:** Mevzuat gereği saklanması zorunlu olanlar hariç.
 

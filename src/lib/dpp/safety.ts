@@ -105,12 +105,16 @@ export async function runDailyMaintenance(force = false) {
   try {
     const data = await exportDppData()
     const body = JSON.stringify(data)
-    const blob = await putBlob(`backups/dpp/daily/${day}.json`, body)
+    // Her çalıştırma ayrı dosyaya yazılır: aynı adın üzerine yazmak önbellekten eski içeriğin okunmasına yol açar
+    const blob = await putBlob(`backups/dpp/daily/${day}-${Date.now()}.json`, body)
     const counts = Object.fromEntries(Object.entries(data.tables).map(([k, v]) => [k, v.length]))
+    const previous = ((await sql`SELECT url FROM dpp_backups WHERE day = ${day}`) as Array<{ url: string | null }>)[0]?.url
     await sql`
       UPDATE dpp_backups SET status = 'ok', url = ${blob.url}, size_bytes = ${body.length}, counts = ${JSON.stringify(counts)}::jsonb, finished_at = NOW()
       WHERE day = ${day}
     `
+    // Aynı günün önceki (daha eski) yedeği, yenisi başarıyla yazıldıktan sonra silinir
+    if (previous && previous !== blob.url) await deleteBlob(previous).catch(() => undefined)
   } catch (err) {
     console.error('[dpp backup]', err)
     await sql`UPDATE dpp_backups SET status = 'failed', finished_at = NOW() WHERE day = ${day}`

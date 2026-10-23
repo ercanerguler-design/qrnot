@@ -1,0 +1,272 @@
+{
+  "assumptions": {
+    "eurTry": 50,
+    "plans": {
+      "baslangic": 59,
+      "buyume": 149,
+      "isletme": 349,
+      "kurumsal": 790
+    },
+    "mix": {
+      "baslangic": 0.5,
+      "buyume": 0.3,
+      "isletme": 0.15,
+      "kurumsal": 0.05
+    },
+    "discountHaircut": 0.1,
+    "monthlyChurn": 0.02,
+    "addOnShare": 0.15,
+    "pilotFee": 390,
+    "pilotToPaid": 0.6,
+    "dppGrossMargin": 0.85,
+    "giftAvgPriceTry": 449,
+    "giftVat": 0.2,
+    "giftGrossMargin": 0.55,
+    "premiumPriceTry": 199,
+    "premiumAttach": 0.1,
+    "team": [
+      {
+        "from": 1,
+        "role": "Kurucu / satış",
+        "cost": 1500
+      },
+      {
+        "from": 1,
+        "role": "Yazılım (yarı zamanlı)",
+        "cost": 1200
+      },
+      {
+        "from": 4,
+        "role": "Satış / iş geliştirme",
+        "cost": 1600
+      },
+      {
+        "from": 10,
+        "role": "Müşteri başarısı",
+        "cost": 1300
+      },
+      {
+        "from": 13,
+        "role": "Yazılım geliştirici",
+        "cost": 2500
+      },
+      {
+        "from": 16,
+        "role": "Satış (AB pazarı)",
+        "cost": 2200
+      },
+      {
+        "from": 25,
+        "role": "Pazarlama uzmanı",
+        "cost": 1800
+      },
+      {
+        "from": 25,
+        "role": "Yazılım geliştirici 2",
+        "cost": 2500
+      }
+    ],
+    "infra": [
+      150,
+      400,
+      900
+    ],
+    "marketing": [
+      1200,
+      2500,
+      4500
+    ],
+    "overhead": 450
+  },
+  "scenarios": {
+    "temkinli": {
+      "label": "Temkinli",
+      "newPaid": [
+        1,
+        3,
+        6
+      ],
+      "pilots": [
+        1,
+        2,
+        3
+      ],
+      "giftUnits": [
+        60,
+        150,
+        300
+      ]
+    },
+    "baz": {
+      "label": "Baz",
+      "newPaid": [
+        2.5,
+        6,
+        12
+      ],
+      "pilots": [
+        2,
+        4,
+        6
+      ],
+      "giftUnits": [
+        100,
+        300,
+        600
+      ]
+    },
+    "iyimser": {
+      "label": "İyimser",
+      "newPaid": [
+        5,
+        12,
+        25
+      ],
+      "pilots": [
+        3,
+        6,
+        10
+      ],
+      "giftUnits": [
+        200,
+        600,
+        1200
+      ]
+    }
+  },
+  "unit": {
+    "blendedArpa": 149.445,
+    "grossMarginPerMonth": 127.02824999999999,
+    "ltv": 6351.412499999999,
+    "cac": 650,
+    "paybackMonths": 5.116972012131161,
+    "ltvToCac": 9.771403846153845
+  },
+  "results": {
+    "temkinli": {
+      "label": "Temkinli",
+      "years": [
+        {
+          "year": 1,
+          "revenue": 19968.39651855671,
+          "dppRevenue": 14341.596518556707,
+          "giftRevenue": 5626.799999999999,
+          "grossProfit": 15285.097040773202,
+          "opex": 72300,
+          "ebitda": -57014.9029592268,
+          "endCustomers": 10.764163813259998,
+          "endArr": 19303.805532871684
+        },
+        {
+          "year": 2,
+          "revenue": 74734.67032625254,
+          "dppRevenue": 60667.67032625255,
+          "giftRevenue": 14067,
+          "grossProfit": 59304.36977731467,
+          "opex": 157200,
+          "ebitda": -97895.63022268534,
+          "endCustomers": 40.73931080106607,
+          "endArr": 73059.43563198383
+        },
+        {
+          "year": 3,
+          "revenue": 182425.87472545417,
+          "dppRevenue": 154291.87472545414,
+          "giftRevenue": 28134,
+          "grossProfit": 146621.79351663604,
+          "opex": 245400,
+          "ebitda": -98778.20648336396,
+          "endCustomers": 96.5538013785863,
+          "endArr": 173153.79416427395
+        }
+      ],
+      "cashNeed": 253688.73966527614,
+      "breakEvenMonth": null,
+      "endCum": -253688.73966527614
+    },
+    "baz": {
+      "label": "Baz",
+      "years": [
+        {
+          "year": 1,
+          "revenue": 44295.991296391774,
+          "dppRevenue": 34917.991296391774,
+          "giftRevenue": 9378,
+          "grossProfit": 34838.192601933,
+          "opex": 72300,
+          "ebitda": -37461.807398066994,
+          "endCustomers": 26.91040953314999,
+          "endArr": 48259.513832179204
+        },
+        {
+          "year": 2,
+          "revenue": 159226.78103779626,
+          "dppRevenue": 131092.7810377963,
+          "giftRevenue": 28134,
+          "grossProfit": 126902.56388212684,
+          "opex": 157200,
+          "ebitda": -30297.436117873167,
+          "endCustomers": 85.70203128277517,
+          "endArr": 153692.88078065202
+        },
+        {
+          "year": 3,
+          "revenue": 372508.57610209164,
+          "dppRevenue": 316240.57610209164,
+          "giftRevenue": 56268,
+          "grossProfit": 299751.8896867779,
+          "opex": 245400,
+          "ebitda": 54351.88968677795,
+          "endCustomers": 196.42178296475663,
+          "endArr": 352251.04026201664
+        }
+      ],
+      "cashNeed": 72530.91142792476,
+      "breakEvenMonth": 23,
+      "endCum": -13407.353829162217
+    },
+    "iyimser": {
+      "label": "İyimser",
+      "years": [
+        {
+          "year": 1,
+          "revenue": 86719.98259278355,
+          "dppRevenue": 67963.98259278355,
+          "giftRevenue": 18756,
+          "grossProfit": 68085.185203866,
+          "opex": 72300,
+          "ebitda": -4214.814796133989,
+          "endCustomers": 53.82081906629998,
+          "endArr": 96519.02766435841
+        },
+        {
+          "year": 2,
+          "revenue": 314709.5620755925,
+          "dppRevenue": 258441.56207559255,
+          "giftRevenue": 56268,
+          "grossProfit": 250622.72776425365,
+          "opex": 157200,
+          "ebitda": 93422.72776425366,
+          "endCustomers": 171.40406256555033,
+          "endArr": 307385.76156130404
+        },
+        {
+          "year": 3,
+          "revenue": 753742.74872274,
+          "dppRevenue": 641206.74872274,
+          "giftRevenue": 112536,
+          "grossProfit": 606920.536414329,
+          "opex": 245400,
+          "ebitda": 361520.53641432896,
+          "endCustomers": 403.6077297427732,
+          "endArr": 723805.8860569048
+        }
+      ],
+      "cashNeed": 9444.236102926094,
+      "breakEvenMonth": 8,
+      "endCum": 450728.4493824487
+    }
+  },
+  "giftNetEur": 7.483333333333333,
+  "premiumNetEur": 3.316666666666667
+}

@@ -125,10 +125,11 @@ const T = {
     plans: [
       ['Pilot', '10 ürün modeli', 'İlk ürünlerle başlayın, süreci deneyin.'],
       ['Başlangıç', '50 ürün modeli', 'Küçük ve orta ölçekli üreticiler.'],
+      ['Büyüme', '200 ürün modeli', 'Çok tedarikçili, büyüyen koleksiyonlar.'],
       ['İşletme', '500 ürün modeli', 'Geniş koleksiyonlu markalar.'],
       ['Kurumsal', 'Sınırsız', 'Entegrasyon ve öncelikli destek.'],
     ],
-    plansNote: 'Tüm paketlerde sınırsız seri numarası, 8 dil, belgeler ve etiket baskısı vardır. Fiyat ürün sayısına ve hizmet kapsamına göre teklifle belirlenir.',
+    plansNote: 'Tüm paketlerde sınırsız seri numarası ve kullanıcı, 8 dil, tedarikçi portalı, belgeler ve etiket baskısı vardır. Fiyat teklifle belirlenir. 14 gün ücretsiz demo: qrnot.com/dpp/demo',
     startTitle: 'Nasıl başlarız?',
     start: [
       ['MessagesSquare', 'Tanışma', 'Ürün gruplarınızı ve ihracat pazarlarınızı konuşuruz.'],
@@ -298,10 +299,11 @@ const T = {
     plans: [
       ['Pilot', '10 product models', 'Start with your first products.'],
       ['Starter', '50 product models', 'Small and mid-sized manufacturers.'],
+      ['Growth', '200 product models', 'Growing collections with many suppliers.'],
       ['Business', '500 product models', 'Brands with large collections.'],
       ['Enterprise', 'Unlimited', 'Integrations and priority support.'],
     ],
-    plansNote: 'All plans include unlimited serial numbers, 8 languages, documents and label printing. Pricing is quoted by product count and service scope.',
+    plansNote: 'All plans include unlimited serial numbers and users, 8 languages, the supplier portal, documents and label printing. Pricing by quotation. Free 14-day demo: qrnot.com/dpp/demo?lang=en',
     startTitle: 'How we start',
     start: [
       ['MessagesSquare', 'Discovery', 'We discuss your product groups and export markets.'],
@@ -589,8 +591,8 @@ const catalogPages = (t) => [
     ${logo(true)}
     <div class="kicker accent" style="font-size:17px;margin-top:64px">${t.plansKicker}</div>
     <h2 style="font-size:60px;margin-top:16px">${t.plansTitle}</h2>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px">
-      ${t.plans.map(([name, limit, desc], i) => `<div class="card" style="padding:26px;${i === 1 ? `border-color:${C.mint};box-shadow:0 0 0 2px ${C.mint}` : ''}"><div class="head" style="font-size:28px">${name}</div><div class="accent" style="font-size:18px;font-weight:700;margin-top:6px">${limit}</div><div class="muted" style="font-size:16px;margin-top:12px;line-height:1.45">${desc}</div></div>`).join('')}
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:34px">
+      ${t.plans.map(([name, limit, desc], i) => `<div class="card" style="padding:26px;${i === 2 ? `border-color:${C.mint};box-shadow:0 0 0 2px ${C.mint}` : ''}"><div class="head" style="font-size:28px">${name}</div><div class="accent" style="font-size:18px;font-weight:700;margin-top:6px">${limit}</div><div class="muted" style="font-size:16px;margin-top:12px;line-height:1.45">${desc}</div></div>`).join('')}
     </div>
     <p class="muted" style="font-size:17px;margin-top:18px;line-height:1.5">${t.plansNote}</p>
     <h3 style="font-size:34px;margin-top:46px">${t.startTitle}</h3>
@@ -730,8 +732,8 @@ const deckSlides = (t) => [
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:46px">
       ${t.start.map(([ic, title, desc], i) => `<div class="soft" style="padding:30px"><div style="display:flex;justify-content:space-between;align-items:center">${ringIcon(ic, C.navy, 60, '#fff')}<span class="head" style="font-size:44px;color:${C.line}">0${i + 1}</span></div><div class="head" style="font-size:28px;margin-top:20px">${title}</div><div class="muted" style="font-size:19px;margin-top:8px;line-height:1.45">${desc}</div></div>`).join('')}
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:34px">
-      ${t.plans.map(([name, limit, desc], i) => `<div class="card" style="padding:28px;${i === 1 ? `border-color:${C.green};box-shadow:0 0 0 2px ${C.green}` : ''}"><div class="head" style="font-size:30px">${name}</div><div style="font-size:21px;font-weight:700;color:${C.green};margin-top:6px">${limit}</div><div class="muted" style="font-size:18px;margin-top:10px">${desc}</div></div>`).join('')}
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:34px">
+      ${t.plans.map(([name, limit, desc], i) => `<div class="card" style="padding:28px;${i === 2 ? `border-color:${C.green};box-shadow:0 0 0 2px ${C.green}` : ''}"><div class="head" style="font-size:30px">${name}</div><div style="font-size:21px;font-weight:700;color:${C.green};margin-top:6px">${limit}</div><div class="muted" style="font-size:18px;margin-top:10px">${desc}</div></div>`).join('')}
     </div>
     <p class="muted" style="font-size:19px;margin-top:auto;margin-bottom:24px">${t.plansNote}</p>` },
   { slug: 'iletisim', dark: true, body: `

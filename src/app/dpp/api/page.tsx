@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { msg, type MsgKey } from '@/lib/dpp/i18n'
+import { API_BASE } from '@/lib/dpp/openapi'
 import { BATTERY_ITEM_FIELDS, fieldLabelKey, SECTOR_FIELDS, type Sector, type SectorField } from '@/lib/dpp/sectors'
 import { getRequestLang } from '@/lib/i18n.server'
 import type { Lang } from '@/lib/i18n'
-import { SITE_URL } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'DPP API — QRNot Dijital Ürün Pasaportu',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/dpp/api', languages: { 'tr-TR': '/dpp/api', 'en-US': '/dpp/api?lang=en' } },
 }
 
-const BASE = `${SITE_URL}/api/dpp/v1`
+const BASE = API_BASE
 
 const C = {
   tr: {

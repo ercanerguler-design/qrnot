@@ -2,6 +2,9 @@ import { SITE_URL } from '@/lib/site'
 import { BATTERY_ITEM_FIELDS, SECTOR_FIELDS, type SectorField } from './sectors'
 import { DPP_CATEGORIES, DPP_LANGS } from './types'
 
+// API'nin doğrudan yanıt veren adresi: qrnot.com → www.qrnot.com yönlendirmesinde istemciler Authorization başlığını düşürür.
+export const API_BASE = `${SITE_URL.replace('://qrnot.com', '://www.qrnot.com')}/api/dpp/v1`
+
 // QRNot DPP API v1 için OpenAPI 3.1 tanımı. Sektör alanları sectors.ts'ten üretilir: belge ile sistem ayrışmaz.
 
 function fieldSchema(f: SectorField) {
@@ -48,7 +51,7 @@ export function openApiSpec() {
       description:
         'Create and update digital product passports from your ERP / PIM / BMS. Changes are saved as drafts; the public passport changes only after /publish. Every write is recorded in the company audit log.',
     },
-    servers: [{ url: `${SITE_URL}/api/dpp/v1` }],
+    servers: [{ url: API_BASE }],
     security: [{ bearer: [] }],
     components: {
       securitySchemes: { bearer: { type: 'http', scheme: 'bearer', description: 'API key created in the panel (Settings → API keys), starts with qrn_live_' } },

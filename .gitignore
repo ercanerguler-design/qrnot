@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 # Click-Once directory
 publish/
+!src/app/api/dpp/v1/products/\[id\]/publish/
 
 # Publish Web Output
 *.[Pp]ublish.xml

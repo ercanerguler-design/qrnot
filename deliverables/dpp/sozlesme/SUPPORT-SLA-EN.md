@@ -1,6 +1,6 @@
 # QRNot DPP — Support and Service Level Agreement (SLA)
 
-> **DRAFT — LEGAL REVIEW REQUIRED.** This is **Annex 2** to the Subscription and Services Agreement (the “Main Agreement”) between SCE INNOVATION LTD. ŞTİ. (“QRNot”) and the Customer. Defined terms have the meaning given in the Main Agreement.
+This SLA is **Annex 2** to the Subscription and Services Agreement (the “Main Agreement”) between SCE INNOVATION LTD. ŞTİ. (“QRNot”) and the Customer. Defined terms have the meaning given in the Main Agreement.
 
 ---
 

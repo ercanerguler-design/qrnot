@@ -1,7 +1,5 @@
 # QRNot Dijital Ürün Pasaportu Hizmet Satış ve Abonelik Sözleşmesi
 
-> **TASLAK — HUKUKİ İNCELEME GEREKİR.** Bu metin SCE INNOVATION LTD. ŞTİ. için hazırlanmış bir şablondur. İmzalanmadan önce bir avukat tarafından incelenmeli, köşeli parantez içindeki [ ] alanlar doldurulmalıdır. Taraflar tacir olduğundan tüketici mevzuatı (mesafeli satış vb.) uygulanmaz; Türk Borçlar Kanunu ve Türk Ticaret Kanunu hükümleri esas alınmıştır.
-
 ---
 
 ## Madde 1 — Taraflar
@@ -9,7 +7,7 @@
 **Hizmet Sağlayıcı (“QRNot”):**
 - Unvan: SCE INNOVATION LTD. ŞTİ.
 - Adres: Çetin Emeç Bulvarı 25/3, Çankaya / Ankara
-- Vergi dairesi / no: Ankara Yıldırım Beyazıt V.D. / 7571071832 · MERSİS: [ ]
+- Vergi dairesi / no: Ankara Yıldırım Beyazıt V.D. / 7571071832 · MERSİS: 075710718320001
 - E-posta: sce@scegrup.com · Destek: 0850 888 1 889 · WhatsApp: +90 543 392 92 30
 
 **Müşteri:**

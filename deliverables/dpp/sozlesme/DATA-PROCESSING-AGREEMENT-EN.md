@@ -2,15 +2,13 @@
 
 **For the QRNot Digital Product Passport (DPP) service**
 
-> **DRAFT — LEGAL REVIEW REQUIRED.** This text is a template. It must be reviewed by a lawyer and the fields in square brackets [ ] completed before signing. Because data is processed in the USA, where the customer is subject to the GDPR the Standard Contractual Clauses must be attached in full; where Turkish KVKK applies, the standard contract published by the Turkish Personal Data Protection Board must be used verbatim and notified to the Authority within the statutory period.
-
 ---
 
 ## 1. Parties
 
 **Controller (“Customer”):** [Company name], [address], [registration / VAT number]
 
-**Processor (“QRNot”):** SCE INNOVATION LTD. ŞTİ., Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye, tax office / no.: Ankara Yıldırım Beyazıt / 7571071832
+**Processor (“QRNot”):** SCE INNOVATION LTD. ŞTİ., Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye, tax office / no.: Ankara Yıldırım Beyazıt / 7571071832, MERSIS no.: 075710718320001
 
 This agreement is an annex to the QRNot DPP service agreement between the parties dated [date] (the “Main Agreement”). In case of conflict on matters of personal data protection, this agreement prevails.
 

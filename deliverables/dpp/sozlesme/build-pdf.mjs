@@ -8,12 +8,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const dir = dirname(fileURLToPath(import.meta.url))
 const DOCS = [
-  ['VERI-ISLEME-SOZLESMESI-TR.md', 'tr', 'TASLAK'],
-  ['DATA-PROCESSING-AGREEMENT-EN.md', 'en', 'DRAFT'],
-  ['HIZMET-SATIS-SOZLESMESI-TR.md', 'tr', 'TASLAK'],
-  ['TEKNIK-DESTEK-SOZLESMESI-TR.md', 'tr', 'TASLAK'],
-  ['SERVICE-AGREEMENT-EN.md', 'en', 'DRAFT'],
-  ['SUPPORT-SLA-EN.md', 'en', 'DRAFT'],
+  ['VERI-ISLEME-SOZLESMESI-TR.md', 'tr', ''],
+  ['DATA-PROCESSING-AGREEMENT-EN.md', 'en', ''],
+  ['HIZMET-SATIS-SOZLESMESI-TR.md', 'tr', ''],
+  ['TEKNIK-DESTEK-SOZLESMESI-TR.md', 'tr', ''],
+  ['SERVICE-AGREEMENT-EN.md', 'en', ''],
+  ['SUPPORT-SLA-EN.md', 'en', ''],
 ]
 const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
 const browser = BROWSERS.find((b) => existsSync(b))

@@ -1,7 +1,5 @@
 # QRNot Digital Product Passport — Subscription and Services Agreement
 
-> **DRAFT — LEGAL REVIEW REQUIRED.** Template prepared for SCE INNOVATION LTD. ŞTİ. for business customers (B2B). Fields in square brackets [ ] must be completed and the agreement reviewed by a lawyer before signing, particularly where the customer is established outside Türkiye.
-
 ---
 
 ## 1. Parties
@@ -9,7 +7,7 @@
 **Provider (“QRNot”):**
 - SCE INNOVATION LTD. ŞTİ.
 - Çetin Emeç Bulvarı 25/3, Çankaya, Ankara, Türkiye
-- Tax office / no.: Ankara Yıldırım Beyazıt / 7571071832 · sce@scegrup.com · WhatsApp +90 543 392 92 30
+- Tax office / no.: Ankara Yıldırım Beyazıt / 7571071832 · MERSIS no.: 075710718320001 · sce@scegrup.com · WhatsApp +90 543 392 92 30
 
 **Customer:**
 - [Company name], [address], [registration / VAT no.]

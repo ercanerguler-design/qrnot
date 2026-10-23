@@ -48,7 +48,7 @@ Evet, Türkiye'de rakip var ve sayıları artıyor. Aşağıdaki bilgiler firmal
    - Her değişiklik işlem kaydında.
    - Günlük otomatik yedek; silinen dosya 30 gün geri alınabilir.
    - Çakışma koruması.
-   - Açık güvenlik sayfası ve KVKK/GDPR sözleşme taslağı.
+   - Açık güvenlik sayfası ve KVKK/GDPR veri işleme sözleşmesi.
 6. **Hızlı başlangıç ve Türkçe destek.** Firma hesabı dakikalar içinde açılıyor; pilot aynı gün başlıyor.
 
 ### Eksiklerimiz (dürüst liste, öncelik sırasıyla)
@@ -690,7 +690,7 @@ Bugün tedarikçi verisini nasıl topluyorsunuz?
 - ❌ "ISO 27001 / SOC 2 sertifikalıyız" deme; değiliz. Veriler ABD'de (Neon / AWS us-east-1, Vercel). Sorulursa açıkça söyle; AB bölgesi talep üzerine.
 - ❌ Rakip kötüleme. "Biz şunu yapıyoruz" de; karşılaştırmayı müşteri yapsın.
 - ❌ Uydurma müşteri, uydurma alıntı, uydurma sertifika numarası, gerçek firmaya ait GTIN kullanma.
-- ❌ Sözleşme taslağını (`sozlesme/`) avukat okumadan imzaya sunma.
+- ❌ Sözleşme maddelerini (sorumluluk sınırı, süreler, fiyatlar) müşteriyle sözlü pazarlıkta değiştirme; değişiklik yazılı ve Sipariş Formu'nda olsun.
 
 ---
 
@@ -716,7 +716,7 @@ Bugün tedarikçi verisini nasıl topluyorsunuz?
 - `sosyal/<tr|en>/<format>/01–06.png` (6 gönderi × 3 format × 2 dil)
 - `sosyal/PAYLASIM-REHBERI-TR.md`, `sosyal/SHARING-GUIDE-EN.md`
 - `SUNUM-METINLERI.md` (konuşma metni, itiraz–cevap)
-- `sozlesme/` (hizmet satış ve abonelik sözleşmesi, teknik destek / SLA, KVKK/GDPR veri işleme sözleşmesi; TR + EN taslaklar ve PDF)
+- `sozlesme/` (hizmet satış ve abonelik sözleşmesi, teknik destek / SLA, KVKK/GDPR veri işleme sözleşmesi; TR + EN, Markdown ve PDF)
 - `FIYAT-LISTESI.md` (fiyat tablosu, ek hizmetler, indirimler, epassportify karşılaştırması)
 - Ücretsiz demo: qrnot.com/dpp/demo
 - Güvenlik sayfası: qrnot.com/dpp/guvenlik

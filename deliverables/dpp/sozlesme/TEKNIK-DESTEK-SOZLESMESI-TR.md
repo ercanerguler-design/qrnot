@@ -1,6 +1,6 @@
 # QRNot DPP Teknik Destek ve Hizmet Seviyesi Sözleşmesi (SLA)
 
-> **TASLAK — HUKUKİ İNCELEME GEREKİR.** Bu sözleşme, SCE INNOVATION LTD. ŞTİ. (“QRNot”) ile Müşteri arasındaki Hizmet Satış ve Abonelik Sözleşmesi'nin (“Ana Sözleşme”) **Ek-2**'sidir. Tanımlar Ana Sözleşme'deki anlamı taşır. Köşeli parantez içindeki [ ] alanlar imzadan önce doldurulmalıdır.
+Bu sözleşme, SCE INNOVATION LTD. ŞTİ. (“QRNot”) ile Müşteri arasındaki Hizmet Satış ve Abonelik Sözleşmesi'nin (“Ana Sözleşme”) **Ek-2**'sidir. Tanımlar Ana Sözleşme'deki anlamı taşır.
 
 ---
 

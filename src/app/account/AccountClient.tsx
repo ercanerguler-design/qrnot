@@ -27,6 +27,8 @@ interface AccountQr {
   nfc_scan_count?: number
   qr_mode?: string
   created_at: string
+  /** Hesap sahibine ait QR'ın yönetim anahtarı (sunucudan; başka cihazdan da "Yönet" çalışsın) */
+  manage_token?: string | null
 }
 
 interface AccountOrder {
@@ -178,7 +180,8 @@ export default function AccountClient({ lang }: { lang: Lang }) {
       setPremiumUntil(data.premiumUntil || null)
       const found: Record<string, string> = {}
       for (const item of (data.items || []) as AccountQr[]) {
-        const token = localStorage.getItem(`qrnote_token_${item.slug}`)
+        // Önce sunucudan gelen (hesap sahibine ait) anahtar; yoksa bu cihazda kayıtlı olan
+        const token = item.manage_token || localStorage.getItem(`qrnote_token_${item.slug}`)
         if (token) found[item.slug] = token
       }
       setTokens(found)

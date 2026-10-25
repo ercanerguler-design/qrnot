@@ -78,7 +78,21 @@ const C = {
     nfcDesc:
       'NFC modellerinde kamerayı açmaya bile gerek yok: telefonu kolyeye ya da anahtarlığa yaklaştırmak yeterli. QR yedekte, NFC olmayan telefonlar da açabilir.',
     nfcCta: 'NFC ürünleri gör',
-    videoTitle: '30 saniyede QRNot',
+    previewKicker: 'Hediyeyi alan ne görür?',
+    previewTitle: 'Okutur, sesini duyar.',
+    previewDesc: 'QR okutulduğunda telefonda uygulama gerektirmeyen sade bir sayfa açılır. Sağdaki örneği şimdi dinleyebilirsin.',
+    previewPoints: [
+      ['🎙️', 'Sesin ilk sırada', 'Kaydettiğin mesaj tek dokunuşla çalar.'],
+      ['🖼️', 'Fotoğraf ve video', 'Aynı sayfada anılarınız sekmeler halinde durur.'],
+      ['💬', 'Sana cevap bırakır', 'Hediyeyi alan kişi sesli ya da yazılı teşekkür edebilir.'],
+    ],
+    previewPhone: {
+      title: 'Annemin sesi ❤️',
+      opened: '24 kez açıldı',
+      tabs: ['Ses', 'Fotoğraf', 'Video'],
+      note: '“Doğum günün kutlu olsun canım kızım. Uzakta olsam da sesim hep yanında.”',
+      reply: 'Cevap bırak',
+    },
     faqKicker: 'Sık sorulan sorular',
     faq: [
       ['Uygulama indirmek gerekiyor mu?', "Hayır. Telefonun kamerasıyla QR'ı okutmak (ya da NFC modellerde dokundurmak) yeterli. İçerik tarayıcıda açılır."],
@@ -234,7 +248,21 @@ const C = {
     nfcDesc:
       "With NFC models you don't even need the camera: just hold a phone near the necklace or keychain. The QR is there as a backup for phones without NFC.",
     nfcCta: 'See NFC products',
-    videoTitle: 'QRNot in 30 seconds',
+    previewKicker: 'What does the recipient see?',
+    previewTitle: 'They scan. They hear you.',
+    previewDesc: 'Scanning the QR opens a clean page on the phone, no app needed. You can listen to the example on the right right now.',
+    previewPoints: [
+      ['🎙️', 'Your voice comes first', 'Your recorded message plays with a single tap.'],
+      ['🖼️', 'Photos and video', 'Your memories sit on the same page, in tabs.'],
+      ['💬', 'They can reply', 'The recipient can leave you a voice or written thank-you.'],
+    ],
+    previewPhone: {
+      title: "Mom's voice ❤️",
+      opened: 'Opened 24 times',
+      tabs: ['Voice', 'Photo', 'Video'],
+      note: '“Happy birthday, sweetheart. Even far away, my voice is always with you.”',
+      reply: 'Leave a reply',
+    },
     faqKicker: 'FAQ',
     faq: [
       ['Do I need an app?', 'No. Scanning the QR with the phone camera (or tapping NFC models) is enough. Content opens in the browser.'],
@@ -546,10 +574,57 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
         </div>
       </section>
 
-      {/* VIDEO */}
-      <section className="mx-auto max-w-4xl px-4 py-10">
-        <h2 className="font-display mb-5 text-center text-2xl font-semibold">{c.videoTitle}</h2>
-        <video className="w-card aspect-video w-full bg-ink object-cover" controls playsInline preload="metadata" src="/qrnot-intro.mp4" />
+      {/* PREVIEW: alıcının telefonunda açılan sayfa */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <div className="grid items-center gap-12 md:grid-cols-[1.1fr_1fr]">
+          <div>
+            <Kicker>{c.previewKicker}</Kicker>
+            <h2 className="font-display mt-2 text-3xl font-semibold sm:text-4xl">{c.previewTitle}</h2>
+            <p className="mt-4 max-w-xl leading-relaxed text-ink-2">{c.previewDesc}</p>
+            <ul className="mt-8 space-y-5">
+              {c.previewPoints.map(([icon, title, desc]) => (
+                <li key={title} className="flex gap-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cream-2 text-xl" aria-hidden="true">
+                    {icon}
+                  </span>
+                  <div>
+                    <h3 className="font-semibold">{title}</h3>
+                    <p className="mt-0.5 text-sm text-ink-2">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mx-auto w-full max-w-[320px] rounded-[2.75rem] bg-ink p-3 shadow-2xl">
+            <div className="overflow-hidden rounded-[2.25rem] bg-cream px-4 pb-6 pt-3">
+              <div className="mx-auto mb-5 h-5 w-24 rounded-full bg-ink" aria-hidden="true" />
+              <div className="text-center">
+                <p className="font-display text-2xl font-semibold">{c.previewPhone.title}</p>
+                <p className="mt-1 text-xs text-muted">{c.previewPhone.opened}</p>
+              </div>
+              <div className="w-card mt-5 space-y-4 p-4">
+                <div className="flex flex-wrap gap-1.5" aria-hidden="true">
+                  {c.previewPhone.tabs.map((tab, i) => (
+                    <span
+                      key={tab}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium ${i === 0 ? 'border-ink bg-ink text-white' : 'border-line-2 bg-paper text-ink-2'}`}
+                    >
+                      {tab}
+                    </span>
+                  ))}
+                </div>
+                <div className="rounded-2xl bg-cream-2 p-3">
+                  <VoicePlayer src="/demo-voice.wav" lang={lang} compact />
+                </div>
+                <p className="text-sm italic leading-relaxed text-ink-2">{c.previewPhone.note}</p>
+                <span className="w-btn w-btn-ghost w-btn-sm w-full" aria-hidden="true">
+                  💬 {c.previewPhone.reply}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* FAQ */}

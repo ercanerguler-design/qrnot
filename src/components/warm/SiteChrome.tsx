@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import PaymentBadges from '@/components/warm/PaymentBadges'
 import Link from 'next/link'
 import { CartButton, LangSwitch } from '@/components/warm/HeaderClient'
 import { withLang, type Lang } from '@/lib/i18n'
@@ -107,7 +108,6 @@ const FOOTER = {
       ],
     },
     rights: 'Tüm hakları saklıdır.',
-    pay: 'Güvenli ödeme: PayTR · Havale/EFT',
     stores: 'Bizi ayrıca bulabileceğin yerler',
     support: 'Destek hattı',
   },
@@ -139,7 +139,6 @@ const FOOTER = {
       ],
     },
     rights: 'All rights reserved.',
-    pay: 'Secure payment: PayTR',
     stores: 'ALSO FIND US ON',
     support: 'Support line (Turkey)',
   },
@@ -204,7 +203,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           <p>
             © {year} {COMPANY.legalName} · {COMPANY.address} · {COMPANY.email}
           </p>
-          <p>{t.pay}</p>
+          <PaymentBadges lang={lang} />
         </div>
       </div>
     </footer>

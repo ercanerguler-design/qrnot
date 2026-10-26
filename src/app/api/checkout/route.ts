@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
       clientIp: ip,
     })
 
-    if (provider !== 'mock') trackConversion(req, 'checkout_start', { path: '/checkout', value: Number(order.total), currency, props: { orderNo: order.order_no, provider } })
+    if (provider !== 'mock') trackConversion(req, 'checkout_start', { path: '/checkout', value: Number(order.total) / 100, currency, props: { orderNo: order.order_no, provider } })
 
     const origin = req.nextUrl.origin
     const orderUrl = `${origin}/order/${order.order_no}?key=${order.access_key}${en ? '&lang=en' : ''}`

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { notFound, redirect } from 'next/navigation'
+import PaymentBadges from '@/components/warm/PaymentBadges'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { formatMoney } from '@/lib/commerce/catalog'
 import { getOrder } from '@/lib/commerce/orders'
@@ -41,7 +42,10 @@ export default async function PaytrCheckoutPage({ searchParams }: { searchParams
             scrolling="no"
           />
         </div>
-        <p className="mt-4 text-center text-xs text-muted">
+        <div className="mt-4 flex justify-center text-xs text-muted">
+          <PaymentBadges lang={order.lang} transfer={false} />
+        </div>
+        <p className="mt-3 text-center text-xs text-muted">
           {en
             ? 'Payments are processed by PayTR. Your card details never reach QRNot servers.'
             : 'Ödeme altyapısı PayTR tarafından sağlanır. Kart bilgilerin QRNot sunucularına ulaşmaz.'}

@@ -147,7 +147,9 @@ export async function markOrderPaid(orderNo: string, providerRef: string | null,
 
   const fulfilled = await fulfillDigital(order)
   await notifyNewOrder(fulfilled).catch((error) => console.error('[order notify]', error))
-  if (order.provider !== 'mock') await trackPurchase(order.order_no, Number(order.total), String(order.currency))
+  // Ölçüme TL / USD olarak yazılır (sipariş tutarları kuruş / cent); test ödemeleri satış sayılmaz
+  const isTest = order.provider === 'mock' || String(order.provider_ref || '').endsWith(':test')
+  if (!isTest) await trackPurchase(order.order_no, Number(order.total) / 100, String(order.currency))
   return { order: fulfilled, transitioned: true }
 }
 

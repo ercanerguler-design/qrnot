@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { CardLogos } from '@/components/warm/PaymentBadges'
 import ProductArt from '@/components/warm/ProductArt'
 import { readCart, subscribeCart, writeCart } from '@/lib/commerce/cartClient'
 import { currencyForLang, formatMoney, getProduct, priceCart, type CartLine } from '@/lib/commerce/catalog'
@@ -299,6 +300,11 @@ export default function CartClient({
                 <span>
                   <span className="block font-semibold text-ink">{label}</span>
                   {hint && <span className="block text-xs text-muted">{hint}</span>}
+                  {p === 'paytr' && (
+                    <span className="mt-2 block">
+                      <CardLogos />
+                    </span>
+                  )}
                 </span>
               </label>
             )

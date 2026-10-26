@@ -11,8 +11,10 @@ interface AdminOrder {
   access_key: string
   status: string
   provider: string
+  provider_ref: string | null
   currency: Currency
   total: number
+  paid_at: string | null
   email: string
   full_name: string
   phone: string
@@ -57,6 +59,16 @@ export const STATUS_LABEL: Record<string, string> = {
   cancelled: 'İptal',
   refunded: 'İade',
 }
+
+export const PROVIDER_LABEL: Record<string, string> = {
+  paytr: '💳 Kart (PayTR)',
+  transfer: '🏦 Havale/EFT',
+  iyzico: '💳 Kart (iyzico)',
+  stripe: '💳 Kart (Stripe)',
+  mock: '🧪 Test',
+}
+export const providerLabel = (provider: string, ref?: string | null) =>
+  `${PROVIDER_LABEL[provider] || provider}${String(ref || '').endsWith(':test') ? ' · TEST' : ''}`
 
 export const input = 'w-full bg-neutral-900 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-cyan-400'
 export const btn = 'rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-40'
@@ -344,13 +356,14 @@ export function RevenueTab({ call, password }: { call: Caller; password: string 
 export function OrdersTab({ call, initialStatus = '' }: { call: Caller; initialStatus?: string }) {
   const [orders, setOrders] = useState<AdminOrder[]>([])
   const [status, setStatus] = useState(initialStatus)
+  const [provider, setProvider] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    const data = await call<{ orders: AdminOrder[] }>('orders.list', { status: status || null, q })
+    const data = await call<{ orders: AdminOrder[] }>('orders.list', { status: status || null, provider: provider || null, q })
     if (data) setOrders(data.orders)
-  }, [call, q, status])
+  }, [call, q, status, provider])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -372,6 +385,12 @@ export function OrdersTab({ call, initialStatus = '' }: { call: Caller; initialS
             </option>
           ))}
         </select>
+        <select className={`${input.replace('w-full ', '')} w-auto`} value={provider} onChange={(e) => setProvider(e.target.value)}>
+          <option value="">Tüm ödeme yöntemleri</option>
+          <option value="paytr">💳 Kredi kartı (PayTR)</option>
+          <option value="transfer">🏦 Havale/EFT</option>
+          <option value="other">Diğer (eski / test)</option>
+        </select>
         <input className={`${input.replace('w-full ', '')} w-full max-w-xs sm:w-72`} placeholder="Sipariş no, e-posta, isim" value={q} onChange={(e) => setQ(e.target.value)} />
         <button className={`${btn} bg-neutral-800`} onClick={() => void load()}>
           ↻ Yenile
@@ -392,7 +411,7 @@ export function OrdersTab({ call, initialStatus = '' }: { call: Caller; initialS
               <span className="truncate text-neutral-400">{order.email}</span>
               <span className="font-semibold">{formatMoney(order.total, order.currency)}</span>
               <span className="text-neutral-400">
-                {order.provider} · {new Date(order.created_at).toLocaleString('tr-TR')}
+                {providerLabel(order.provider, order.provider_ref)} · {new Date(order.created_at).toLocaleString('tr-TR')}
               </span>
             </button>
             {open === order.order_no && (
@@ -472,9 +491,16 @@ function OrderDetail({
         </a>
       </div>
       <div className="space-y-2">
+        <div className="rounded-xl bg-neutral-900 px-3 py-2 text-xs text-neutral-300">
+          <p>
+            Ödeme: <b>{providerLabel(order.provider, order.provider_ref)}</b>
+          </p>
+          {order.paid_at && <p>Ödeme zamanı: {new Date(order.paid_at).toLocaleString('tr-TR')}</p>}
+          {order.provider === 'paytr' && order.paid_at && <p className="text-neutral-500">PayTR sipariş no: {order.order_no}</p>}
+        </div>
         {(order.status === 'awaiting_transfer' || order.status === 'pending' || order.status === 'failed') && (
           <button className={`${btn} w-full bg-emerald-500 text-neutral-950`} onClick={onMarkPaid}>
-            ✓ Ödeme alındı (havale onayı)
+            {order.provider === 'transfer' ? '✓ Ödeme alındı (havale onayı)' : '✓ Ödeme alındı olarak işaretle (PayTR panelinden kontrol et)'}
           </button>
         )}
         <div className="flex gap-2">

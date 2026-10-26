@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { formatMoney, type Currency } from '@/lib/commerce/catalog'
-import { btn, STATUS_LABEL, type Caller } from './ShopTabs'
+import { btn, PROVIDER_LABEL, STATUS_LABEL, type Caller } from './ShopTabs'
 
 // Genel bakış: admin açılınca ilk görülen ekran. Bekleyen işler, bu ayın geliri, temel sayılar, son hareketler.
 
@@ -10,7 +10,7 @@ interface Dashboard {
   todo: Record<string, number>
   counts: { users: number; premium: number; claimed: number; blank: number; plays: number; scans7: number; entries7: number; etsy7: number }
   month: { from: string; to: string; netTRY: number; netUSD: number; orders: number }
-  recentOrders: Array<{ order_no: string; status: string; currency: Currency; total: number; full_name: string; created_at: string }>
+  recentOrders: Array<{ order_no: string; status: string; provider: string; currency: Currency; total: number; full_name: string; created_at: string }>
   recentEvents: Array<{ kind: string; created_at: string; slug: string; title: string }>
 }
 
@@ -132,7 +132,9 @@ export function HomeTab({ call, go }: { call: Caller; go: Go }) {
                 </span>
                 <span className="shrink-0 text-right">
                   <span className="font-semibold">{formatMoney(o.total, o.currency)}</span>
-                  <span className="block text-xs text-neutral-500">{STATUS_LABEL[o.status] || o.status}</span>
+                  <span className="block text-xs text-neutral-500">
+                    {PROVIDER_LABEL[o.provider] || o.provider} · {STATUS_LABEL[o.status] || o.status}
+                  </span>
                 </span>
               </div>
             ))}

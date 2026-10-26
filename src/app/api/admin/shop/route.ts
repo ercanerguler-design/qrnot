@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
             (SELECT COUNT(*)::int FROM etsy_activations WHERE created_at > NOW() - INTERVAL '7 days') AS etsy7
         `,
         revenueSummary(from, to),
-        sql`SELECT order_no, status, currency, total, full_name, created_at FROM shop_orders ORDER BY created_at DESC LIMIT 6`,
+        sql`SELECT order_no, status, provider, currency, total, full_name, created_at FROM shop_orders ORDER BY created_at DESC LIMIT 6`,
         sql`
           SELECT e.kind, e.created_at, q.slug, q.title
           FROM qr_events e JOIN qr_codes q ON q.id = e.qr_id
@@ -68,12 +68,14 @@ export async function POST(req: NextRequest) {
       const status = ORDER_STATUSES.includes(body.status) ? body.status : null
       const q = String(body.q || '').trim()
       const like = `%${q}%`
+      const provider = ['paytr', 'transfer', 'other'].includes(body.provider) ? String(body.provider) : null
       const orders = await sql`
         SELECT order_no, access_key, status, provider, provider_ref, currency, subtotal, shipping, total, lang, email, full_name, phone,
                address, items, fulfillment, customer_note, admin_note, tracking_no, paid_at, created_at
         FROM shop_orders
         WHERE (${status}::text IS NULL OR status = ${status})
           AND (${q} = '' OR order_no ILIKE ${like} OR email ILIKE ${like} OR full_name ILIKE ${like})
+          AND (${provider}::text IS NULL OR (${provider} = 'other' AND provider NOT IN ('paytr', 'transfer')) OR provider = ${provider})
         ORDER BY created_at DESC
         LIMIT 200
       `
@@ -151,6 +153,8 @@ export async function POST(req: NextRequest) {
 
       // 4) Sipariş kaydı
       await sql`DELETE FROM shop_orders WHERE order_no = ${order.order_no}`
+      // Ölçüm ekranındaki satış kaydı da gider (silinen test/iptal siparişi satış görünmesin)
+      await sql`DELETE FROM site_events WHERE type = 'conversion' AND name = 'purchase' AND props->>'orderNo' = ${order.order_no}`.catch(() => null)
 
       return NextResponse.json({ ok: true, deletedQrs, credits, creditsRemoved, creditsAlreadyUsed: Math.max(0, credits - creditsRemoved) })
     }

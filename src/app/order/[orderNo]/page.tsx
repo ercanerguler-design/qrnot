@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import FrameBreakout from '@/components/warm/FrameBreakout'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { formatMoney } from '@/lib/commerce/catalog'
 import { getOrder, type OrderStatus } from '@/lib/commerce/orders'
 import { formatDate, normalizeLang, withLang } from '@/lib/i18n'
 import { COMPANY, whatsappHref } from '@/lib/site'
 import ClearCartOnSuccess from './ClearCartOnSuccess'
+import PendingRefresh from './PendingRefresh'
 
 export const metadata: Metadata = { title: 'Sipariş durumu', robots: { index: false, follow: false } }
 export const dynamic = 'force-dynamic'
@@ -97,6 +99,8 @@ export default async function OrderPage({
 
   return (
     <WarmPage lang={lang}>
+      <FrameBreakout />
+      {order.status === 'pending' && order.provider === 'paytr' && <PendingRefresh />}
       {(success || order.status === 'awaiting_transfer') && <ClearCartOnSuccess />}
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
         <div className="text-center">

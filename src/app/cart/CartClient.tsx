@@ -24,21 +24,19 @@ const T = {
     fullName: 'Ad soyad',
     email: 'E-posta',
     phone: 'Cep telefonu',
-    tckn: 'T.C. kimlik no (fatura için, isteğe bağlı)',
     address: 'Teslimat adresi',
     addressLine: 'Mahalle, sokak, bina ve daire no',
     district: 'İlçe',
     city: 'İl',
     postal: 'Posta kodu',
+    country: 'Ülke',
     note: 'Sipariş notu (isteğe bağlı)',
     notePh: 'Örn: Hediye paketi üzerine "İyi ki doğdun" yazılsın',
     payment: 'Ödeme yöntemi',
-    iyzico: 'Kredi / banka kartı',
-    iyzicoHint: 'iyzico güvencesiyle · 9 aya varan taksit',
+    paytr: 'Kredi / banka kartı',
+    paytrHint: 'PayTR güvencesiyle · taksit seçenekleri',
     transfer: 'Havale / EFT',
     transferHint: 'Sipariş sonrası IBAN bilgileri gösterilir; ödeme onaylanınca hazırlanır.',
-    stripe: 'Card',
-    stripeHint: 'Stripe',
     mock: 'Test ödemesi (yerel)',
     mockHint: 'Gerçek para çekilmez — sadece geliştirme ortamında görünür.',
     noProvider: "Şu an online ödeme yöntemi aktif değil. WhatsApp'tan sipariş verebilirsin.",
@@ -72,21 +70,19 @@ const T = {
     fullName: 'Full name',
     email: 'Email',
     phone: 'Phone (optional)',
-    tckn: '',
     address: 'Shipping address',
-    addressLine: '',
-    district: '',
-    city: '',
-    postal: '',
+    addressLine: 'Street address, apartment',
+    district: 'State / region',
+    city: 'City',
+    postal: 'Postal code',
+    country: 'Country',
     note: 'Order note (optional)',
     notePh: 'e.g. Please add a "Happy birthday" note',
     payment: 'Payment',
-    iyzico: 'Card (iyzico)',
-    iyzicoHint: '',
+    paytr: 'Credit / debit card',
+    paytrHint: 'Secure checkout by PayTR',
     transfer: 'Bank transfer',
     transferHint: '',
-    stripe: 'Credit / debit card',
-    stripeHint: 'Secure checkout by Stripe · Apple Pay & Google Pay',
     mock: 'Test payment (local)',
     mockHint: 'No real charge — only visible in development.',
     noProvider: 'Online payment is not available right now. Please contact us on WhatsApp.',
@@ -102,7 +98,7 @@ const T = {
     loginNeeded: 'Your purchases are linked to your account. Please sign in or create an account to continue.',
     login: 'Sign in / create an account',
     paymentError: 'Payment could not be completed. Please try again.',
-    secure: '🔒 Your card details never touch QRNot servers. Shipping address is collected on the Stripe page.',
+    secure: '🔒 Your card details never touch QRNot servers.',
     variant: 'Finish',
   },
 }
@@ -139,11 +135,11 @@ export default function CartClient({
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [tckn, setTckn] = useState('')
   const [addressLine, setAddressLine] = useState('')
   const [district, setDistrict] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
+  const [country, setCountry] = useState('')
   const [note, setNote] = useState('')
   const [consentPre, setConsentPre] = useState(false)
   const [consentDistance, setConsentDistance] = useState(false)
@@ -178,7 +174,7 @@ export default function CartClient({
   const removeLine = (index: number) => writeCart(lines.filter((_, i) => i !== index))
 
   const loginHref = withLang(`/account?next=${encodeURIComponent(withLang('/cart', lang))}`, lang)
-  const showAddress = cart.hasPhysical && provider !== 'stripe'
+  const showAddress = cart.hasPhysical
 
   const submit = async () => {
     if (!provider) return
@@ -192,8 +188,8 @@ export default function CartClient({
           lang,
           provider,
           lines: cart.lines.map((line) => ({ productId: line.productId, variantId: line.variantId, quantity: line.quantity })),
-          customer: { fullName, email, phone, identityNumber: tckn },
-          address: { line: addressLine, district, city, postalCode, country: en ? '' : 'Türkiye' },
+          customer: { fullName, email, phone },
+          address: { line: addressLine, district, city, postalCode, country: en ? country : 'Türkiye' },
           note,
           consents: { preInfo: consentPre, distanceSales: consentDistance, terms: consentTerms, marketing: consentMarketing },
         }),
@@ -226,7 +222,7 @@ export default function CartClient({
 
   const consentsOk = consentTerms && (en || (consentPre && consentDistance))
   const providerLabel = (p: PaymentProvider) =>
-    ({ iyzico: [t.iyzico, t.iyzicoHint], transfer: [t.transfer, t.transferHint], stripe: [t.stripe, t.stripeHint], mock: [t.mock, t.mockHint] })[p]
+    ({ paytr: [t.paytr, t.paytrHint], transfer: [t.transfer, t.transferHint], mock: [t.mock, t.mockHint] })[p]
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.2fr_1fr]">
@@ -254,16 +250,6 @@ export default function CartClient({
             />
             <input className="w-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.email} autoComplete="email" />
             <input className="w-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.phone} autoComplete="tel" />
-            {!en && (
-              <input
-                className="w-input sm:col-span-2"
-                inputMode="numeric"
-                value={tckn}
-                maxLength={11}
-                onChange={(e) => setTckn(e.target.value.replace(/\D/g, ''))}
-                placeholder={t.tckn}
-              />
-            )}
           </div>
         </section>
 
@@ -281,6 +267,15 @@ export default function CartClient({
               <input className="w-input" value={district} onChange={(e) => setDistrict(e.target.value)} placeholder={t.district} />
               <input className="w-input" value={city} onChange={(e) => setCity(e.target.value)} placeholder={t.city} autoComplete="address-level1" />
               <input className="w-input" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder={t.postal} autoComplete="postal-code" />
+              {en && (
+                <input
+                  className="w-input sm:col-span-3"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder={t.country}
+                  autoComplete="country-name"
+                />
+              )}
             </div>
           </section>
         )}

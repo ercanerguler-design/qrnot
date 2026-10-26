@@ -19,7 +19,7 @@ const T = {
     desc: 'Her ürün kendine ait kalıcı bir QR (ve NFC modellerde çip) ile gelir. İçeriği sen eklersin, sonradan güncelleyebilirsin (3 kayıt dahil).',
     physical: 'Takı ve aksesuar',
     digital: 'Dijital ürünler',
-    trust: ['🚚 1-3 iş gününde kargoda', '🎁 Hediye kutusunda', '🔒 iyzico güvenli ödeme', '↩️ 14 gün iade'],
+    trust: ['🚚 1-3 iş gününde kargoda', '🎁 Hediye kutusunda', '🔒 PayTR güvenli ödeme', '↩️ 14 gün iade'],
   },
   en: {
     kicker: 'Shop',
@@ -27,7 +27,7 @@ const T = {
     desc: 'Every product comes with its own permanent QR (and an NFC chip on NFC models). You add the content and can update it later (3 recordings included).',
     physical: 'Jewelry & accessories',
     digital: 'Digital products',
-    trust: ['🌍 Worldwide delivery', '🎁 Gift-ready packaging', '🔒 Secure Stripe checkout', '↩️ 14-day returns'],
+    trust: ['🌍 Worldwide delivery', '🎁 Gift-ready packaging', '🔒 Secure card checkout', '↩️ 14-day returns'],
   },
 }
 

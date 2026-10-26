@@ -16,7 +16,6 @@ export const COMPANY = {
   whatsappDisplay: '+90 543 392 92 30',
   bankName: 'Türkiye Garanti Bankası — Etlik Şubesi',
   iban: 'TR48 0006 2000 7740 0006 2930 33',
-  iyzicoMerchant: 'SCE Innovation Ltd. Şti.',
 }
 
 /** QRNot'un pazaryeri mağazaları (anasayfa, footer ve yapılandırılmış veri bu listeden beslenir). */

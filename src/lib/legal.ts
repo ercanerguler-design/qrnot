@@ -36,7 +36,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', '3. Ödeme ve Teslimat'],
       [
         'ul',
-        'Ödeme; kredi/banka kartı (iyzico altyapısı) veya havale/EFT ile yapılır.|Fiziksel ürünler ödemenin onaylanmasından itibaren en geç 3 iş günü içinde kargoya verilir; yasal teslim süresi 30 gündür.|Dijital ürünler (QR hakkı, dijital anı defteri) ödeme onayıyla birlikte üyelik hesabına anında tanımlanır.',
+        'Ödeme; kredi/banka kartı (PayTR altyapısı) veya havale/EFT ile yapılır.|Fiziksel ürünler ödemenin onaylanmasından itibaren en geç 3 iş günü içinde kargoya verilir; yasal teslim süresi 30 gündür.|Dijital ürünler (QR hakkı, dijital anı defteri) ödeme onayıyla birlikte üyelik hesabına anında tanımlanır.',
       ],
       ['h2', '4. Cayma Hakkı'],
       [
@@ -74,7 +74,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Madde 3 — Ürün, Fiyat ve Ödeme'],
       [
         'p',
-        'Ürünlerin cinsi, türü, adedi, satış bedeli, ödeme şekli ve teslimat bilgileri sipariş özetinde ve sipariş onay sayfasında yer alır. Listelenen fiyatlar satış fiyatıdır ve KDV dahildir. Kart bilgileri SATICI tarafından saklanmaz; ödeme altyapısı iyzico tarafından sağlanır.',
+        'Ürünlerin cinsi, türü, adedi, satış bedeli, ödeme şekli ve teslimat bilgileri sipariş özetinde ve sipariş onay sayfasında yer alır. Listelenen fiyatlar satış fiyatıdır ve KDV dahildir. Kart bilgileri SATICI tarafından saklanmaz; ödeme altyapısı PayTR Ödeme ve Elektronik Para Kuruluşu A.Ş. tarafından sağlanır.',
       ],
       ['h2', 'Madde 4 — Teslimat'],
       [
@@ -133,7 +133,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         'Hesap verileri: e-posta adresi ve şifrenin (geri döndürülemez şekilde) özeti.|Sipariş verileri: ad-soyad, telefon, teslimat adresi, sipariş içeriği.|QR içerikleri: yüklediğin ses, video, fotoğraf, başlık ve bağlantılar.|Cevaplar ve grup mesajları: QR’ına cevap ya da grup hediyesi mesajı bırakan kişinin adı, mesajı ve yüklediği ses/video/fotoğraf.|Kayıp modu: QR’ı okutan kişi açıkça izin verirse, tarayıcısının bildirdiği tek seferlik konumu ve isteğe bağlı notu/iletişim bilgisi yalnızca QR sahibine iletilir; sürekli konum takibi yapılmaz.|Okutma kayıtları ve bildirimler: QR’ın okutulma zamanı ve kaynağı (QR/NFC); anlık bildirim için tarayıcının oluşturduğu abonelik bilgisi.|Yapay zekâ altyazı (Premium): altyazı istendiğinde ses/video dosyası yazıya dökülmek üzere OpenAI’a, metin çevrilmek üzere Anthropic’e iletilir; bu hizmet sağlayıcılar veriyi yalnızca işlemi gerçekleştirmek için kullanır.|Dijital Ürün Pasaportu (kurumsal): firma kullanıcılarının e-posta, ad ve şifre özeti; firmanın girdiği ürün verileri ve belgeler. Pasaport okutmalarında kişisel veri tutulmaz, yalnızca ülke kodu ve dil istatistik amacıyla kaydedilir. Otomatik çeviri istendiğinde ürün metinleri Anthropic’e iletilir.|Anı defteri içerikleri: misafirlerin bıraktığı isim, mesaj ve medya.|Teknik veriler: IP adresi (güvenlik ve kötüye kullanımı önleme), görüntülenme sayıları.',
       ],
       ['h2', 'Ödeme bilgileri'],
-      ['p', 'Kart bilgilerin QRNot sunucularına ulaşmaz; ödemeler iyzico (Türkiye) veya Stripe (yurt dışı) tarafından işlenir.'],
+      ['p', 'Kart bilgilerin QRNot sunucularına ulaşmaz; ödemeler PayTR tarafından işlenir.'],
       ['h2', 'Verilerin saklandığı yerler'],
       [
         'p',
@@ -165,7 +165,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Aktarım'],
       [
         'p',
-        'Kişisel veriler; ödeme kuruluşları (iyzico, Stripe), kargo firmaları, barındırma ve depolama hizmet sağlayıcıları (Vercel, Neon) ve yasal olarak yetkili kamu kurumlarıyla, yukarıdaki amaçlarla sınırlı olarak paylaşılabilir.',
+        'Kişisel veriler; ödeme kuruluşları (PayTR), kargo firmaları, barındırma ve depolama hizmet sağlayıcıları (Vercel, Neon) ve yasal olarak yetkili kamu kurumlarıyla, yukarıdaki amaçlarla sınırlı olarak paylaşılabilir.',
       ],
       ['h2', 'Haklarınız (KVKK m.11)'],
       [
@@ -226,7 +226,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         'Account data: email address and a one-way hash of your password.|Order data: name, phone, shipping address and order contents.|Content you upload: voice, video, photos, titles and links.|Replies and group messages: the name, message and media of anyone who replies to your QR or adds a group-gift message.|Lost mode: if the person scanning your QR explicitly allows it, their browser’s one-time location and optional note/contact are sent only to the QR owner; there is no continuous tracking.|Scan records and notifications: when and how (QR/NFC) your QR was scanned; the browser push subscription needed for notifications.|AI captions (Premium): when you request captions, the audio/video is sent to OpenAI for transcription and the text to Anthropic for translation; these providers use the data only to perform the request.|Digital Product Passport (business): company users’ email, name and password hash; product data and documents entered by the company. Passport scans store no personal data, only the country code and language for statistics. When auto-translation is requested, product texts are sent to Anthropic.|Guestbook content left by guests: name, message and media.|Technical data: IP address (security and abuse prevention), view counts.',
       ],
       ['h2', 'Payments'],
-      ['p', 'Card details never reach QRNot servers; payments are processed by Stripe or iyzico.'],
+      ['p', 'Card details never reach QRNot servers; payments are processed by PayTR.'],
       ['h2', 'Where data is stored'],
       ['p', 'Data is hosted on Vercel (hosting and file storage) and Neon (database). We do not sell personal data and do not use advertising trackers.'],
       ['h2', 'Visibility'],

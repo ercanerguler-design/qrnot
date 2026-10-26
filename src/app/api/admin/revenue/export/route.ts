@@ -26,7 +26,7 @@ const STATUS_TR: Record<string, string> = {
   cancelled: 'İptal',
   refunded: 'İade',
 }
-const PROVIDER_TR: Record<string, string> = { iyzico: 'Kart (iyzico)', stripe: 'Kart (Stripe)', transfer: 'Havale / EFT', mock: 'Test' }
+const PROVIDER_TR: Record<string, string> = { paytr: 'Kart (PayTR)', iyzico: 'Kart (iyzico)', stripe: 'Kart (Stripe)', transfer: 'Havale / EFT', mock: 'Test' }
 const MONEY_FORMAT = '#,##0.00'
 
 const money = (kurus: number) => Math.round(Number(kurus)) / 100

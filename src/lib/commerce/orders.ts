@@ -10,7 +10,9 @@ import { formatMoney, type Currency, type PricedLine } from '@/lib/commerce/cata
 
 export type OrderStatus = 'pending' | 'awaiting_transfer' | 'paid' | 'fulfilled' | 'shipped' | 'delivered' | 'failed' | 'cancelled' | 'refunded'
 
-export type PaymentProvider = 'iyzico' | 'stripe' | 'transfer' | 'mock'
+export type PaymentProvider = 'paytr' | 'transfer' | 'mock'
+/** Eski siparişlerde kalan, artık kullanılmayan ödeme yöntemleri */
+type LegacyProvider = 'iyzico' | 'stripe'
 
 export interface OrderAddress {
   line: string
@@ -25,7 +27,7 @@ export interface ShopOrder {
   order_no: string
   access_key: string
   status: OrderStatus
-  provider: PaymentProvider
+  provider: PaymentProvider | LegacyProvider
   provider_ref: string | null
   currency: Currency
   subtotal: number

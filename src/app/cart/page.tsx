@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
+import FrameBreakout from '@/components/warm/FrameBreakout'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { AUTH_COOKIE_NAME } from '@/lib/auth'
 import { currencyForLang } from '@/lib/commerce/catalog'
@@ -20,6 +21,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
 
   return (
     <WarmPage lang={lang}>
+      <FrameBreakout />
       <CartClient lang={lang} providers={providers} hasSession={hasSession} paymentError={query.payment === 'error'} />
     </WarmPage>
   )

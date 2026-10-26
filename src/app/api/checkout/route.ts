@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/auth'
 import { priceCart, type CartLine, type Currency } from '@/lib/commerce/catalog'
-import { initIyzicoCheckout, toIyzicoPrice } from '@/lib/commerce/iyzico'
 import { createOrder, markOrderFailed, setOrderProviderRef, type OrderAddress, type PaymentProvider } from '@/lib/commerce/orders'
-import { createStripeCheckout } from '@/lib/commerce/stripe'
+import { getPaytrToken } from '@/lib/commerce/paytr'
 import { availableProviders } from '@/lib/commerce/providers'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 import { normalizeLang } from '@/lib/i18n'
@@ -57,9 +56,6 @@ export async function POST(req: NextRequest) {
     const phone = String(customer.phone || '')
       .trim()
       .slice(0, 40)
-    const identityNumber = String(customer.identityNumber || '')
-      .replace(/\D/g, '')
-      .slice(0, 11)
 
     if (fullName.split(/\s+/).length < 2) return bad(en ? 'Please enter your full name.' : 'Ad ve soyadını yaz.')
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return bad(en ? 'Please enter a valid email.' : 'Geçerli bir e-posta yaz.')
@@ -67,8 +63,7 @@ export async function POST(req: NextRequest) {
 
     const rawAddress = body.address || {}
     let address: OrderAddress | null = null
-    // Stripe'ta teslimat adresi Stripe sayfasında toplanır
-    if (cart.hasPhysical && provider !== 'stripe') {
+    if (cart.hasPhysical) {
       address = {
         line: String(rawAddress.line || '')
           .trim()
@@ -86,7 +81,7 @@ export async function POST(req: NextRequest) {
           .trim()
           .slice(0, 60),
       }
-      if (address.line.length < 8 || !address.city) return bad(en ? 'Please enter your delivery address.' : 'Teslimat adresini eksiksiz yaz.')
+      if (address.line.length < 8 || !address.city || !address.country) return bad(en ? 'Please enter your delivery address.' : 'Teslimat adresini eksiksiz yaz.')
     }
 
     const consents = body.consents || {}
@@ -139,79 +134,38 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    if (provider === 'iyzico') {
-      const [name, ...rest] = fullName.split(/\s+/)
-      const city = address?.city || String(rawAddress.city || 'Istanbul')
-      try {
-        const session = await initIyzicoCheckout({
-          orderNo: order.order_no,
-          total: cart.total,
-          callbackUrl: `${origin}/api/payments/iyzico/callback?order=${order.order_no}`,
-          locale: lang,
-          buyer: {
-            id: user?.id || `guest-${order.order_no}`,
-            name,
-            surname: rest.join(' ') || name,
-            email,
-            gsmNumber: phone,
-            identityNumber: identityNumber.length === 11 ? identityNumber : '11111111111',
-            ip,
-            address: address ? `${address.line} ${address.district}`.trim() : 'Dijital teslimat',
-            city,
-            country: address?.country || 'Turkey',
-            zipCode: address?.postalCode || undefined,
-          },
-          shipping: address
-            ? {
-                contactName: fullName,
-                address: `${address.line} ${address.district}`.trim(),
-                city: address.city,
-                country: address.country,
-                zipCode: address.postalCode || undefined,
-              }
-            : null,
-          items: [
-            ...cart.lines.map((line, index) => ({
-              id: `${line.productId}-${index}`,
-              name: `${line.quantity}x ${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ''}`.slice(0, 100),
-              category1: line.physical ? 'Takı ve Aksesuar' : 'Dijital Hizmet',
-              itemType: (line.physical ? 'PHYSICAL' : 'VIRTUAL') as 'PHYSICAL' | 'VIRTUAL',
-              price: toIyzicoPrice(line.lineTotal),
-            })),
-            ...(cart.shipping > 0
-              ? [{ id: 'shipping', name: 'Kargo', category1: 'Kargo', itemType: 'VIRTUAL' as const, price: toIyzicoPrice(cart.shipping) }]
-              : []),
-          ],
-        })
-        await setOrderProviderRef(order.order_no, session.token)
-        return NextResponse.json({ orderNo: order.order_no, redirectUrl: session.paymentPageUrl })
-      } catch (error) {
-        await markOrderFailed(order.order_no, `iyzico init: ${error instanceof Error ? error.message : 'error'}`)
-        return bad(error instanceof Error ? error.message : 'iyzico hatası', 502)
-      }
-    }
-
-    // Stripe
+    // PayTR: ödeme oturumu (token) alınır, kullanıcı sitedeki ödeme sayfasına gider
     try {
-      const session = await createStripeCheckout({
+      const token = await getPaytrToken({
         orderNo: order.order_no,
+        total: cart.total,
+        currency,
         email,
-        lines: cart.lines.map((line) => ({
-          name: `${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ''}`,
-          unitAmount: line.unitPrice,
-          quantity: line.quantity,
-        })),
-        shipping: cart.shipping,
-        collectShipping: cart.hasPhysical,
-        successUrl: `${origin}/api/payments/stripe/return?order=${order.order_no}&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${origin}/cart${en ? '?lang=en' : ''}`,
-        locale: lang,
+        userIp: ip,
+        userName: fullName,
+        userAddress: address ? [address.line, address.district, address.city, address.postalCode, address.country].filter(Boolean).join(', ') : '',
+        userPhone: phone,
+        okUrl: orderUrl,
+        failUrl: `${origin}/cart?payment=error${en ? '&lang=en' : ''}`,
+        lang,
+        basket: [
+          ...cart.lines.map((line): [string, number, number] => [
+            `${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ''}`,
+            line.unitPrice,
+            line.quantity,
+          ]),
+          ...(cart.shipping > 0 ? [[en ? 'Shipping' : 'Kargo', cart.shipping, 1] as [string, number, number]] : []),
+        ],
       })
-      await setOrderProviderRef(order.order_no, session.id)
-      return NextResponse.json({ orderNo: order.order_no, redirectUrl: session.url })
+      await setOrderProviderRef(order.order_no, token)
+      return NextResponse.json({
+        orderNo: order.order_no,
+        redirectUrl: `${origin}/checkout/paytr?order=${order.order_no}&key=${order.access_key}`,
+      })
     } catch (error) {
-      await markOrderFailed(order.order_no, `stripe init: ${error instanceof Error ? error.message : 'error'}`)
-      return bad(error instanceof Error ? error.message : 'Stripe error', 502)
+      await markOrderFailed(order.order_no, `paytr init: ${error instanceof Error ? error.message : 'error'}`)
+      console.error('[checkout paytr]', error)
+      return bad(en ? 'Could not open the payment page. Please try again.' : 'Ödeme sayfası açılamadı. Lütfen tekrar dene.', 502)
     }
   } catch (err) {
     console.error('[checkout]', err)

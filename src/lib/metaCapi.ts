@@ -3,7 +3,7 @@ import { createHash } from 'crypto'
 // Meta Dönüşümler API'si (Conversions API): ödeme sağlayıcısı onayı geldiğinde satın almayı sunucudan Meta'ya bildirir.
 // Yalnızca müşteri ödeme anında çerez onayı vermişse (consents.meta) gönderilir. META_CAPI_TOKEN yoksa hiçbir şey yapmaz.
 
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1296303192108755'
+const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1840016090504466'
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION || 'v24.0'
 
 const sha = (value: string) => createHash('sha256').update(value).digest('hex')

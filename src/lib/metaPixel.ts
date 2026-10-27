@@ -4,7 +4,7 @@
 // Gizli anahtar taşıyan ya da kişisel içerik gösteren sayfalarda (QR içeriği, yönetim, sipariş, admin…) hiç çalışmaz.
 // Satın alma olayı tarayıcıdan değil, ödeme onaylanınca sunucudan gönderilir (src/lib/metaCapi.ts).
 
-export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1296303192108755'
+export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1840016090504466'
 export const CONSENT_COOKIE = 'qrnot_consent'
 export const CONSENT_EVENT = 'qrnot-consent'
 export const OPEN_CONSENT_EVENT = 'qrnot-open-consent'

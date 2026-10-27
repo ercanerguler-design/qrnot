@@ -185,6 +185,7 @@ export function QrsTab({ password }: { password: string }) {
       )}
 
       <CreateQrCard password={password} onCreated={load} />
+      <TransferQrCard password={password} onDone={load} />
 
       <section className={`${card} space-y-4`}>
         <div className="flex flex-wrap items-center gap-2">
@@ -307,6 +308,57 @@ export function QrsTab({ password }: { password: string }) {
         )}
       </section>
     </div>
+  )
+}
+
+/** QR'ı başka bir üyenin hesabına devreder (ör. senin hesabında hazırlanmış QR'ı müşteriye vermek). */
+function TransferQrCard({ password, onDone }: { password: string; onDone: () => Promise<void> }) {
+  const [slug, setSlug] = useState('')
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState<string | null>(null)
+
+  const transfer = async () => {
+    if (!window.confirm(`${slug.trim()} kodlu QR, ${email.trim()} hesabına devredilsin mi?\n\nİçerik aynen kalır. Eski hesap bu QR'ı artık yönetemez; eski yönetim linki ve kurtarma kodu çalışmaz.`)) return
+    setLoading(true)
+    setError(null)
+    setDone(null)
+    try {
+      const data = await adminPost<{ slug: string; title: string | null; claimed: boolean; from: string | null; to: string }>('/api/admin/shop', password, { action: 'qr.transfer', slug, email })
+      setDone(
+        `✓ ${data.slug}${data.title ? ` (${data.title})` : ''}: ${data.from || 'sahipsiz'} → ${data.to}. ` +
+          (data.claimed ? 'Müşteri “Hesabım” sayfasında QR’ı görür ve yönetebilir.' : 'QR henüz kurulmamış; müşteri okutup kendi hesabıyla kurabilir.')
+      )
+      setSlug('')
+      setEmail('')
+      await onDone()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Devredilemedi')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <details className={`${card} group`}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <span>
+          <span className="text-lg font-semibold">⇄ QR sahibini değiştir</span>
+          <span className="block text-sm text-neutral-400">Bir QR’ı içeriğiyle birlikte başka bir üyenin hesabına taşı. Müşterinin önce sitede üye olması gerekir.</span>
+        </span>
+        <span className="text-neutral-500 transition group-open:rotate-45">＋</span>
+      </summary>
+      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <input className={input} placeholder="QR kodu ya da linki (qrnot.com/q/…)" value={slug} onChange={(e) => setSlug(e.target.value)} />
+        <input className={input} type="email" placeholder="Müşterinin üyelik e-postası" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <button className={`${btn} bg-cyan-500 text-neutral-950`} disabled={loading || !slug.trim() || !email.trim()} onClick={() => void transfer()}>
+          {loading ? 'Devrediliyor…' : 'Devret'}
+        </button>
+      </div>
+      {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
+      {done && <p className="mt-3 text-sm text-emerald-300">{done}</p>}
+    </details>
   )
 }
 

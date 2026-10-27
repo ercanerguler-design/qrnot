@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
 import { sql } from '@/lib/db'
@@ -93,6 +94,41 @@ export async function POST(req: NextRequest) {
         WHERE id = ${id}
       `
       return NextResponse.json({ ok: true })
+    }
+
+    // QR'ı başka bir üyenin hesabına devret. İçerik aynen kalır; eski hesabın yönetim linki ve kurtarma kodu geçersiz olur.
+    if (action === 'qr.transfer') {
+      const raw = String(body.slug || '').trim()
+      const slug = (raw.match(/\/(?:q|manage)\/([^/?#\s]+)/)?.[1] || raw).trim()
+      const email = String(body.email || '').trim().toLowerCase()
+      if (!slug || !/^[A-Za-z0-9_-]{2,80}$/.test(slug)) return NextResponse.json({ error: 'QR kodunu ya da linkini yaz' }, { status: 400 })
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return NextResponse.json({ error: 'Geçerli bir e-posta yaz' }, { status: 400 })
+
+      const users = (await sql`SELECT id, email FROM users WHERE lower(trim(email)) = ${email} LIMIT 1`) as Array<{ id: string; email: string }>
+      const target = users[0]
+      if (!target) return NextResponse.json({ error: 'Bu e-postayla kayıtlı üye yok. Müşteri önce qrnot.com/account sayfasından üye olmalı.' }, { status: 404 })
+
+      const rows = (await sql`
+        SELECT q.id, q.slug, q.is_claimed, q.is_demo, q.title, q.owner_user_id, q.creator_user_id, u.email AS current_email
+        FROM qr_codes q LEFT JOIN users u ON u.id = COALESCE(q.owner_user_id, q.creator_user_id)
+        WHERE q.slug = ${slug} LIMIT 1
+      `) as Array<{ id: string; slug: string; is_claimed: boolean; is_demo: boolean; title: string | null; owner_user_id: string | null; creator_user_id: string | null; current_email: string | null }>
+      const qr = rows[0]
+      if (!qr) return NextResponse.json({ error: `"${slug}" kodlu QR bulunamadı` }, { status: 404 })
+      if (qr.is_demo) return NextResponse.json({ error: 'Demo QR devredilemez' }, { status: 400 })
+      if ((qr.owner_user_id || qr.creator_user_id) === target.id) return NextResponse.json({ error: 'Bu QR zaten bu hesapta' }, { status: 400 })
+
+      if (qr.is_claimed) {
+        await sql`
+          UPDATE qr_codes
+          SET owner_user_id = ${target.id}, creator_user_id = ${target.id},
+              admin_token = ${randomBytes(32).toString('hex')}, recovery_code_hash = NULL, updated_at = NOW()
+          WHERE id = ${qr.id}
+        `
+      } else {
+        await sql`UPDATE qr_codes SET creator_user_id = ${target.id}, owner_user_id = NULL, updated_at = NOW() WHERE id = ${qr.id}`
+      }
+      return NextResponse.json({ ok: true, slug: qr.slug, title: qr.title, claimed: qr.is_claimed, from: qr.current_email, to: target.email })
     }
 
     if (action === 'meta.test') {

@@ -162,7 +162,7 @@ export function parseWhatsAppSupport(errorText: string) {
 export async function attachMedia(
   formData: FormData,
   file: File,
-  options: { slug: string; token?: string; onProgress: (value: number) => void }
+  options: { slug: string; token?: string; onProgress: (value: number) => void; lang?: Lang }
 ) {
   try {
     const url = await uploadMediaDirect({ slug: options.slug, scope: 'qr', file, token: options.token, onProgress: options.onProgress })
@@ -172,7 +172,14 @@ export async function attachMedia(
       formData.append('media', file)
       return
     }
-    throw error
+    // Sunucunun kendi Türkçe mesajları (yetki, kota vb.) aynen gösterilir; ağ / Blob hataları sadeleştirilir.
+    const raw = error instanceof Error ? error.message : ''
+    if (raw && !/vercel blob|fetch|network|failed|abort|timeout/i.test(raw)) throw error
+    throw new Error(
+      options.lang === 'en'
+        ? 'The upload could not finish. Check your internet connection (Wi-Fi is best for large videos) and try again.'
+        : 'Yükleme tamamlanamadı. İnternet bağlantını kontrol edip tekrar dene (büyük videolar için Wi-Fi önerilir).'
+    )
   }
 }
 

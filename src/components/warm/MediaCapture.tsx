@@ -25,6 +25,11 @@ const T = {
     noAudioTrack: 'Videoda ses algılanmadı. Mikrofon iznini kontrol et.',
     recording: 'Kaydediliyor',
     pickPhoto: 'Fotoğraf seç',
+    checking: 'Dosya kontrol ediliyor…',
+    tooLong: (max: string) => `Bu kayıt ${max} sınırından uzun. Lütfen kısaltıp tekrar seç.`,
+    tooBig: (mb: number) => `Dosya çok büyük (en fazla ${mb} MB). Videoyu kısalt ya da telefonda 1080p çözünürlükte çek.`,
+    tooBigIos: (mb: number) =>
+      `Dosya çok büyük (en fazla ${mb} MB). iPhone 4K çekimleri çok yer kaplar: Ayarlar › Kamera › Video Kaydı › “1080p HD, 30 fps” seçip yeniden çek ya da videoyu Fotoğraflar’da kısalt.`,
   },
   en: {
     maxDuration: 'Up to',
@@ -44,13 +49,86 @@ const T = {
     noAudioTrack: 'No sound detected in the video. Check microphone permission.',
     recording: 'Recording',
     pickPhoto: 'Choose photo',
+    checking: 'Checking file…',
+    tooLong: (max: string) => `This recording is longer than ${max}. Please trim it and choose again.`,
+    tooBig: (mb: number) => `The file is too large (max ${mb} MB). Trim the video or record it at 1080p on your phone.`,
+    tooBigIos: (mb: number) =>
+      `The file is too large (max ${mb} MB). iPhone 4K videos are very large: go to Settings › Camera › Record Video › “1080p HD at 30 fps” and record again, or trim the video in Photos.`,
   },
+}
+
+// Bazı telefonlar (özellikle Android ve .mov/.mkv dosyaları) dosya türünü boş gönderir; uzantıdan tamamlanır.
+const MIME_BY_EXT: Record<string, string> = {
+  mp4: 'video/mp4',
+  m4v: 'video/mp4',
+  mov: 'video/quicktime',
+  webm: 'video/webm',
+  mkv: 'video/x-matroska',
+  '3gp': 'video/3gpp',
+  avi: 'video/x-msvideo',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  m4a: 'audio/mp4',
+  aac: 'audio/aac',
+  ogg: 'audio/ogg',
+  opus: 'audio/ogg',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif',
+  heic: 'image/heic',
+  heif: 'image/heif',
+}
+
+function normalizeFile(file: File, mode: 'audio' | 'video' | 'image'): File | null {
+  const type = (file.type || '').toLowerCase()
+  if (type.startsWith(`${mode}/`)) return file
+  const ext = (file.name.split('.').pop() || '').toLowerCase()
+  let guessed = MIME_BY_EXT[ext]
+  if (ext === 'webm' && mode === 'audio') guessed = 'audio/webm'
+  if (!guessed || !guessed.startsWith(`${mode}/`)) return null
+  if (type && type !== 'application/octet-stream') return null
+  return new File([file], file.name, { type: guessed, lastModified: file.lastModified })
+}
+
+/** Tarayıcının okuyabildiği süre (sn). Okunamazsa null: karar sunucuya ve sınıra bırakılır. */
+function readDuration(url: string, mode: 'audio' | 'video'): Promise<number | null> {
+  return new Promise((resolve) => {
+    const el = document.createElement(mode)
+    let done = false
+    const finish = (value: number | null) => {
+      if (done) return
+      done = true
+      el.removeAttribute('src')
+      el.load()
+      resolve(value)
+    }
+    const timer = setTimeout(() => finish(null), 8000)
+    el.preload = 'metadata'
+    el.muted = true
+    el.onloadedmetadata = () => {
+      clearTimeout(timer)
+      finish(Number.isFinite(el.duration) && el.duration > 0 ? el.duration : null)
+    }
+    el.onerror = () => {
+      clearTimeout(timer)
+      finish(null)
+    }
+    el.src = url
+  })
 }
 
 function isSafariLike() {
   if (typeof navigator === 'undefined') return false
   const ua = navigator.userAgent
   return /Safari/i.test(ua) && !/Chrome|Chromium|Edg|OPR/i.test(ua)
+}
+
+function isAppleMobile() {
+  if (typeof navigator === 'undefined') return false
+  // iPadOS kendini Mac olarak tanıtır; dokunmatik ekranla ayırt edilir.
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
 }
 
 function preferredTypes(mode: 'audio' | 'video') {
@@ -81,12 +159,15 @@ export default function MediaCapture({
   maxSeconds,
   onChange,
   allowRecord = true,
+  maxBytes,
 }: {
   mode: 'audio' | 'video' | 'image'
   lang: Lang
   maxSeconds: number
   onChange: (file: File | null) => void
   allowRecord?: boolean
+  /** Seçilen dosya için üst sınır (bayt); yüklemeye başlamadan uyarır. */
+  maxBytes?: number
 }) {
   const t = T[lang]
   const [status, setStatus] = useState<'idle' | 'recording' | 'done'>('idle')
@@ -195,16 +276,32 @@ export default function MediaCapture({
     }, 1000)
   }
 
-  const onPick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const onPick = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = event.target.files?.[0]
     event.target.value = ''
-    if (!file) return
-    if (!file.type.startsWith(`${mode}/`)) {
+    if (!picked) return
+    const file = normalizeFile(picked, mode)
+    if (!file) {
       setMessage(mode === 'audio' ? t.wrongAudio : mode === 'video' ? t.wrongVideo : t.wrongImage)
       return
     }
+    if (maxBytes && file.size > maxBytes) {
+      const mb = Math.floor(maxBytes / 1024 / 1024)
+      setMessage(isAppleMobile() ? t.tooBigIos(mb) : t.tooBig(mb))
+      return
+    }
+    const url = URL.createObjectURL(file)
+    if (mode !== 'image') {
+      setMessage(t.checking)
+      const duration = await readDuration(url, mode)
+      if (duration !== null && duration > maxSeconds + 1) {
+        URL.revokeObjectURL(url)
+        setMessage(t.tooLong(formatDuration(maxSeconds, lang)))
+        return
+      }
+    }
     setMessage(null)
-    setPreview(URL.createObjectURL(file))
+    setPreview(url)
     setFileName(file.name)
     setStatus('done')
     onChange(file)

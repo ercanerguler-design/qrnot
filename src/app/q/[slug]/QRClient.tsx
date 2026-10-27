@@ -7,7 +7,8 @@ import VoicePlayer from '@/components/warm/VoicePlayer'
 import type { QRCode, QRMedia } from '@/lib/db'
 import type { PublicGuestbookSettings } from '@/lib/guestbook'
 import { withLang, type Lang } from '@/lib/i18n'
-import { getMaxAudioSeconds, getMaxVideoSeconds, spotifyEmbedUrl, youtubeEmbedUrl } from '@/lib/media'
+import { getMaxAudioSeconds, getMaxImageFileSizeBytes, getMaxVideoFileSizeBytes, getMaxVideoSeconds, spotifyEmbedUrl, youtubeEmbedUrl } from '@/lib/media'
+import { MAX_AUDIO_FILE_SIZE_BYTES } from '@/lib/audio'
 import { GuestbookSetupView, GuestbookView } from './GuestbookClient'
 import { CaptionPanel, GroupMessages, LostModeCard, ReplyBox, TimeCapsuleCard, type PlayExtrasData } from './PlayExtras'
 import { attachMedia, composeProfileTitle, ErrorBox, OwnerSecrets, parseProfileTitle, QR_T, ScanShell, SignInGate } from './ScanShared'
@@ -64,7 +65,7 @@ function ClaimView({ qr, lang }: { qr: QRCode; lang: Lang }) {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<{ manageUrl: string; recoveryCode: string } | null>(null)
 
-  const maxVideoSeconds = getMaxVideoSeconds(qr.order_type)
+  const maxVideoSeconds = getMaxVideoSeconds(qr.order_type, qr.video_max_seconds)
   const maxAudioSeconds = getMaxAudioSeconds(qr.order_type)
   const canSubmit = Boolean(mediaFile || youtubeUrl.trim() || spotifyUrl.trim() || externalUrl.trim())
 
@@ -80,7 +81,7 @@ function ClaimView({ qr, lang }: { qr: QRCode; lang: Lang }) {
       const fd = new FormData()
       if (mediaFile) {
         setProgress(0)
-        await attachMedia(fd, mediaFile, { slug: qr.slug, onProgress: setProgress })
+        await attachMedia(fd, mediaFile, { slug: qr.slug, onProgress: setProgress, lang })
       }
       setProgress(null)
       fd.append('title', composeProfileTitle(title, emergencyPhone, emergencyLocation, lang === 'en' ? 'Voice note' : 'Sesli Not'))
@@ -143,7 +144,7 @@ function ClaimView({ qr, lang }: { qr: QRCode; lang: Lang }) {
               setMediaFile(null)
             }}
           />
-          <MediaCapture key={mediaMode} mode={mediaMode} lang={lang} maxSeconds={mediaMode === 'video' ? maxVideoSeconds : maxAudioSeconds} onChange={setMediaFile} />
+          <MediaCapture key={mediaMode} mode={mediaMode} lang={lang} maxSeconds={mediaMode === 'video' ? maxVideoSeconds : maxAudioSeconds} maxBytes={mediaMode === 'video' ? getMaxVideoFileSizeBytes(qr.order_type) : mediaMode === 'audio' ? MAX_AUDIO_FILE_SIZE_BYTES : getMaxImageFileSizeBytes()} onChange={setMediaFile} />
         </div>
 
         <div className="w-divider" />

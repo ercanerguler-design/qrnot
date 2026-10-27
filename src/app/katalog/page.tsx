@@ -112,7 +112,7 @@ const T = {
     facts: [
       'Uygulama gerekmez — iPhone ve Android kamerasıyla açılır',
       'QR, satın alanın hesabına bağlanır; başkası değiştiremez',
-      'Ses ve video kaydı 2 dakikaya kadar (kurumsalda 10 dakika)',
+      'Ses ve video kaydı 3 dakikaya kadar (kurumsalda 10 dakika)',
       '3 içerik kaydı dahil; isim, telefon ve adres sınırsız güncellenir',
     ],
     storesTitle: 'Nereden alırım?',
@@ -165,7 +165,7 @@ const T = {
     facts: [
       'No app needed — opens with any iPhone or Android camera',
       'Your QR is linked to your account; no one else can change it',
-      'Voice and video up to 2 minutes (10 minutes for business)',
+      'Voice and video up to 3 minutes (10 minutes for business)',
       '3 recordings included; name, phone and address can be edited without limit',
     ],
     storesTitle: 'Where to buy',

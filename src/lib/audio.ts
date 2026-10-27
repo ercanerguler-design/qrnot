@@ -3,7 +3,8 @@ import { parseBuffer } from 'music-metadata'
 import { getMaxAudioSeconds } from '@/lib/media'
 
 export { getMaxAudioSeconds }
-export const MAX_AUDIO_FILE_SIZE_BYTES = 25 * 1024 * 1024
+// 10 dk sıkıştırılmamış WAV ≈ 100 MB
+export const MAX_AUDIO_FILE_SIZE_BYTES = 120 * 1024 * 1024
 
 export function formatAudioDuration(seconds: number) {
   const minutes = Math.floor(seconds / 60)
@@ -26,7 +27,7 @@ export async function validateAudioFile(file: File, orderType?: string | null) {
   }
 
   if (file.size > MAX_AUDIO_FILE_SIZE_BYTES) {
-    return 'Ses dosyası 25MB\'dan büyük olamaz'
+    return 'Ses dosyası 120MB\'dan büyük olamaz'
   }
 
   const maxAudioSeconds = getMaxAudioSeconds(orderType)

@@ -1,11 +1,14 @@
 import { parseBuffer } from 'music-metadata'
 
-const DEFAULT_MAX_VIDEO_SECONDS = 120
+// Bireysel: ses ve video 3 dk · Kurumsal (order_type = corporate): ses ve video 10 dk
+const DEFAULT_MAX_VIDEO_SECONDS = 180
 const DEFAULT_MAX_VIDEO_SECONDS_CORPORATE = 600
-const DEFAULT_MAX_AUDIO_SECONDS = 120
+const DEFAULT_MAX_AUDIO_SECONDS = 180
 const DEFAULT_MAX_AUDIO_SECONDS_CORPORATE = 600
-const DEFAULT_MAX_VIDEO_FILE_SIZE_MB = 80
-const DEFAULT_MAX_VIDEO_FILE_SIZE_MB_CORPORATE = 250
+// Boyut sınırı süreye göre: iPhone 4K60 HEVC (.mov) dakikada ~400 MB tutar (Android 1080p ~100 MB).
+// 3 dk × 400 MB ≈ 1,2 GB · 10 dk × 400 MB ≈ 4 GB — en ağır iPhone ayarı da sığar.
+const DEFAULT_MAX_VIDEO_FILE_SIZE_MB = 1300
+const DEFAULT_MAX_VIDEO_FILE_SIZE_MB_CORPORATE = 4200
 const DEFAULT_MAX_IMAGE_FILE_SIZE_MB = 15
 
 function parsePositiveInteger(raw: string | undefined, fallback: number) {
@@ -29,7 +32,7 @@ export function getMaxVideoSeconds(orderType?: string | null, overrideSeconds?: 
   return parsePositiveInteger(envKey || process.env.NEXT_PUBLIC_MAX_VIDEO_SECONDS, fallback)
 }
 
-/** Ses kaydı süresi: bireysel 2 dk, kurumsal (order_type = corporate) 10 dk. Ortam değişkeniyle değiştirilebilir. */
+/** Ses kaydı süresi: bireysel 3 dk, kurumsal (order_type = corporate) 10 dk. Ortam değişkeniyle değiştirilebilir. */
 export function getMaxAudioSeconds(orderType?: string | null) {
   const isCorporate = orderType === 'corporate'
   const fallback = isCorporate ? DEFAULT_MAX_AUDIO_SECONDS_CORPORATE : DEFAULT_MAX_AUDIO_SECONDS

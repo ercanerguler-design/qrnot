@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           maximumSizeInBytes: maxUploadBytes(qr.order_type),
           addRandomSuffix: true,
           allowOverwrite: false,
-          validUntil: Date.now() + 30 * 60 * 1000,
+          validUntil: Date.now() + 2 * 60 * 60 * 1000, // büyük videolar yavaş mobil bağlantıda uzun sürebilir
         }
       },
     })

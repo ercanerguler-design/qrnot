@@ -8,7 +8,8 @@ import NfcWriter from '@/components/warm/NfcWriter'
 import QrCard from '@/components/warm/QrCard'
 import type { PublicGuestbookSettings } from '@/lib/guestbook'
 import { formatDate, withLang, type Lang } from '@/lib/i18n'
-import { getMaxAudioSeconds, getMaxVideoSeconds } from '@/lib/media'
+import { getMaxAudioSeconds, getMaxImageFileSizeBytes, getMaxVideoFileSizeBytes, getMaxVideoSeconds } from '@/lib/media'
+import { MAX_AUDIO_FILE_SIZE_BYTES } from '@/lib/audio'
 import { SITE_URL } from '@/lib/site'
 import { attachMedia, composeProfileTitle, ErrorBox, parseProfileTitle, ScanShell } from '@/app/q/[slug]/ScanShared'
 import GuestbookAdmin from './GuestbookAdmin'
@@ -181,7 +182,7 @@ export default function ManageClient({ slug, lang }: { slug: string; lang: Lang 
       fd.append('token', token)
       if (newMedia) {
         setProgress(0)
-        await attachMedia(fd, newMedia, { slug, token, onProgress: setProgress })
+        await attachMedia(fd, newMedia, { slug, token, onProgress: setProgress, lang })
         setProgress(null)
       }
       fd.append('title', composeProfileTitle(title, phone, location, lang === 'en' ? 'Voice note' : 'Sesli Not'))
@@ -333,6 +334,7 @@ export default function ManageClient({ slug, lang }: { slug: string; lang: Lang 
                 mode={mediaMode}
                 lang={lang}
                 maxSeconds={mediaMode === 'video' ? getMaxVideoSeconds(info.orderType) : getMaxAudioSeconds(info.orderType)}
+                maxBytes={mediaMode === 'video' ? getMaxVideoFileSizeBytes(info.orderType) : mediaMode === 'audio' ? MAX_AUDIO_FILE_SIZE_BYTES : getMaxImageFileSizeBytes()}
                 onChange={setNewMedia}
               />
             </div>

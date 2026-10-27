@@ -80,6 +80,7 @@ export function AnalyticsTab({ password }: { password: string }) {
 
   return (
     <div className="space-y-5">
+      <MetaTestCard password={password} />
       <div className="flex flex-wrap items-center gap-2">
         <p className="mr-auto text-sm text-neutral-400">Reklam, arama ve sosyal medyadan gelen ziyaretçiler ve dönüşümleri</p>
         <select className="rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm" value={area} onChange={(e) => setArea(e.target.value)}>
@@ -334,5 +335,41 @@ export function AnalyticsTab({ password }: { password: string }) {
         </>
       )}
     </div>
+  )
+}
+
+/** Meta Dönüşümler API anahtarını (META_CAPI_TOKEN) gerçek satış saymadan dener. */
+function MetaTestCard({ password }: { password: string }) {
+  const [code, setCode] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+
+  const run = async () => {
+    setBusy(true)
+    setResult(null)
+    const res = await fetch('/api/admin/shop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, action: 'meta.test', testCode: code }),
+    })
+    const json = await res.json().catch(() => ({}))
+    setResult(res.ok ? json : { ok: false, message: json.error || 'İstek başarısız' })
+    setBusy(false)
+  }
+
+  return (
+    <details className="rounded-2xl border border-neutral-800 bg-neutral-950/60 p-4 text-sm">
+      <summary className="cursor-pointer font-semibold">📘 Meta (Facebook / Instagram) satış bağlantısı testi</summary>
+      <p className="mt-2 text-neutral-400">
+        Olay Yöneticisi → QRNot → <b>Olayları test et</b> ekranındaki test kodunu (ör. TEST12345) yaz ve dene. Gerçek satış sayılmaz; o ekranda “Purchase · Sunucu” olarak görünür.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <input className="rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2" placeholder="Test kodu (TEST…)" value={code} onChange={(e) => setCode(e.target.value.trim())} />
+        <button className="rounded-xl bg-cyan-500 px-3 py-2 font-semibold text-neutral-950 disabled:opacity-40" disabled={busy} onClick={() => void run()}>
+          {busy ? 'Deneniyor…' : 'Test olayı gönder'}
+        </button>
+      </div>
+      {result && <p className={`mt-3 ${result.ok ? 'text-emerald-300' : 'text-red-300'}`}>{result.message}</p>}
+    </details>
   )
 }

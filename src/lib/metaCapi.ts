@@ -80,3 +80,39 @@ export async function sendMetaPurchase(order: {
     console.error('[meta capi]', error)
   }
 }
+
+/**
+ * Yönetim panelindeki "Meta testi": anahtarın çalıştığını gerçek satış saymadan dener.
+ * test_event_code ile giden olay sadece Olay Yöneticisi → Olayları test et ekranında görünür.
+ */
+export async function sendMetaTestEvent(testCode: string) {
+  const token = String(process.env.META_CAPI_TOKEN || '').trim()
+  if (!token) return { ok: false, message: 'META_CAPI_TOKEN Vercel’de tanımlı değil (ya da eklendikten sonra Redeploy yapılmadı).' }
+  const body = {
+    data: [
+      {
+        event_name: 'Purchase',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: `test-${Date.now()}`,
+        action_source: 'website',
+        event_source_url: 'https://www.qrnot.com/cart',
+        user_data: { em: [sha('test@qrnot.com')], client_user_agent: 'QRNot admin test' },
+        custom_data: { value: 1, currency: 'TRY', order_id: 'TEST' },
+      },
+    ],
+    ...(testCode ? { test_event_code: testCode } : {}),
+  }
+  try {
+    const res = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${PIXEL_ID}/events?access_token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(8000),
+    })
+    const json = (await res.json().catch(() => ({}))) as { events_received?: number; error?: { message?: string; code?: number } }
+    if (res.ok && json.events_received) return { ok: true, message: `Meta olayı kabul etti (${json.events_received} olay). Anahtar doğru çalışıyor.` }
+    return { ok: false, message: `Meta reddetti (${res.status}): ${json.error?.message || 'bilinmeyen hata'}` }
+  } catch (error) {
+    return { ok: false, message: `Meta’ya ulaşılamadı: ${error instanceof Error ? error.message : String(error)}` }
+  }
+}

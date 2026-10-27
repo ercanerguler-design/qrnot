@@ -9,6 +9,7 @@ import { SITE_URL } from '@/lib/site'
 import { deleteQrWithMedia } from '@/lib/qrDelete'
 import { resolveRevenueRange, revenueSummary } from '@/lib/revenue'
 import { ensureQuoteSchema, QUOTE_STATUSES, type QuoteStatus } from '@/lib/corporateQuote'
+import { sendMetaTestEvent } from '@/lib/metaCapi'
 
 // Mağaza / Etsy / NFC üretim yönetimi — tek uç nokta, ADMIN_PASSWORD ile korunur.
 
@@ -92,6 +93,11 @@ export async function POST(req: NextRequest) {
         WHERE id = ${id}
       `
       return NextResponse.json({ ok: true })
+    }
+
+    if (action === 'meta.test') {
+      const code = String(body.testCode || '').trim().slice(0, 40)
+      return NextResponse.json(await sendMetaTestEvent(/^[A-Za-z0-9]*$/.test(code) ? code : ''))
     }
 
     if (action === 'quotes.delete') {

@@ -54,6 +54,11 @@ const T = {
     password: 'Şifren (en az 8 karakter)',
     createAccount: 'Hesap oluştur',
     signIn: 'Giriş yap',
+    forgot: 'Şifremi unuttum',
+    forgotDesc: 'Üye olduğun e-posta adresini yaz; şifreni yenilemen için sana bir link gönderelim.',
+    sendReset: 'Sıfırlama linki gönder',
+    resetSent: 'Bu e-postayla bir hesap varsa sıfırlama linki gönderildi. Gelen kutunu (ve gereksiz/spam klasörünü) kontrol et. Link 24 saat geçerli.',
+    backToLogin: '← Girişe dön',
     working: 'İşleniyor…',
     why: [
       'Satın aldığın ürünler ve haklar hesabına eklenir',
@@ -105,6 +110,11 @@ const T = {
     password: 'Password (min. 8 characters)',
     createAccount: 'Create account',
     signIn: 'Sign in',
+    forgot: 'Forgot password?',
+    forgotDesc: 'Enter the email you signed up with and we will send you a link to reset your password.',
+    sendReset: 'Send reset link',
+    resetSent: 'If an account exists for this email, a reset link has been sent. Check your inbox (and spam folder). The link is valid for 24 hours.',
+    backToLogin: '← Back to sign in',
     working: 'Working…',
     why: ['Purchases and credits are added to your account', 'Only your account can manage your QR', 'All your QRs and orders in one place', 'Works from any device'],
     myAccount: 'My account',
@@ -156,6 +166,8 @@ export default function AccountClient({ lang }: { lang: Lang }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
+  const [forgotOpen, setForgotOpen] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
@@ -247,6 +259,25 @@ export default function AccountClient({ lang }: { lang: Lang }) {
     }
   }
 
+  const handleForgot = async () => {
+    setAuthLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, lang }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || t.error)
+      setResetSent(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
   const handleCreate = async () => {
     if (!user?.remainingSlots) return
     setCreating(true)
@@ -327,22 +358,72 @@ export default function AccountClient({ lang }: { lang: Lang }) {
               {t.login}
             </button>
           </div>
-          <input className="w-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.email} autoComplete="email" />
-          <input
-            className="w-input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t.password}
-            autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && email && password) void handleAuth()
-            }}
-          />
-          {error && <div className="w-alert w-alert-error">{error}</div>}
-          <button type="button" onClick={handleAuth} disabled={authLoading || !email || !password} className="w-btn w-btn-primary w-btn-block py-4">
-            {authLoading ? t.working : authMode === 'register' ? t.createAccount : t.signIn}
-          </button>
+          {forgotOpen ? (
+            <>
+              <p className="text-sm text-ink-2">{t.forgotDesc}</p>
+              <input
+                className="w-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t.email}
+                autoComplete="email"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && email && !resetSent) void handleForgot()
+                }}
+              />
+              {error && <div className="w-alert w-alert-error">{error}</div>}
+              {resetSent ? (
+                <div className="w-alert w-alert-info">{t.resetSent}</div>
+              ) : (
+                <button type="button" onClick={handleForgot} disabled={authLoading || !email} className="w-btn w-btn-primary w-btn-block py-4">
+                  {authLoading ? t.working : t.sendReset}
+                </button>
+              )}
+              <button
+                type="button"
+                className="text-sm text-ink-2 hover:text-ink"
+                onClick={() => {
+                  setForgotOpen(false)
+                  setResetSent(false)
+                  setError(null)
+                }}
+              >
+                {t.backToLogin}
+              </button>
+            </>
+          ) : (
+            <>
+              <input className="w-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.email} autoComplete="email" />
+              <input
+                className="w-input"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t.password}
+                autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && email && password) void handleAuth()
+                }}
+              />
+              {error && <div className="w-alert w-alert-error">{error}</div>}
+              <button type="button" onClick={handleAuth} disabled={authLoading || !email || !password} className="w-btn w-btn-primary w-btn-block py-4">
+                {authLoading ? t.working : authMode === 'register' ? t.createAccount : t.signIn}
+              </button>
+              {authMode === 'login' && (
+                <button
+                  type="button"
+                  className="block w-full text-center text-sm text-ink-2 underline-offset-2 hover:text-ink hover:underline"
+                  onClick={() => {
+                    setForgotOpen(true)
+                    setError(null)
+                  }}
+                >
+                  {t.forgot}
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
     )

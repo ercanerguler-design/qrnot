@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { formatMoney, PRODUCTS } from '@/lib/commerce/catalog'
+import { describeLeadDetails, LEAD_TOPICS, topicLabel } from '@/lib/leadTopics'
 import { btn, input, type Caller } from './ShopTabs'
 
-// Kurumsal hediye teklif talepleri: /kurumsal-hediye formundan gelir.
+// Teklif talepleri: /kurumsal-hediye (topic = gift) ve /teklif?konu=… (dpp, hotel, education…) formlarından gelir.
 
 type Quote = {
   id: string
+  topic: string
+  details: Record<string, unknown>
   company: string
   name: string
   email: string
@@ -48,6 +51,7 @@ const phoneDigits = (phone: string) => {
 
 export function QuotesTab({ call }: { call: Caller }) {
   const [status, setStatus] = useState('')
+  const [topic, setTopic] = useState('')
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [notes, setNotes] = useState<Record<string, string>>({})
@@ -55,13 +59,13 @@ export function QuotesTab({ call }: { call: Caller }) {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await call<{ quotes: Quote[]; counts: Array<{ status: string; count: number }> }>('quotes.list', { status })
+    const data = await call<{ quotes: Quote[]; counts: Array<{ status: string; count: number }> }>('quotes.list', { status, topic })
     if (data) {
       setQuotes(data.quotes)
       setCounts(Object.fromEntries(data.counts.map((c) => [c.status, c.count])))
     }
     setLoading(false)
-  }, [call, status])
+  }, [call, status, topic])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -90,6 +94,14 @@ export function QuotesTab({ call }: { call: Caller }) {
             </option>
           ))}
         </select>
+        <select className={`${input.replace('w-full ', '')} w-auto`} value={topic} onChange={(e) => setTopic(e.target.value)}>
+          <option value="">Tüm konular</option>
+          {['gift', ...Object.keys(LEAD_TOPICS)].map((key) => (
+            <option key={key} value={key}>
+              {topicLabel(key)}
+            </option>
+          ))}
+        </select>
         <button className={`${btn} bg-neutral-800`} onClick={() => void load()}>
           Yenile
         </button>
@@ -98,7 +110,7 @@ export function QuotesTab({ call }: { call: Caller }) {
         </a>
       </div>
       <p className="text-sm text-neutral-400">
-        Listede {quotes.length} talep · açık taleplerin tahmini toplamı <span className="font-semibold text-white">{formatMoney(pipeline, 'TRY')}</span> (KDV dahil)
+        Listede {quotes.length} talep · açık hediye taleplerinin tahmini toplamı <span className="font-semibold text-white">{formatMoney(pipeline, 'TRY')}</span> (KDV dahil)
       </p>
 
       {quotes.length === 0 && <p className="rounded-2xl border border-neutral-800 p-6 text-center text-neutral-500">{loading ? 'Yükleniyor…' : 'Henüz talep yok'}</p>}
@@ -106,11 +118,14 @@ export function QuotesTab({ call }: { call: Caller }) {
       {quotes.map((quote) => (
         <details key={quote.id} className="group rounded-2xl border border-neutral-800 bg-neutral-950/60" open={quote.status === 'new'}>
           <summary className="flex cursor-pointer list-none flex-wrap items-center gap-3 p-4">
+            <span className="text-xs text-neutral-400">{topicLabel(quote.topic)}</span>
             <span className="font-semibold">{quote.company}</span>
             <span className={`rounded-full border px-2 py-0.5 text-xs ${STATUS_TONE[quote.status] || STATUS_TONE.lost}`}>{QUOTE_STATUS_LABEL[quote.status] || quote.status}</span>
-            <span className="text-sm text-neutral-300">
-              {quote.total_qty} adet · {formatMoney(quote.est_total, 'TRY')}
-            </span>
+            {quote.topic === 'gift' && (
+              <span className="text-sm text-neutral-300">
+                {quote.total_qty} adet · {formatMoney(quote.est_total, 'TRY')}
+              </span>
+            )}
             <span className="ml-auto text-xs text-neutral-500">{new Date(quote.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</span>
           </summary>
           <div className="grid gap-4 border-t border-neutral-800 p-4 text-sm md:grid-cols-2">
@@ -134,6 +149,13 @@ export function QuotesTab({ call }: { call: Caller }) {
                   {quote.email}
                 </a>
               </p>
+              {quote.topic !== 'gift' && (
+                <ul className="mt-2 space-y-0.5">
+                  {describeLeadDetails(quote.topic, quote.details || {}).map((line) => (
+                    <li key={line}>• {line}</li>
+                  ))}
+                </ul>
+              )}
               <ul className="mt-2 space-y-0.5">
                 {Object.entries(quote.items || {}).map(([id, qty]) => (
                   <li key={id}>

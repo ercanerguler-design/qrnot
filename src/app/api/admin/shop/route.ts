@@ -68,10 +68,13 @@ export async function POST(req: NextRequest) {
     // Kurumsal hediye teklif talepleri (/kurumsal-hediye)
     if (action === 'quotes.list') {
       await ensureQuoteSchema()
-      const status = String(body.status || '')
-      const quotes = QUOTE_STATUSES.includes(status as QuoteStatus)
-        ? await sql`SELECT * FROM corporate_quotes WHERE status = ${status} ORDER BY created_at DESC LIMIT 300`
-        : await sql`SELECT * FROM corporate_quotes ORDER BY created_at DESC LIMIT 300`
+      const status = QUOTE_STATUSES.includes(String(body.status || '') as QuoteStatus) ? String(body.status) : null
+      const topic = /^[a-z]{2,20}$/.test(String(body.topic || '')) ? String(body.topic) : null
+      const quotes = await sql`
+        SELECT * FROM corporate_quotes
+        WHERE (${status}::text IS NULL OR status = ${status}) AND (${topic}::text IS NULL OR topic = ${topic})
+        ORDER BY created_at DESC LIMIT 300
+      `
       const counts = await sql`SELECT status, COUNT(*)::int AS count FROM corporate_quotes GROUP BY status`
       return NextResponse.json({ quotes, counts })
     }

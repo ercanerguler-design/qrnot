@@ -7,7 +7,7 @@ import VoicePlayer from '@/components/warm/VoicePlayer'
 import { PRODUCTS } from '@/lib/commerce/catalog'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
-import { MARKETPLACES, SITE_URL, whatsappHref } from '@/lib/site'
+import { MARKETPLACES, SITE_URL } from '@/lib/site'
 import { pageMeta } from '@/lib/seo'
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
@@ -678,14 +678,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
                   ))}
                 </ul>
                 <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-                  <a
-                    href={whatsappHref(c.sectorQuoteMsg.replace('{sector}', sector.name))}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-btn w-btn-dark w-btn-sm"
-                  >
+                  <Link href={withLang(`/teklif?konu=${sector.href.slice(1)}`, lang)} className="w-btn w-btn-dark w-btn-sm">
                     {c.sectorQuote}
-                  </a>
+                  </Link>
                   <Link href={withLang(sector.href, lang)} className="text-xs text-muted hover:underline">
                     {c.sectorLogin} →
                   </Link>
@@ -717,14 +712,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
           </Link>
           <p className="mt-6 text-sm text-ink-2">{c.b2bExtra}</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href={whatsappHref(lang === 'en' ? 'Hello QRNot, I would like a business quote.' : 'Merhaba QRNot, kurumsal teklif almak istiyorum.')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-btn w-btn-dark"
-            >
+            <Link href={withLang('/teklif?konu=business', lang)} className="w-btn w-btn-dark">
               {c.b2bCta}
-            </a>
+            </Link>
             <Link href={withLang('/katalog#kurumsal', lang)} className="w-btn w-btn-ghost">
               {c.bizCatalog}
             </Link>

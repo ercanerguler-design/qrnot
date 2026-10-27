@@ -4,7 +4,6 @@ import { WarmPage } from '@/components/warm/SiteChrome'
 import { DEMO_PASSPORT_ID } from '@/lib/dpp/demo'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
-import { whatsappHref } from '@/lib/site'
 import { pageMeta } from '@/lib/seo'
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }): Promise<Metadata> {
@@ -13,6 +12,15 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     en: { title: "Digital Product Passport (DPP) Software — Prepare for EU ESPR", description: "Digital product passports for manufacturers exporting to the EU: QR / NFC, 8 languages, versioned, GS1 Digital Link. For textile, furniture, electronics and battery makers." },
   }, { image: "/dpp/opengraph-image" })
 }
+
+// Paket fiyatları (€, KDV hariç). Teklif formu (/teklif?konu=dpp&plan=…) ve fiyat listesi Excel'iyle aynı.
+const DPP_PRICES = [
+  { plan: 'pilot', eur: 390, per: 'once' },
+  { plan: 'baslangic', eur: 59, per: 'month' },
+  { plan: 'buyume', eur: 149, per: 'month' },
+  { plan: 'isletme', eur: 349, per: 'month' },
+  { plan: 'kurumsal', eur: 790, per: 'from' },
+] as const
 
 const C = {
   tr: {
@@ -73,7 +81,10 @@ const C = {
       ['İşletme', '500 ürün modeline kadar', 'Geniş koleksiyonlu markalar için.'],
       ['Kurumsal', 'Sınırsız', 'Entegrasyon, özel alan adı ve öncelikli destek.'],
     ],
-    plansNote: 'Tüm paketlerde sınırsız seri numarası, 8 dil, belgeler ve etiket baskısı vardır. Fiyat ürün sayısına ve hizmet kapsamına göre belirlenir.',
+    plansNote: 'Fiyatlar KDV hariçtir; Türkiye’de fatura günün kuruyla TL olarak kesilir. Pilot ücreti, pakete geçişte ilk faturadan düşülür. Tüm paketlerde sınırsız seri numarası, 8 dil, belgeler ve etiket baskısı vardır.',
+    priceOnce: 'tek sefer',
+    priceMonth: '/ ay',
+    priceFrom: '/ ay’dan başlayan',
     honestTitle: 'Açık konuşalım',
     honest:
       'QRNot DPP, pasaport verinizi bugünden toplamanız, yayınlamanız ve ürünlerinize uygulamanız için hazır bir altyapıdır. AB’nin teknik standartları ve ürün grubu kuralları kesinleştikçe veri modelini güncelliyoruz. Ürününüzün ilgili mevzuata uygunluğunun sorumluluğu üreticidedir; biz bu süreci kolaylaştırıyoruz.',
@@ -147,7 +158,10 @@ const C = {
       ['Business', 'Up to 500 product models', 'For brands with large collections.'],
       ['Enterprise', 'Unlimited', 'Integrations, custom domain and priority support.'],
     ],
-    plansNote: 'All plans include unlimited serial numbers, 8 languages, documents and label printing. Pricing depends on product count and service scope.',
+    plansNote: 'Prices exclude VAT. The pilot fee is credited against your first invoice when you move to a plan. All plans include unlimited serial numbers, 8 languages, documents and label printing.',
+    priceOnce: 'one-off',
+    priceMonth: '/ month',
+    priceFrom: '/ month, from',
     honestTitle: 'In plain terms',
     honest:
       'QRNot DPP is ready-made infrastructure to collect, publish and apply your passport data today. We update the data model as EU technical standards and product-group rules are finalised. The manufacturer remains responsible for the product’s compliance; we make the process easier.',
@@ -194,9 +208,9 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
             <a href={demoHref} target="_blank" className="w-btn w-btn-primary px-7 py-4 text-base">
               {c.ctaDemo} ↗
             </a>
-            <a href={whatsappHref(c.quoteMsg)} target="_blank" rel="noopener noreferrer" className="w-btn w-btn-dark px-7 py-4 text-base">
+            <Link href={withLang('/teklif?konu=dpp', lang)} className="w-btn w-btn-dark px-7 py-4 text-base">
               {c.ctaQuote}
-            </a>
+            </Link>
             <Link href={withLang('/dpp/demo', lang)} className="w-btn w-btn-ghost px-7 py-4 text-base">
               🧪 {c.ctaTrial}
             </Link>
@@ -278,10 +292,14 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
             <div key={name} className={`w-card flex flex-col p-6 ${i === 1 ? 'ring-2 ring-coral' : ''}`}>
               <h3 className="font-display text-2xl font-semibold">{name}</h3>
               <p className="mt-1 font-semibold text-coral">{limit}</p>
+              <p className="mt-4">
+                <span className="font-display text-3xl font-semibold">{DPP_PRICES[i].eur} €</span>{' '}
+                <span className="text-sm text-muted">{DPP_PRICES[i].per === 'once' ? c.priceOnce : DPP_PRICES[i].per === 'from' ? c.priceFrom : c.priceMonth}</span>
+              </p>
               <p className="mt-3 flex-1 text-sm text-ink-2">{desc}</p>
-              <a href={whatsappHref(`${c.quoteMsg} (${name})`)} target="_blank" rel="noopener noreferrer" className="w-btn w-btn-dark w-btn-sm mt-5">
+              <Link href={withLang(`/teklif?konu=dpp&plan=${DPP_PRICES[i].plan}`, lang)} className="w-btn w-btn-dark w-btn-sm mt-5">
                 {c.ctaQuote}
-              </a>
+              </Link>
             </div>
           ))}
         </div>
@@ -316,9 +334,9 @@ export default async function DppLanding({ searchParams }: { searchParams: Promi
       <section className="mx-auto max-w-4xl px-4 py-20 text-center">
         <h2 className="font-display text-3xl font-semibold sm:text-4xl">{c.finalTitle}</h2>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <a href={whatsappHref(c.quoteMsg)} target="_blank" rel="noopener noreferrer" className="w-btn w-btn-primary px-8 py-4 text-base">
+          <Link href={withLang('/teklif?konu=dpp', lang)} className="w-btn w-btn-primary px-8 py-4 text-base">
             {c.ctaQuote} →
-          </a>
+          </Link>
           <a href={demoHref} target="_blank" className="w-btn w-btn-ghost px-8 py-4 text-base">
             {c.ctaDemo} ↗
           </a>

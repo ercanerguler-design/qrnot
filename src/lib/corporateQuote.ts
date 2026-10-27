@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db'
 import { cleanQuoteItems, estimateQuote, QUOTE_MIN_QTY, type QuoteItems } from '@/lib/corporateQuoteShared'
+import { cleanLeadDetails, isLeadTopic, type LeadTopicKey } from '@/lib/leadTopics'
 
 // Kurumsal hediye teklif talepleri (/kurumsal-hediye formu). Yönetim panelinde "Kurumsal teklifler" sekmesinde izlenir.
 
@@ -33,6 +34,9 @@ export function ensureQuoteSchema() {
         )
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_corporate_quotes_created ON corporate_quotes(created_at DESC)`
+      // Konu: gift (/kurumsal-hediye) ya da /teklif?konu=… (dpp, hotel, education…); details: konuya özel cevaplar
+      await sql`ALTER TABLE corporate_quotes ADD COLUMN IF NOT EXISTS topic VARCHAR(20) NOT NULL DEFAULT 'gift'`
+      await sql`ALTER TABLE corporate_quotes ADD COLUMN IF NOT EXISTS details JSONB NOT NULL DEFAULT '{}'::jsonb`
     })().catch((err) => {
       ready = null
       throw err
@@ -78,6 +82,45 @@ export function parseQuoteInput(body: Record<string, unknown>, lang: 'tr' | 'en'
   if (body.consent !== true) throw new QuoteError(en ? 'Please accept the privacy notice.' : 'Aydınlatma metnini onayla.')
 
   return { company, name, email, phone, items, logoBox: body.logoBox === true, neededBy, message, lang }
+}
+
+export type LeadInput = {
+  topic: LeadTopicKey
+  company: string
+  name: string
+  email: string
+  phone: string
+  details: Record<string, string | number>
+  message: string
+  lang: 'tr' | 'en'
+}
+
+/** /teklif formu: ortak iletişim alanları + konuya özel cevaplar */
+export function parseLeadInput(body: Record<string, unknown>, lang: 'tr' | 'en'): LeadInput {
+  const en = lang === 'en'
+  if (!isLeadTopic(body.topic)) throw new QuoteError(en ? 'Please choose a topic.' : 'Bir konu seç.')
+  const topic = body.topic
+  const company = text(body.company, 200)
+  const name = text(body.name, 120)
+  const email = text(body.email, 255).toLowerCase()
+  const phone = text(body.phone, 40)
+  const message = String(body.message ?? '').trim().slice(0, 2000)
+  if (!company || !name) throw new QuoteError(en ? 'Please enter your company and name.' : 'Firma adını ve adını yaz.')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new QuoteError(en ? 'Please enter a valid email.' : 'Geçerli bir e-posta yaz.')
+  if (phone.replace(/\D/g, '').length < 10) throw new QuoteError(en ? 'Please enter a phone number.' : 'Telefon numaranı yaz.')
+  if (body.consent !== true) throw new QuoteError(en ? 'Please accept the privacy notice.' : 'Aydınlatma metnini onayla.')
+  return { topic, company, name, email, phone, details: cleanLeadDetails(topic, body.details), message, lang }
+}
+
+export async function saveLead(input: LeadInput, source: string) {
+  await ensureQuoteSchema()
+  const rows = (await sql`
+    INSERT INTO corporate_quotes (topic, company, name, email, phone, details, message, lang, source, consent_at)
+    VALUES (${input.topic}, ${input.company}, ${input.name}, ${input.email}, ${input.phone}, ${JSON.stringify(input.details)}::jsonb,
+            ${input.message}, ${input.lang}, ${source.slice(0, 300)}, NOW())
+    RETURNING id
+  `) as Array<{ id: string }>
+  return { id: rows[0].id }
 }
 
 export async function saveQuote(input: QuoteInput, source: string) {

@@ -20,6 +20,7 @@ export const CONVERSIONS = {
   purchase: 'Ödeme alındı',
   dpp_demo: 'DPP demo talebi',
   corporate_quote: 'Kurumsal hediye talebi',
+  lead: 'Teklif talebi (DPP / sektör)',
 } as const
 export type ConversionName = keyof typeof CONVERSIONS
 

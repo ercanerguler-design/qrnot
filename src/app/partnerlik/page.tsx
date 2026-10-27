@@ -262,13 +262,7 @@ export default async function PartnerlikPage({
             <h2 className="text-3xl sm:text-4xl font-black text-white">{copy.perMarketplace}</h2>
           </div>
           <a
-            href={encodeWhatsApp(
-              isEn
-                ? 'Hello QRNote, could you share the platform-specific proposal deck?'
-                : 'Merhaba QRNote, platform bazli teklif dosyasini paylasir misiniz?'
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/teklif?konu=partner${isEn ? '&lang=en' : ''}`}
             className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-3 rounded-2xl transition-all"
           >
             {copy.askProposal}
@@ -293,9 +287,7 @@ export default async function PartnerlikPage({
                   ))}
                 </div>
                 <a
-                  href={encodeWhatsApp(card.message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`/teklif?konu=partner&platform=${encodeURIComponent(card.name)}${isEn ? '&lang=en' : ''}`}
                   className="inline-flex items-center justify-center bg-white hover:bg-neutral-100 text-neutral-950 font-semibold px-5 py-2.5 rounded-xl transition-all"
                 >
                   {card.name} {copy.startPilot}

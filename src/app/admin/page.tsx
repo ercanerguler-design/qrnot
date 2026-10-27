@@ -23,7 +23,7 @@ const SECTIONS = [
     title: 'Satış',
     tabs: [
       { key: 'orders', icon: '🛒', label: 'Siparişler' },
-      { key: 'quotes', icon: '🎁', label: 'Kurumsal teklifler' },
+      { key: 'quotes', icon: '📨', label: 'Teklif talepleri' },
       { key: 'revenue', icon: '💰', label: 'Gelir' },
       { key: 'etsy', icon: '🧡', label: 'Etsy' },
     ],

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { withLang, type Lang } from '@/lib/i18n'
 import { getRequestLang } from '@/lib/i18n.server'
-import { MARKETPLACES, whatsappHref } from '@/lib/site'
+import { MARKETPLACES } from '@/lib/site'
 import { CatalogImageButton, type CatalogImage } from './CatalogGallery'
 import { pageMeta } from '@/lib/seo'
 
@@ -225,14 +225,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                 >
                   {t.order} →
                 </Link>
-                <a
-                  href={whatsappHref(t.quoteMsg)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={withLang('/kurumsal-hediye', lang)}
                   className="rounded-full border border-white/25 px-7 py-3.5 font-semibold text-white transition hover:border-white/60"
                 >
                   {t.quote}
-                </a>
+                </Link>
               </div>
             </div>
             <CatalogImageButton images={ALL} index={idx('anahtarlik')} sizes="(min-width: 1024px) 560px, 100vw" priority />
@@ -355,14 +353,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                 >
                   ⬇ {t.bizPdf}
                 </a>
-                <a
-                  href={whatsappHref(t.bizQuoteMsg)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={withLang('/teklif?konu=business', lang)}
                   className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60"
                 >
                   {t.bizQuote}
-                </a>
+                </Link>
               </div>
             </div>
             <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

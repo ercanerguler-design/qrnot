@@ -73,11 +73,11 @@ export async function POST(req: NextRequest) {
           if (qr.is_claimed && (!payload.token || payload.token !== qr.admin_token)) {
             throw new Error('Yetkisiz erişim')
           }
-          // Sahipsiz QR'a yükleme = sahiplenme adımı: üye girişi şart (sahiplenme ile aynı kural).
+          // Sahipsiz QR'a yükleme = sahiplenme adımı: üye girişi şart. Başka hesabın oluşturduğu QR'ı da kurabilir
+          // (firma/satıcı QR'ı hazırlar, alıcı kendi hesabıyla kurar).
           if (!qr.is_claimed) {
             const user = await getAuthenticatedUser(req)
             if (!user) throw new Error('Devam etmek için giriş yap')
-            if (qr.creator_user_id && qr.creator_user_id !== user.id) throw new Error('Bu QR kodu başka bir hesaba ait')
           }
         } else if (scope === 'rp') {
           // Cevap ver: normal QR, cevaplar açık ve zaman kapsülü kilitli değil

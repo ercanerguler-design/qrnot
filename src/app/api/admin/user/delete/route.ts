@@ -31,6 +31,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 })
     }
 
+    // Bu hesabın oluşturup başka bir hesabın sahiplendiği QR'lar silinmez, sadece oluşturan bağı kaldırılır.
+    await sql`
+      UPDATE qr_codes SET creator_user_id = NULL
+      WHERE creator_user_id = ${userId} AND owner_user_id IS NOT NULL AND owner_user_id <> ${userId}
+    `
+
     const userQrs = await sql`
       SELECT id, slug, audio_url
       FROM qr_codes

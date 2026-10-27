@@ -4,7 +4,7 @@ import { sql } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 import { deleteQrWithMedia } from '@/lib/qrDelete'
 
-// Üye, kendi hesabındaki (oluşturduğu ya da sahiplendiği) QR'ı tüm içeriğiyle kalıcı olarak siler.
+// Üye, kendi hesabındaki (sahiplendiği ya da oluşturup henüz kimsenin sahiplenmediği) QR'ı tüm içeriğiyle kalıcı olarak siler.
 // Fiziksel ürünün QR'ı / NFC'si bundan sonra "bulunamadı" verir. Kullanılmış hak iade edilmez.
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       SELECT id, slug
       FROM qr_codes
       WHERE slug = ${slug}
-        AND (creator_user_id = ${user.id} OR owner_user_id = ${user.id})
+        AND (owner_user_id = ${user.id} OR (owner_user_id IS NULL AND creator_user_id = ${user.id}))
       LIMIT 1
     `) as Array<{ id: string; slug: string }>
 

@@ -65,7 +65,7 @@ export async function POST(
     if (qr.is_claimed) {
       return NextResponse.json({ error: 'Bu QR kodu zaten sahiplenilmiş' }, { status: 409 })
     }
-    const claimer = await requireClaimUser(req, qr.id)
+    const claimer = await requireClaimUser(req)
     if (claimer.error) return claimer.error
 
     const formData = await req.formData()
@@ -190,7 +190,6 @@ export async function POST(
           updated_at = NOW()
       WHERE slug = ${slug}
         AND is_claimed = FALSE
-        AND (creator_user_id IS NULL OR creator_user_id = ${claimer.user.id})
       RETURNING id
     `) as Array<{ id: string }>
 

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     if (qr.qr_mode !== 'guestbook') return NextResponse.json({ error: 'Bu QR bir anı defteri değil' }, { status: 400 })
     if (qr.is_active === false) return NextResponse.json({ error: 'Bu QR kodu devre dışı bırakılmış' }, { status: 410 })
     if (qr.is_claimed) return NextResponse.json({ error: 'Bu anı defteri zaten kurulmuş' }, { status: 409 })
-    const claimer = await requireClaimUser(req, qr.id)
+    const claimer = await requireClaimUser(req)
     if (claimer.error) return claimer.error
 
     const body = await req.json().catch(() => ({}))
@@ -51,7 +51,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
           owner_user_id = ${claimer.user.id},
           updated_at = NOW()
       WHERE id = ${qr.id} AND is_claimed = FALSE
-        AND (creator_user_id IS NULL OR creator_user_id = ${claimer.user.id})
       RETURNING id
     `
     if (updated.length === 0) return NextResponse.json({ error: 'Bu anı defteri zaten kurulmuş' }, { status: 409 })

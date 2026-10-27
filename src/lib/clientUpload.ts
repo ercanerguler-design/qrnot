@@ -25,14 +25,32 @@ export async function uploadMediaDirect(options: {
   const { slug, scope, file, token, pin, groupKey, onProgress } = options
   const pathname = `${scope}/${slug}-${Date.now()}.${extensionOf(file)}`
 
-  const blob = await upload(pathname, file, {
-    access: 'private',
-    handleUploadUrl: '/api/upload',
-    clientPayload: JSON.stringify({ slug, scope, token, pin, groupKey }),
-    contentType: file.type || undefined,
-    multipart: file.size > 8 * 1024 * 1024,
-    onUploadProgress: ({ percentage }) => onProgress?.(percentage),
-  })
+  const clientPayload = JSON.stringify({ slug, scope, token, pin, groupKey })
+  const multipart = file.size > 8 * 1024 * 1024
 
-  return blob.url
+  try {
+    const blob = await upload(pathname, file, {
+      access: 'private',
+      handleUploadUrl: '/api/upload',
+      clientPayload,
+      contentType: file.type || undefined,
+      multipart,
+      onUploadProgress: ({ percentage }) => onProgress?.(percentage),
+    })
+    return blob.url
+  } catch (error) {
+    // Yükleme izni reddedilince Blob kütüphanesi sunucunun mesajını yutar ("Failed to retrieve the client token").
+    // Aynı isteği tekrar atıp gerçek nedeni (giriş gerekli, yetkisiz, limit…) kullanıcıya gösteriyoruz.
+    if (error instanceof Error && /client token/i.test(error.message)) {
+      const reason = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ type: 'blob.generate-client-token', payload: { pathname, clientPayload, multipart } }),
+      })
+        .then(async (res) => (res.ok ? null : ((await res.json().catch(() => ({}))) as { error?: string }).error || null))
+        .catch(() => null)
+      if (reason) throw new Error(reason)
+    }
+    throw error
+  }
 }

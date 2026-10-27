@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const rows = await sql`
     SELECT e.id, e.kind, e.data, e.read_at, e.created_at, q.slug, q.title
     FROM qr_events e JOIN qr_codes q ON q.id = e.qr_id
-    WHERE q.owner_user_id = ${user.id} OR q.creator_user_id = ${user.id}
+    WHERE q.owner_user_id = ${user.id} OR (q.owner_user_id IS NULL AND q.creator_user_id = ${user.id})
     ORDER BY e.created_at DESC
     LIMIT 100
   `
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   await sql`
     UPDATE qr_events SET read_at = NOW()
-    WHERE read_at IS NULL AND qr_id IN (SELECT id FROM qr_codes WHERE owner_user_id = ${user.id} OR creator_user_id = ${user.id})
+    WHERE read_at IS NULL AND qr_id IN (SELECT id FROM qr_codes WHERE (owner_user_id = ${user.id} OR (owner_user_id IS NULL AND creator_user_id = ${user.id})))
   `
   return NextResponse.json({ ok: true })
 }

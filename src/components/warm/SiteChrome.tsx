@@ -5,7 +5,8 @@ import { CartButton, LangSwitch } from '@/components/warm/HeaderClient'
 import { withLang, type Lang } from '@/lib/i18n'
 import { COMPANY, MARKETPLACES, whatsappHref } from '@/lib/site'
 
-const NAV = {
+// highlight: ayrı iş kolu (DPP) menüde koyu hap olarak öne çıkar
+const NAV: Record<Lang, Array<{ href: string; label: string; highlight?: boolean }>> = {
   tr: [
     { href: '/shop', label: 'Ürünler' },
     { href: '/katalog', label: 'Katalog' },
@@ -13,6 +14,7 @@ const NAV = {
     { href: '/guestbook', label: 'Anı Defteri' },
     { href: '/nfc', label: 'NFC' },
     { href: '/kurumsal-hediye', label: 'Kurumsal hediye' },
+    { href: '/dpp', label: 'QRNot DPP', highlight: true },
   ],
   en: [
     { href: '/shop', label: 'Shop' },
@@ -21,6 +23,7 @@ const NAV = {
     { href: '/guestbook', label: 'Guestbook' },
     { href: '/nfc', label: 'NFC' },
     { href: '/etsy', label: 'Etsy buyers' },
+    { href: '/dpp', label: 'QRNot DPP', highlight: true },
   ],
 }
 
@@ -44,9 +47,13 @@ export function SiteHeader({ lang }: { lang: Lang }) {
     <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <Logo lang={lang} />
-        <nav className="hidden items-center gap-6 text-sm font-medium text-ink-2 md:flex" aria-label={lang === 'en' ? 'Main' : 'Ana menü'}>
+        <nav className="hidden items-center gap-5 text-sm font-medium text-ink-2 lg:flex xl:gap-6" aria-label={lang === 'en' ? 'Main' : 'Ana menü'}>
           {items.map((item) => (
-            <Link key={item.href} href={withLang(item.href, lang)} className="hover:text-ink">
+            <Link
+              key={item.href}
+              href={withLang(item.href, lang)}
+              className={item.highlight ? 'whitespace-nowrap rounded-full bg-ink px-3 py-1.5 text-white transition hover:opacity-90' : 'whitespace-nowrap hover:text-ink'}
+            >
               {item.label}
             </Link>
           ))}
@@ -61,9 +68,13 @@ export function SiteHeader({ lang }: { lang: Lang }) {
           <CartButton lang={lang} />
         </div>
       </div>
-      <nav className="flex gap-5 overflow-x-auto px-4 pb-2 text-sm font-medium text-ink-2 md:hidden" aria-label={lang === 'en' ? 'Main mobile' : 'Mobil menü'}>
+      <nav className="flex items-center gap-5 overflow-x-auto px-4 pb-2 text-sm font-medium text-ink-2 lg:hidden" aria-label={lang === 'en' ? 'Main mobile' : 'Mobil menü'}>
         {items.map((item) => (
-          <Link key={item.href} href={withLang(item.href, lang)} className="whitespace-nowrap hover:text-ink">
+          <Link
+            key={item.href}
+            href={withLang(item.href, lang)}
+            className={item.highlight ? 'whitespace-nowrap rounded-full bg-ink px-3 py-1 text-white' : 'whitespace-nowrap hover:text-ink'}
+          >
             {item.label}
           </Link>
         ))}
@@ -91,6 +102,7 @@ const FOOTER = {
         ['/guestbook', 'Dijital anı defteri'],
         ['/nfc', 'NFC ürünler'],
         ['/kurumsal-hediye', 'Kurumsal hediye'],
+        ['/dpp', 'QRNot DPP · Ürün pasaportu'],
       ],
       help: [
         ['/#sss', 'Sık sorulan sorular'],
@@ -127,6 +139,7 @@ const FOOTER = {
         ['/guestbook', 'Audio guestbook'],
         ['/nfc', 'NFC products'],
         ['/kurumsal-hediye', 'Corporate gifts'],
+        ['/dpp', 'QRNot DPP · Product passport'],
       ],
       help: [
         ['/#sss', 'FAQ'],

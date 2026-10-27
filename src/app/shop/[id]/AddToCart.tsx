@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ProductArt from '@/components/warm/ProductArt'
 import { addToCart } from '@/lib/commerce/cartClient'
+import { currencyForLang } from '@/lib/commerce/catalog'
+import { pixelTrack } from '@/lib/metaPixel'
 import type { Product } from '@/lib/commerce/catalog'
 import type { Lang } from '@/lib/i18n'
 
@@ -30,6 +32,8 @@ export default function ProductBuyBox({ product, lang, header, footer }: { produ
 
   const add = (thenGo: boolean) => {
     addToCart(product.id, variantId, quantity)
+    const currency = currencyForLang(lang)
+    pixelTrack('AddToCart', { content_ids: [product.id], content_type: 'product', value: (product.price[currency] * quantity) / 100, currency })
     if (thenGo) {
       router.push(cartHref)
       return

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { readMetaConsent } from '@/lib/metaCapi'
 import { getAuthenticatedUser } from '@/lib/auth'
 import { priceCart, type CartLine, type Currency } from '@/lib/commerce/catalog'
 import { createOrder, markOrderFailed, setOrderProviderRef, type OrderAddress, type PaymentProvider } from '@/lib/commerce/orders'
@@ -111,6 +112,8 @@ export async function POST(req: NextRequest) {
         acceptedAt: new Date().toISOString(),
         ip,
         userAgent: String(req.headers.get('user-agent') || '').slice(0, 300),
+        // Meta çerez onayı verdiyse satın alma Meta'ya bildirilir (src/lib/metaCapi.ts)
+        ...(readMetaConsent(req.cookies) ? { meta: readMetaConsent(req.cookies) } : {}),
       },
       customerNote: String(body.note || '')
         .trim()

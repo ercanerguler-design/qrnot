@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { pixelTrack } from '@/lib/metaPixel'
 import type { Lang } from '@/lib/i18n'
 
 // Demo talep formu: başarılı olunca giriş bilgileri bir kez gösterilir (e-postayla gönderilmez).
@@ -117,6 +118,7 @@ export default function DemoForm({ lang }: { lang: Lang }) {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || t.error)
       setDone(data)
+      pixelTrack('Lead', { content_category: 'dpp_demo' })
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error)
     } finally {

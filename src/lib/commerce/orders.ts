@@ -1,5 +1,6 @@
 import { notifyAdmin } from '@/lib/adminNotify'
 import { trackPurchase } from '@/lib/analytics'
+import { sendMetaPurchase } from '@/lib/metaCapi'
 import { randomBytes } from 'crypto'
 import { sql } from '@/lib/db'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
@@ -149,7 +150,10 @@ export async function markOrderPaid(orderNo: string, providerRef: string | null,
   await notifyNewOrder(fulfilled).catch((error) => console.error('[order notify]', error))
   // Ölçüme TL / USD olarak yazılır (sipariş tutarları kuruş / cent); test ödemeleri satış sayılmaz
   const isTest = order.provider === 'mock' || String(order.provider_ref || '').endsWith(':test')
-  if (!isTest) await trackPurchase(order.order_no, Number(order.total) / 100, String(order.currency))
+  if (!isTest) {
+    await trackPurchase(order.order_no, Number(order.total) / 100, String(order.currency))
+    await sendMetaPurchase(order)
+  }
   return { order: fulfilled, transitioned: true }
 }
 

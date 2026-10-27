@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { withLang, type Lang } from '@/lib/i18n'
 import { LEAD_TOPICS, type LeadField, type LeadTopic, type LeadTopicKey } from '@/lib/leadTopics'
 import { whatsappHref } from '@/lib/site'
+import { pixelTrack } from '@/lib/metaPixel'
 
 const T = {
   tr: {
@@ -78,6 +79,7 @@ export default function LeadForm({ lang, topic, preset }: { lang: Lang; topic: L
       const data = (await res.json().catch(() => ({}))) as { error?: string }
       if (!res.ok) throw new Error(data.error || t.error)
       setState('done')
+      pixelTrack('Lead', { content_category: topic })
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : t.error)

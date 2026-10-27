@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { pixelTrack } from '@/lib/metaPixel'
 import AccountExtras from './AccountExtras'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -232,6 +233,7 @@ export default function AccountClient({ lang }: { lang: Lang }) {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || t.error)
+      if (authMode === 'register') pixelTrack('CompleteRegistration')
       setPassword('')
       if (next && next.startsWith('/') && !next.startsWith('//')) {
         router.push(next)

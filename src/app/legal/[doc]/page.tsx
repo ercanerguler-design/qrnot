@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import ConsentButton from '@/components/ConsentButton'
 import { WarmPage } from '@/components/warm/SiteChrome'
 import { getLegalDoc, LEGAL_DOCS } from '@/lib/legal'
 
@@ -42,6 +43,7 @@ export default async function LegalPage({ params }: Props) {
               )
             return <p key={index}>{text}</p>
           })}
+          {(doc.slug === 'cerez' || doc.slug === 'cookies') && <ConsentButton lang={doc.lang} />}
         </article>
         <nav className="space-y-2 text-sm" aria-label="Legal">
           {others.map((item) => (

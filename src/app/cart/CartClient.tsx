@@ -6,6 +6,7 @@ import { CardLogos } from '@/components/warm/PaymentBadges'
 import ProductArt from '@/components/warm/ProductArt'
 import { readCart, subscribeCart, writeCart } from '@/lib/commerce/cartClient'
 import { currencyForLang, formatMoney, getProduct, priceCart, type CartLine } from '@/lib/commerce/catalog'
+import { pixelTrack } from '@/lib/metaPixel'
 import type { PaymentProvider } from '@/lib/commerce/orders'
 import { withLang, type Lang } from '@/lib/i18n'
 
@@ -180,6 +181,13 @@ export default function CartClient({
   const submit = async () => {
     if (!provider) return
     setSubmitting(true)
+    pixelTrack('InitiateCheckout', {
+      value: cart.total / 100,
+      currency,
+      num_items: cart.lines.reduce((sum, line) => sum + line.quantity, 0),
+      content_ids: cart.lines.map((line) => line.productId),
+      content_type: 'product',
+    })
     setError(null)
     try {
       const res = await fetch('/api/checkout', {

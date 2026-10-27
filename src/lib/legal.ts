@@ -12,7 +12,7 @@ export interface LegalDoc {
   blocks: LegalBlock[]
 }
 
-const UPDATED = '12.10.2026'
+const UPDATED = '27.10.2026'
 const SELLER = `${COMPANY.legalName}, ${COMPANY.address}. E-posta: ${COMPANY.email}, Telefon: ${COMPANY.phone}`
 
 export const LEGAL_DOCS: LegalDoc[] = [
@@ -130,7 +130,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Topladığımız veriler'],
       [
         'ul',
-        'Hesap verileri: e-posta adresi ve şifrenin (geri döndürülemez şekilde) özeti.|Sipariş verileri: ad-soyad, telefon, teslimat adresi, sipariş içeriği.|QR içerikleri: yüklediğin ses, video, fotoğraf, başlık ve bağlantılar.|Cevaplar ve grup mesajları: QR’ına cevap ya da grup hediyesi mesajı bırakan kişinin adı, mesajı ve yüklediği ses/video/fotoğraf.|Kayıp modu: QR’ı okutan kişi açıkça izin verirse, tarayıcısının bildirdiği tek seferlik konumu ve isteğe bağlı notu/iletişim bilgisi yalnızca QR sahibine iletilir; sürekli konum takibi yapılmaz.|Okutma kayıtları ve bildirimler: QR’ın okutulma zamanı ve kaynağı (QR/NFC); anlık bildirim için tarayıcının oluşturduğu abonelik bilgisi.|Yapay zekâ altyazı (Premium): altyazı istendiğinde ses/video dosyası yazıya dökülmek üzere OpenAI’a, metin çevrilmek üzere Anthropic’e iletilir; bu hizmet sağlayıcılar veriyi yalnızca işlemi gerçekleştirmek için kullanır.|Dijital Ürün Pasaportu (kurumsal): firma kullanıcılarının e-posta, ad ve şifre özeti; firmanın girdiği ürün verileri ve belgeler. Pasaport okutmalarında kişisel veri tutulmaz, yalnızca ülke kodu ve dil istatistik amacıyla kaydedilir. Otomatik çeviri istendiğinde ürün metinleri Anthropic’e iletilir.|Anı defteri içerikleri: misafirlerin bıraktığı isim, mesaj ve medya.|Teknik veriler: IP adresi (güvenlik ve kötüye kullanımı önleme), görüntülenme sayıları.',
+        'Hesap verileri: e-posta adresi ve şifrenin (geri döndürülemez şekilde) özeti.|Sipariş verileri: ad-soyad, telefon, teslimat adresi, sipariş içeriği.|QR içerikleri: yüklediğin ses, video, fotoğraf, başlık ve bağlantılar.|Cevaplar ve grup mesajları: QR’ına cevap ya da grup hediyesi mesajı bırakan kişinin adı, mesajı ve yüklediği ses/video/fotoğraf.|Kayıp modu: QR’ı okutan kişi açıkça izin verirse, tarayıcısının bildirdiği tek seferlik konumu ve isteğe bağlı notu/iletişim bilgisi yalnızca QR sahibine iletilir; sürekli konum takibi yapılmaz.|Okutma kayıtları ve bildirimler: QR’ın okutulma zamanı ve kaynağı (QR/NFC); anlık bildirim için tarayıcının oluşturduğu abonelik bilgisi.|Yapay zekâ altyazı (Premium): altyazı istendiğinde ses/video dosyası yazıya dökülmek üzere OpenAI’a, metin çevrilmek üzere Anthropic’e iletilir; bu hizmet sağlayıcılar veriyi yalnızca işlemi gerçekleştirmek için kullanır.|Dijital Ürün Pasaportu (kurumsal): firma kullanıcılarının e-posta, ad ve şifre özeti; firmanın girdiği ürün verileri ve belgeler. Pasaport okutmalarında kişisel veri tutulmaz, yalnızca ülke kodu ve dil istatistik amacıyla kaydedilir. Otomatik çeviri istendiğinde ürün metinleri Anthropic’e iletilir.|Anı defteri içerikleri: misafirlerin bıraktığı isim, mesaj ve medya.|Teknik veriler: IP adresi (güvenlik ve kötüye kullanımı önleme), görüntülenme sayıları.|Reklam ölçümü (yalnızca çerez onayı verirsen): ziyaret edilen sayfalar ve sepet, ödeme, üyelik, teklif işlemleri Meta’ya (Facebook / Instagram) iletilir; ayrıntılar Çerez Politikası’ndadır.',
       ],
       ['h2', 'Ödeme bilgileri'],
       ['p', 'Kart bilgilerin QRNot sunucularına ulaşmaz; ödemeler PayTR tarafından işlenir.'],
@@ -165,7 +165,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Aktarım'],
       [
         'p',
-        'Kişisel veriler; ödeme kuruluşları (PayTR), kargo firmaları, barındırma ve depolama hizmet sağlayıcıları (Vercel, Neon) ve yasal olarak yetkili kamu kurumlarıyla, yukarıdaki amaçlarla sınırlı olarak paylaşılabilir.',
+        'Kişisel veriler; ödeme kuruluşları (PayTR), kargo firmaları, barındırma ve depolama hizmet sağlayıcıları (Vercel, Neon), çerez onayı verilmesi hâlinde reklam ölçümü için Meta Platforms Ireland Ltd. ve yasal olarak yetkili kamu kurumlarıyla, yukarıdaki amaçlarla sınırlı olarak paylaşılabilir.',
       ],
       ['h2', 'Haklarınız (KVKK m.11)'],
       [
@@ -180,13 +180,20 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: 'Çerez Politikası',
     updated: UPDATED,
     blocks: [
-      ['p', 'QRNot yalnızca sitenin çalışması için zorunlu çerezleri ve tarayıcı depolamasını kullanır. Reklam veya üçüncü taraf takip çerezi kullanılmaz.'],
+      ['p', 'QRNot, sitenin çalışması için zorunlu çerezleri ve tarayıcı depolamasını her zaman kullanır. Reklam ölçümü için Meta (Facebook / Instagram) çerezleri ise yalnızca çerez şeridinde "Kabul et" dersen kullanılır.'],
+      ['h2', 'Zorunlu çerezler'],
       [
         'ul',
         'qrnote_auth: oturum çerezi — giriş yapmış kalmanı sağlar.|qrnote_lang: dil tercihi.|Tarayıcı depolaması (localStorage): sepet içeriği ve QR sahip anahtarı (içeriğini bu cihazdan yönetebilmen için).',
       ],
       ['p', 'Site kullanımını ölçmek için kendi sunucumuzda çerezsiz bir ölçüm yapıyoruz: hangi sayfanın açıldığı, ziyaretin hangi siteden ya da reklam bağlantısından geldiği, ülke ve cihaz türü. IP adresin saklanmaz; ziyaretçiler yalnızca aynı gün içinde, her gün değişen anonim bir özetle ayırt edilir. Bu veriler üçüncü taraflarla paylaşılmaz ve 400 gün sonra silinir.'],
-      ['p', 'Tarayıcı ayarlarından çerezleri silebilirsin; bu durumda yeniden giriş yapman gerekir.'],
+      ['h2', 'Reklam çerezleri (onayına bağlı)'],
+      [
+        'p',
+        'Onay verirsen Meta Platforms Ireland Ltd.’in Meta Pixel aracı yüklenir ve _fbp / _fbc çerezlerini kullanır. Bu araçla hangi sayfaları ziyaret ettiğin ve sepete ekleme, ödemeye geçme, üyelik, teklif formu gönderme gibi işlemler, Instagram ve Facebook reklamlarımızın etkisini ölçmek ve reklamları ilgilenebilecek kişilere göstermek amacıyla Meta’ya iletilir. Ödeme tamamlandığında sipariş tutarı, tarayıcı bilgisi ve e-posta / telefonunun geri döndürülemez özeti (hash) de bu amaçla Meta’ya gönderilir. QR içerik sayfaları, yönetim sayfaları ve sipariş sayfalarında Meta Pixel hiç çalışmaz. Meta bu verileri yurt dışında işler; aktarım açık rızana dayanır.',
+      ],
+      ['ul', 'qrnot_consent: çerez tercihin (1 yıl).|_fbp, _fbc: Meta reklam ölçümü (yalnızca onay verirsen, 90 gün).'],
+      ['p', 'Onayını istediğin zaman bu sayfadaki butonla geri alabilirsin. Tarayıcı ayarlarından çerezleri silebilirsin; bu durumda yeniden giriş yapman gerekir.'],
     ],
   },
   {
@@ -228,7 +235,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ['h2', 'Payments'],
       ['p', 'Card details never reach QRNot servers; payments are processed by PayTR.'],
       ['h2', 'Where data is stored'],
-      ['p', 'Data is hosted on Vercel (hosting and file storage) and Neon (database). We do not sell personal data and do not use advertising trackers.'],
+      ['p', 'Data is hosted on Vercel (hosting and file storage) and Neon (database). We do not sell personal data. Meta advertising cookies are used only with your consent (see the Cookie Policy).'],
       ['h2', 'Visibility'],
       ['p', 'Content on your QR page can be seen by anyone who scans the QR or has the link. Please do not add sensitive information.'],
       ['h2', 'Your rights'],
@@ -260,7 +267,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     blocks: [
       [
         'p',
-        'QRNot only uses cookies and browser storage that are strictly necessary for the site to work. No advertising or third-party tracking cookies are used.',
+        'QRNot always uses the cookies and browser storage strictly necessary for the site to work. Meta (Facebook / Instagram) advertising cookies are used only if you click "Accept" in the cookie banner.',
       ],
       [
         'ul',
@@ -270,6 +277,12 @@ export const LEGAL_DOCS: LegalDoc[] = [
         'p',
         'We measure site usage with cookieless analytics on our own servers: which page was opened, which site or ad link the visit came from, country and device type. Your IP address is not stored; visitors are only told apart within the same day by an anonymous digest that changes daily. This data is not shared with third parties and is deleted after 400 days.',
       ],
+      ['h2', 'Advertising cookies (with your consent)'],
+      [
+        'p',
+        'If you consent, Meta Platforms Ireland Ltd.’s Meta Pixel is loaded and uses the _fbp / _fbc cookies. Pages you visit and actions such as adding to cart, starting checkout, signing up or sending a quote form are shared with Meta to measure and target our Instagram and Facebook ads. When a payment is completed, the order value, browser information and a one-way hash of your email / phone are also sent to Meta for this purpose. Meta Pixel never runs on QR content pages, management pages or order pages. You can withdraw consent at any time with the button on this page.',
+      ],
+      ['ul', 'qrnot_consent: your cookie choice (1 year).|_fbp, _fbc: Meta ad measurement (only with consent, 90 days).'],
     ],
   },
 ]

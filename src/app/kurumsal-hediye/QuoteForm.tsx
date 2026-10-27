@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { pixelTrack } from '@/lib/metaPixel'
 import ProductArt from '@/components/warm/ProductArt'
 import { formatMoney, PRODUCTS } from '@/lib/commerce/catalog'
 import { estimateQuote, QUOTE_MIN_QTY, QUOTE_PRODUCT_IDS, QUOTE_TIERS, type QuoteItems, type QuoteProductId } from '@/lib/corporateQuoteShared'
@@ -110,6 +111,7 @@ export default function QuoteForm({ lang }: { lang: Lang }) {
       const data = (await res.json().catch(() => ({}))) as { error?: string }
       if (!res.ok) throw new Error(data.error || t.error)
       setState('done')
+      pixelTrack('Lead', { content_category: 'corporate_gift' })
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : t.error)
       setState('idle')

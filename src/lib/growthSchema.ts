@@ -111,6 +111,8 @@ export function ensureGrowthSchema() {
       await sql`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS kind VARCHAR(12) NOT NULL DEFAULT 'guestbook'`
       await sql`ALTER TABLE qr_media ADD COLUMN IF NOT EXISTS transcript TEXT`
       await sql`ALTER TABLE qr_media ADD COLUMN IF NOT EXISTS transcript_lang VARCHAR(12)`
+      // Büyük videolarda altyazı için ayrıca yüklenen küçük ses dosyası (Whisper 25 MB sınırı)
+      await sql`ALTER TABLE qr_media ADD COLUMN IF NOT EXISTS caption_audio_url TEXT`
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_until TIMESTAMP WITH TIME ZONE`
       await sql`
         CREATE TABLE IF NOT EXISTS media_translations (

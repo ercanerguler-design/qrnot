@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LangSwitch } from '@/components/warm/HeaderClient'
 import { uploadMediaDirect } from '@/lib/clientUpload'
+import { prepareCaptionAudio } from '@/lib/captionAudio'
 import { withLang, type Lang } from '@/lib/i18n'
 
 // QR okutma, anı defteri ve yönetim ekranlarının ortak parçaları.
@@ -167,6 +168,16 @@ export async function attachMedia(
   try {
     const url = await uploadMediaDirect({ slug: options.slug, scope: 'qr', file, token: options.token, onProgress: options.onProgress })
     formData.append('media_blob_url', url)
+    // Büyük videoda altyazı için sesi ayrı küçük dosya olarak da yükle. Olmazsa yükleme yine tamamlanır.
+    try {
+      const captionAudio = await prepareCaptionAudio(file)
+      if (captionAudio) {
+        const audioUrl = await uploadMediaDirect({ slug: options.slug, scope: 'qr', file: captionAudio, token: options.token })
+        formData.append('caption_audio_blob_url', audioUrl)
+      }
+    } catch (captionError) {
+      console.warn('[caption audio upload]', captionError)
+    }
   } catch (error) {
     if (file.size <= FORM_UPLOAD_LIMIT) {
       formData.append('media', file)

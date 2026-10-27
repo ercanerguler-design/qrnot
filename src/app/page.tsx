@@ -182,6 +182,10 @@ const C = {
     dppTitle: 'Dijital Ürün Pasaportu (DPP)',
     dppDesc: 'AB’nin ESPR düzenlemesiyle ürünlere kademeli olarak dijital pasaport zorunlu hale geliyor. Tekstil, mobilya, elektronik ve batarya üreticileri için 8 dilli, sürümlü, QR / NFC ile açılan ürün pasaportları.',
     dppCta: 'DPP’yi incele',
+    giftKicker: 'Yıl sonu personel hediyesi',
+    giftTitle: 'Çalışanlarınıza sesli bir teşekkür',
+    giftDesc: 'Kolye ve anahtarlıklarda yöneticinizin sesli mesajı. 10+ adette %10, 50+ adette %15, 200+ adette %20 indirim; logolu kutu ve toplu kurulum.',
+    giftCta: 'Teklif al',
     b2bCta: 'Kurumsal teklif al',
     bizCatalog: 'Kurumsal katalog',
     partner: 'Pazaryeri ortaklığı',
@@ -346,6 +350,10 @@ const C = {
     dppTitle: 'Digital Product Passport (DPP)',
     dppDesc: 'Under the EU ESPR, digital product passports are being phased in. Versioned passports in 8 languages that open via QR / NFC, for textile, furniture, electronics and battery manufacturers.',
     dppCta: 'Explore DPP',
+    giftKicker: 'Employee gifts',
+    giftTitle: 'A thank-you your team can hear',
+    giftDesc: 'Necklaces and keychains with a voice message from your leadership. 10% off 10+, 15% off 50+, 20% off 200+; logo boxes and bulk setup.',
+    giftCta: 'Get a quote',
     b2bCta: 'Get a business quote',
     bizCatalog: 'Business catalog',
     partner: 'Marketplace partnership',
@@ -686,8 +694,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             ))}
           </div>
           <Link
+            href={withLang('/kurumsal-hediye', lang)}
+            className="mt-6 flex flex-col gap-4 rounded-2xl border border-coral/30 bg-coral-soft p-6 transition hover:opacity-95 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-coral-2">🎁 {c.giftKicker}</p>
+              <p className="font-display mt-2 text-2xl font-semibold">{c.giftTitle}</p>
+              <p className="mt-2 max-w-2xl text-sm text-ink-2">{c.giftDesc}</p>
+            </div>
+            <span className="w-btn w-btn-primary shrink-0">{c.giftCta} →</span>
+          </Link>
+          <Link
             href={withLang('/dpp', lang)}
-            className="mt-6 flex flex-col gap-4 rounded-2xl bg-ink p-6 text-white transition hover:opacity-95 sm:flex-row sm:items-center sm:justify-between"
+            className="mt-4 flex flex-col gap-4 rounded-2xl bg-ink p-6 text-white transition hover:opacity-95 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">🛂 {c.dppKicker}</p>

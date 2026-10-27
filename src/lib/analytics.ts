@@ -19,6 +19,7 @@ export const CONVERSIONS = {
   checkout_start: 'Ödeme başlatıldı',
   purchase: 'Ödeme alındı',
   dpp_demo: 'DPP demo talebi',
+  corporate_quote: 'Kurumsal hediye talebi',
 } as const
 export type ConversionName = keyof typeof CONVERSIONS
 

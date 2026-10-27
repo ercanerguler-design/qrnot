@@ -5,6 +5,7 @@ import { CorporateTab, QrsTab, UsersTab } from './CoreTabs'
 import { AdminPushCard } from './AdminPushCard'
 import { AnalyticsTab } from './AnalyticsTab'
 import { DppTab } from './DppTab'
+import { QuotesTab } from './QuotesTab'
 import { HomeTab, type Go } from './HomeTab'
 import { btn, EtsyTab, input, OrdersTab, ProductionTab, RevenueTab } from './ShopTabs'
 
@@ -22,6 +23,7 @@ const SECTIONS = [
     title: 'Satış',
     tabs: [
       { key: 'orders', icon: '🛒', label: 'Siparişler' },
+      { key: 'quotes', icon: '🎁', label: 'Kurumsal teklifler' },
       { key: 'revenue', icon: '💰', label: 'Gelir' },
       { key: 'etsy', icon: '🧡', label: 'Etsy' },
     ],
@@ -201,6 +203,7 @@ export default function AdminConsole() {
           </div>
         )}
         {tab === 'orders' && <OrdersTab key={orderStatus} call={call} initialStatus={orderStatus} />}
+        {tab === 'quotes' && <QuotesTab call={call} />}
         {tab === 'revenue' && <RevenueTab call={call} password={password} />}
         {tab === 'etsy' && <EtsyTab call={call} />}
         {tab === 'qrs' && <QrsTab password={password} />}

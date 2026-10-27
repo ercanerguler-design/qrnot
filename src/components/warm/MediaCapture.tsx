@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Lang } from '@/lib/i18n'
+import { setCaptionAudio } from '@/lib/captionAudio'
 
 // Yeni temaya uygun, iki dilli ses/video kaydedici + dosya seçici.
 // Mantık components/MediaRecorder.tsx ile aynıdır (Safari için MP4, Chromium için WebM).
@@ -177,6 +178,7 @@ export default function MediaCapture({
   const [message, setMessage] = useState<string | null>(null)
 
   const recorderRef = useRef<MediaRecorder | null>(null)
+  const audioRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -197,6 +199,7 @@ export default function MediaCapture({
   }
 
   const stop = useCallback(() => {
+    if (audioRecorderRef.current && audioRecorderRef.current.state !== 'inactive') audioRecorderRef.current.stop()
     if (recorderRef.current && recorderRef.current.state !== 'inactive') recorderRef.current.stop()
     if (timerRef.current) {
       clearInterval(timerRef.current)
@@ -247,11 +250,40 @@ export default function MediaCapture({
       if (event.data.size > 0) chunksRef.current.push(event.data)
     }
 
-    recorder.onstop = () => {
+    // Videoda sesi ayrıca, düşük bit hızıyla kaydet: büyük videolarda altyazı bu küçük dosyadan üretilir.
+    let captionAudio: Promise<File | null> = Promise.resolve(null)
+    if (mode === 'video') {
+      try {
+        const audioType = preferredTypes('audio').find((type) => Recorder.isTypeSupported(type))
+        const audioRecorder = new Recorder(new MediaStream(stream.getAudioTracks()), {
+          ...(audioType ? { mimeType: audioType } : {}),
+          audioBitsPerSecond: 48000,
+        })
+        const audioChunks: Blob[] = []
+        audioRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) audioChunks.push(event.data)
+        }
+        captionAudio = new Promise((resolve) => {
+          audioRecorder.onstop = () => {
+            const type = audioRecorder.mimeType || 'audio/webm'
+            resolve(new File(audioChunks, `ses-${Date.now()}.${type.includes('mp4') ? 'm4a' : 'webm'}`, { type }))
+          }
+          audioRecorder.onerror = () => resolve(null)
+        })
+        audioRecorderRef.current = audioRecorder
+        audioRecorder.start(1000)
+      } catch {
+        audioRecorderRef.current = null
+      }
+    }
+
+    recorder.onstop = async () => {
       const type = recorder.mimeType || (mode === 'audio' ? 'audio/webm' : 'video/webm')
       const blob = new Blob(chunksRef.current, { type })
       const extension = type.includes('mp4') ? 'mp4' : 'webm'
       const file = new File([blob], `${mode}-${Date.now()}.${extension}`, { type })
+      const audio = await Promise.race([captionAudio, new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))])
+      if (audio && audio.size > 0) setCaptionAudio(file, audio)
       stream.getTracks().forEach((track) => track.stop())
       if (liveVideoRef.current) liveVideoRef.current.srcObject = null
       setPreview(URL.createObjectURL(blob))

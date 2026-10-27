@@ -15,6 +15,8 @@ export async function deleteQrWithMedia(qrId: string): Promise<{ ok: true } | { 
     UNION
     SELECT blob_url FROM qr_media WHERE qr_id = ${qrId} AND source_type = 'blob' AND blob_url IS NOT NULL
     UNION
+    SELECT caption_audio_url FROM qr_media WHERE qr_id = ${qrId} AND caption_audio_url IS NOT NULL
+    UNION
     SELECT blob_url FROM guestbook_entries WHERE qr_id = ${qrId} AND blob_url IS NOT NULL
   `) as Array<{ url: string }>
 

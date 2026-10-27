@@ -12,7 +12,7 @@ const NAV = {
     { href: '/#nasil-calisir', label: 'Nasıl çalışır?' },
     { href: '/guestbook', label: 'Anı Defteri' },
     { href: '/nfc', label: 'NFC' },
-    { href: '/#kurumsal', label: 'Kurumsal' },
+    { href: '/kurumsal-hediye', label: 'Kurumsal hediye' },
   ],
   en: [
     { href: '/shop', label: 'Shop' },
@@ -90,6 +90,7 @@ const FOOTER = {
         ['/shop/anahtarlik-qr', 'Sesli anahtarlık'],
         ['/guestbook', 'Dijital anı defteri'],
         ['/nfc', 'NFC ürünler'],
+        ['/kurumsal-hediye', 'Kurumsal hediye'],
       ],
       help: [
         ['/#sss', 'Sık sorulan sorular'],
@@ -125,6 +126,7 @@ const FOOTER = {
         ['/shop/anahtarlik-qr', 'Voice keychain'],
         ['/guestbook', 'Audio guestbook'],
         ['/nfc', 'NFC products'],
+        ['/kurumsal-hediye', 'Corporate gifts'],
       ],
       help: [
         ['/#sss', 'FAQ'],

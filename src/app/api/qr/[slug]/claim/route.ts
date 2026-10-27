@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SITE_URL } from '@/lib/site'
 import { validateAudioFile } from '@/lib/audio'
 import { deleteBlob, putBlob } from '@/lib/blob'
-import { resolveDirectUpload } from '@/lib/directUpload'
+import { attachCaptionAudio, resolveDirectUpload } from '@/lib/directUpload'
 import { deactivateExpiredDemoQr, ensureQrSchema, QRCode, sql } from '@/lib/db'
 import {
   detectUploadedMediaType,
@@ -72,6 +72,7 @@ export async function POST(
     const legacyAudioFile = formData.get('audio') as File | null
     const mediaFile = (formData.get('media') as File | null) || legacyAudioFile
     const directBlobUrl = normalizeOptionalUrl(formData.get('media_blob_url') as string | null)
+    const captionBlobUrl = normalizeOptionalUrl(formData.get('caption_audio_blob_url') as string | null)
     const title = ((formData.get('title') as string) || '').trim().slice(0, 100) || 'Sesli Not'
     const youtubeUrl = normalizeOptionalUrl(formData.get('youtube_url') as string | null)
     const spotifyUrl = normalizeOptionalUrl(formData.get('spotify_url') as string | null)
@@ -205,6 +206,7 @@ export async function POST(
         INSERT INTO qr_media (qr_id, media_type, source_type, blob_url, title, sort_order, is_primary)
         VALUES (${qrId}, ${uploadedMediaType}, 'blob', ${uploadedMediaBlobUrl}, ${title}, ${sortOrder}, TRUE)
       `
+      if (uploadedMediaType === 'video') await attachCaptionAudio(captionBlobUrl, qrId, uploadedMediaBlobUrl, slug, qr.order_type)
       sortOrder += 1
     }
 

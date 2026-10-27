@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
 import { deleteBlob } from '@/lib/blob'
 import { ensureQrSchema, QRMedia, sql } from '@/lib/db'
+import { ensureGrowthSchema } from '@/lib/growthSchema'
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,6 +57,13 @@ export async function POST(req: NextRequest) {
           blobUrls.add(media.blob_url)
         }
       }
+      await ensureGrowthSchema()
+      const captionRows = (await sql`
+        SELECT m.caption_audio_url FROM qr_media m
+        INNER JOIN qr_codes q ON q.id = m.qr_id
+        WHERE q.creator_user_id = ${userId} AND m.caption_audio_url IS NOT NULL
+      `) as Array<{ caption_audio_url: string }>
+      for (const row of captionRows) blobUrls.add(row.caption_audio_url)
 
       for (const blobUrl of blobUrls) {
         try {

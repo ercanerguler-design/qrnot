@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { head } from '@vercel/blob'
 import { getBlob } from '@/lib/blob'
 import { sql } from '@/lib/db'
 
@@ -28,6 +29,12 @@ export function aiCaptionsEnabled() {
 export async function transcribeBlob(blobUrl: string): Promise<{ text: string; lang: string | null }> {
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim()
   if (!apiKey) throw new Error('Altyazı servisi yapılandırılmamış')
+
+  // Dosyayı indirmeden önce boyutuna bak: 1 GB'lık videoyu sunucu belleğine almayalım
+  const meta = await head(blobUrl, { token: String(process.env.BLOB_READ_WRITE_TOKEN || '').trim() }).catch(() => null)
+  if (meta && meta.size > WHISPER_MAX_BYTES) {
+    throw new Error('Bu video altyazı için çok büyük. Videoyu yeniden yüklersen altyazı hazırlanabilir.')
+  }
 
   const blob = await getBlob(blobUrl)
   if (!blob || !blob.stream) throw new Error('Dosya bulunamadı')

@@ -3,7 +3,7 @@ import { SITE_URL } from '@/lib/site'
 import { validateAudioFile } from '@/lib/audio'
 import { isUserPremium } from '@/lib/qrFeatures'
 import { deleteBlob, putBlob } from '@/lib/blob'
-import { resolveDirectUpload } from '@/lib/directUpload'
+import { attachCaptionAudio, deleteCaptionAudios, resolveDirectUpload } from '@/lib/directUpload'
 import { deactivateExpiredDemoQr, ensureQrSchema, sql, QRCode, QRMedia } from '@/lib/db'
 import {
   detectUploadedMediaType,
@@ -48,6 +48,7 @@ export async function PUT(
     const legacyAudioFile = formData.get('audio') as File | null
     const mediaFile = (formData.get('media') as File | null) || legacyAudioFile
     const directBlobUrl = normalizeOptionalUrl(formData.get('media_blob_url') as string | null)
+    const captionBlobUrl = normalizeOptionalUrl(formData.get('caption_audio_blob_url') as string | null)
     const titleRaw = formData.get('title') as string | null
     const youtubeRaw = formData.get('youtube_url') as string | null
     const spotifyRaw = formData.get('spotify_url') as string | null
@@ -205,6 +206,7 @@ export async function PUT(
         }
       }
 
+      await deleteCaptionAudios(qr.id)
       await sql`
         DELETE FROM qr_media WHERE qr_id = ${qr.id} AND source_type = 'blob'
       `
@@ -213,6 +215,7 @@ export async function PUT(
         INSERT INTO qr_media (qr_id, media_type, source_type, blob_url, title, sort_order, is_primary)
         VALUES (${qr.id}, ${uploadedMediaType}, 'blob', ${uploadedMediaBlobUrl}, ${newTitle || qr.title}, 0, TRUE)
       `
+      if (uploadedMediaType === 'video') await attachCaptionAudio(captionBlobUrl, qr.id, uploadedMediaBlobUrl, slug, qr.order_type)
 
       await sql`
         UPDATE qr_media

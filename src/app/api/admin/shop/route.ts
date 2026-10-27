@@ -8,6 +8,7 @@ import { createBlankQRCodes } from '@/lib/qr'
 import { SITE_URL } from '@/lib/site'
 import { deleteQrWithMedia } from '@/lib/qrDelete'
 import { resolveRevenueRange, revenueSummary } from '@/lib/revenue'
+import { ensureQuoteSchema, QUOTE_STATUSES, type QuoteStatus } from '@/lib/corporateQuote'
 
 // Mağaza / Etsy / NFC üretim yönetimi — tek uç nokta, ADMIN_PASSWORD ile korunur.
 
@@ -62,6 +63,40 @@ export async function POST(req: NextRequest) {
         recentOrders,
         recentEvents,
       })
+    }
+
+    // Kurumsal hediye teklif talepleri (/kurumsal-hediye)
+    if (action === 'quotes.list') {
+      await ensureQuoteSchema()
+      const status = String(body.status || '')
+      const quotes = QUOTE_STATUSES.includes(status as QuoteStatus)
+        ? await sql`SELECT * FROM corporate_quotes WHERE status = ${status} ORDER BY created_at DESC LIMIT 300`
+        : await sql`SELECT * FROM corporate_quotes ORDER BY created_at DESC LIMIT 300`
+      const counts = await sql`SELECT status, COUNT(*)::int AS count FROM corporate_quotes GROUP BY status`
+      return NextResponse.json({ quotes, counts })
+    }
+
+    if (action === 'quotes.update') {
+      await ensureQuoteSchema()
+      const id = String(body.id || '')
+      const status = String(body.status || '')
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Geçersiz talep' }, { status: 400 })
+      if (status && !QUOTE_STATUSES.includes(status as QuoteStatus)) return NextResponse.json({ error: 'Geçersiz durum' }, { status: 400 })
+      const note = typeof body.note === 'string' ? body.note.slice(0, 2000) : null
+      await sql`
+        UPDATE corporate_quotes
+        SET status = COALESCE(${status || null}, status), admin_note = COALESCE(${note}, admin_note), updated_at = NOW()
+        WHERE id = ${id}
+      `
+      return NextResponse.json({ ok: true })
+    }
+
+    if (action === 'quotes.delete') {
+      await ensureQuoteSchema()
+      const id = String(body.id || '')
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Geçersiz talep' }, { status: 400 })
+      await sql`DELETE FROM corporate_quotes WHERE id = ${id}`
+      return NextResponse.json({ ok: true })
     }
 
     if (action === 'orders.list') {

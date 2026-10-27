@@ -4,12 +4,12 @@ import { sql } from '@/lib/db'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 import { isOwnerToken, isQrPremium, isTimeLocked, loadFeatureQr } from '@/lib/qrFeatures'
 
-type MediaRow = { id: string; blob_url: string | null; media_type: string; transcript: string | null; transcript_lang: string | null }
+type MediaRow = { id: string; blob_url: string | null; caption_audio_url: string | null; media_type: string; transcript: string | null; transcript_lang: string | null }
 
 async function loadMedia(qrId: string, mediaId: string) {
   if (!/^[0-9a-f-]{36}$/i.test(mediaId)) return null
   const rows = (await sql`
-    SELECT id, blob_url, media_type, transcript, transcript_lang FROM qr_media
+    SELECT id, blob_url, caption_audio_url, media_type, transcript, transcript_lang FROM qr_media
     WHERE id = ${mediaId} AND qr_id = ${qrId} AND source_type = 'blob' AND media_type IN ('audio', 'video')
   `) as unknown as MediaRow[]
   return rows[0] || null
@@ -56,7 +56,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     const media = await loadMedia(qr.id, mediaId)
     if (!media?.blob_url) return NextResponse.json({ error: 'Ses ya da video bulunamadı' }, { status: 404 })
 
-    const result = await transcribeBlob(media.blob_url)
+    // Büyük videolarda yüklemeyle birlikte ayrılan küçük ses dosyası kullanılır
+    const result = await transcribeBlob(media.caption_audio_url || media.blob_url)
     if (!result.text) return NextResponse.json({ error: 'Kayıtta konuşma algılanamadı' }, { status: 422 })
     await sql`DELETE FROM media_translations WHERE media_id = ${media.id}`
     await sql`UPDATE qr_media SET transcript = ${result.text}, transcript_lang = ${result.lang}, updated_at = NOW() WHERE id = ${media.id}`

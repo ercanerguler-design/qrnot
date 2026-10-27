@@ -1,5 +1,5 @@
 // E-posta gönderimi: Resend (https://resend.com). RESEND_API_KEY yoksa sessizce atlanır, hiçbir akış bozulmaz.
-// Gönderen adres Resend'de doğrulanmış alan adından olmalıdır (qrnot.com): MAIL_FROM, örn. "QRNot <bilgi@qrnot.com>".
+// Gönderen adres Resend'de doğrulanmış alan adından olmalıdır (scegrup.com): MAIL_FROM, varsayılan "QRNot <sce@scegrup.com>".
 
 export function mailEnabled() {
   return Boolean(String(process.env.RESEND_API_KEY || '').trim())
@@ -8,7 +8,7 @@ export function mailEnabled() {
 export async function sendMail(input: { to: string | string[]; subject: string; text: string; html?: string; replyTo?: string }) {
   const apiKey = String(process.env.RESEND_API_KEY || '').trim()
   if (!apiKey) return { status: 'skipped' as const }
-  const from = String(process.env.MAIL_FROM || 'QRNot <bilgi@qrnot.com>').trim()
+  const from = String(process.env.MAIL_FROM || 'QRNot <sce@scegrup.com>').trim()
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',

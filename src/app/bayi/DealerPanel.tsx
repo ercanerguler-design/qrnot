@@ -49,6 +49,7 @@ interface DppRow {
   amount_try: number | null
   dpp_company_id: string | null
   period_end: string | null
+  renew_count?: number
   status: DppRequestStatus
   paid: boolean
   created_at: string
@@ -540,6 +541,33 @@ function OrderForm({ dealer, providers }: { dealer: DealerInfo; providers: strin
   )
 }
 
+/** Bitişe kalan gün (bugün biten 0, geçmiş eksi) */
+function daysLeft(end: string | null) {
+  if (!end) return Infinity
+  return Math.ceil((new Date(end).getTime() - Date.now()) / 86400000)
+}
+
+function PeriodStatus({ r }: { r: DppRow }) {
+  if (!r.dpp_company_id) {
+    return <span className="text-xs text-ink-2">{r.paid ? 'Ödeme alındı · panel kurulumu hazırlanıyor' : DPP_REQUEST_STATUS_LABEL[r.status] || r.status}</span>
+  }
+  if (!r.period_end) return <span className="text-xs text-sage">✓ Panel açık · tek seferlik paket</span>
+  const left = daysLeft(r.period_end)
+  if (left <= 0) {
+    return (
+      <span className="text-xs font-semibold text-coral-2">
+        ⛔ Dönem {date(r.period_end)} tarihinde sona erdi. Panel açık; müşteriye yenileme uyarısı gösteriliyor.
+      </span>
+    )
+  }
+  if (left <= 7) return <span className="text-xs font-semibold text-gold">⏳ {date(r.period_end)} tarihinde bitiyor · {left} gün kaldı</span>
+  return (
+    <span className="text-xs text-sage">
+      ✓ Panel açık · {date(r.period_end)} tarihine kadar ({left} gün){r.renew_count ? ` · ${r.renew_count}. yenileme` : ''}
+    </span>
+  )
+}
+
 function DppSection({
   plans,
   requests,
@@ -615,11 +643,11 @@ function DppSection({
     }
   }
 
-  const pay = async (id: string) => {
+  const pay = async (id: string, action: 'dpp.pay' | 'dpp.renew' = 'dpp.pay') => {
     setPayError(null)
     setPaying(id)
     try {
-      const res = await fetch('/api/dealer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dpp.pay', id }) })
+      const res = await fetch('/api/dealer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, id }) })
       const json = (await res.json().catch(() => ({}))) as { error?: string; redirectUrl?: string }
       if (!res.ok || !json.redirectUrl) throw new Error(json.error || 'Ödeme sayfası açılamadı.')
       window.location.assign(json.redirectUrl)
@@ -747,17 +775,21 @@ function DppSection({
                       </span>
                     </div>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs text-ink-2">
-                        {r.dpp_company_id
-                          ? `✓ Panel açıldı${r.period_end ? ` · ${date(r.period_end)} tarihine kadar` : ''}`
-                          : r.paid
-                            ? 'Panel kurulumu hazırlanıyor'
-                            : DPP_REQUEST_STATUS_LABEL[r.status] || r.status}
-                      </span>
+                      <PeriodStatus r={r} />
                       <span className="flex flex-wrap justify-end gap-2">
                         {!r.paid && r.status !== 'cancelled' && r.plan !== 'kurumsal' && confirmDel !== r.id && (
                           <button type="button" className="w-btn w-btn-primary w-btn-sm" disabled={paying === r.id} onClick={() => void pay(r.id)}>
                             {paying === r.id ? 'Bekle…' : `Kartla öde${est ? ` · ${formatMoney(est, 'TRY')}` : ''}`}
+                          </button>
+                        )}
+                        {r.dpp_company_id && (r.billing === 'month' || r.billing === 'year') && r.plan !== 'kurumsal' && confirmDel !== r.id && (
+                          <button
+                            type="button"
+                            className={`w-btn w-btn-sm ${daysLeft(r.period_end) <= 7 ? 'w-btn-primary' : 'w-btn-ghost'}`}
+                            disabled={paying === r.id}
+                            onClick={() => void pay(r.id, 'dpp.renew')}
+                          >
+                            {paying === r.id ? 'Bekle…' : `Dönemi yenile${est ? ` · ${formatMoney(est, 'TRY')}` : ''}`}
                           </button>
                         )}
                         {!r.paid && !r.dpp_company_id &&

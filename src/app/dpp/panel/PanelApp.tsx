@@ -23,6 +23,44 @@ export interface Me {
   plan: string
   demoEndsAt: string | null
   demoDaysLeft: number | null
+  paidUntil: string | null
+  paidDaysLeft: number | null
+  billing: string
+  reseller: { name: string; phone: string; email: string } | null
+}
+
+/** Ücretli dönem uyarısı: son 7 gün sarı, dönem bitince kırmızı. Panel kapanmaz; bayiye ya da QRNot'a yönlendirir. */
+function SubscriptionBanner({ me }: { me: Me }) {
+  const { t, lang } = useT()
+  if (!me.paidUntil || me.paidDaysLeft === null || me.paidDaysLeft > 7) return null
+  const ended = me.paidDaysLeft <= 0
+  const date = new Date(me.paidUntil).toLocaleDateString(lang === 'ar' ? 'ar' : lang, { day: 'numeric', month: 'long', year: 'numeric' })
+  const phone = (me.reseller?.phone || '').replace(/\D/g, '').replace(/^0/, '90')
+  const waText = `QRNot DPP: ${me.companyName} (${me.companyCode}) — ${date}`
+  const contactHref = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(waText)}` : `https://wa.me/905433929230?text=${encodeURIComponent(waText)}`
+  return (
+    <div className={ended ? 'border-b border-rose-200 bg-rose-50' : 'border-b border-amber-200 bg-amber-50'}>
+      <div className={`mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm ${ended ? 'text-rose-950' : 'text-amber-950'}`}>
+        <span>
+          {ended ? '⛔' : '⏳'} {ended ? t('sub_ended', { date }) : t('sub_ends', { date, days: me.paidDaysLeft })}
+          {me.reseller && (
+            <span className="ml-1 font-semibold">
+              {t('sub_reseller', { name: me.reseller.name })}
+              {me.reseller.phone ? ` · ${me.reseller.phone}` : ''}
+            </span>
+          )}
+        </span>
+        <a
+          href={contactHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`rounded-lg px-3 py-1 text-xs font-semibold text-white ${ended ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-500 hover:bg-amber-600'}`}
+        >
+          {t('sub_contact')}
+        </a>
+      </div>
+    </div>
+  )
 }
 
 export type View = { page: 'overview' } | { page: 'products' } | { page: 'product'; id: string | null; tab?: string } | { page: 'company' } | { page: 'users' } | { page: 'account' }
@@ -122,6 +160,8 @@ function Shell() {
           </div>
         </div>
       </header>
+
+      <SubscriptionBanner me={me} />
 
       {me.demoEndsAt && (
         <div className="border-b border-amber-200 bg-amber-50">

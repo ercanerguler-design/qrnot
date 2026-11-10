@@ -85,20 +85,25 @@ export async function POST(req: NextRequest) {
       return json({ ok: true, request })
     }
 
-    if (body.action === 'dpp.pay') {
-      // DPP talebi kartla: € (KDV hariç) × TCMB euro satış kuru × (1 + KDV) = TL; PayTR ile tahsil, bildirimle talep "ödendi" olur
+    if (body.action === 'dpp.pay' || body.action === 'dpp.renew') {
+      // DPP talebi kartla: € (KDV hariç) × TCMB euro satış kuru × (1 + KDV) = TL; PayTR ile tahsil, bildirimle talep "ödendi" olur.
+      // dpp.renew: açılmış aylık / yıllık talebin dönem yenilemesi; ödeme onaylanınca bitiş önceki bitişten 30 / 365 gün uzar.
+      const renewal = body.action === 'dpp.renew'
       const reqId = String(body.id || '')
       if (!/^[0-9a-f-]{36}$/i.test(reqId)) return json({ error: 'Geçersiz talep' }, 400)
       const dreq = ((await sql`SELECT * FROM dealer_dpp_requests WHERE id = ${reqId} AND dealer_id = ${dealer.id}`) as unknown as DealerDppRequest[])[0]
       if (!dreq) return json({ error: 'Talep bulunamadı.' }, 404)
-      if (dreq.paid) return json({ error: 'Bu talebin ödemesi zaten alınmış.' }, 400)
+      if (renewal) {
+        if (!dreq.dpp_company_id || !dreq.paid) return json({ error: 'Yenileme sadece paneli açılmış talepte yapılır.' }, 400)
+        if (dreq.billing !== 'month' && dreq.billing !== 'year') return json({ error: 'Pilot paket tek seferliktir; yenilenmez.' }, 400)
+      } else if (dreq.paid) return json({ error: 'Bu talebin ödemesi zaten alınmış.' }, 400)
       if (dreq.status === 'cancelled') return json({ error: 'İptal edilen talep ödenemez.' }, 400)
       if (!dppCardPayable(dreq.plan)) return json({ error: 'Kurumsal pakette fiyat teklifle netleşir; ödeme bilgisi size iletilecek.' }, 400)
       if (!availableProviders('TRY').includes('paytr')) return json({ error: 'Kartla ödeme şu an kullanılamıyor. Havale seçebilirsin.' }, 400)
       const fx = await getEurTryRate()
       const amount = dppTryKurus(Number(dreq.dealer_eur), fx.rate)
       const plan = DPP_DEALER_PLANS.find((p) => p.id === dreq.plan)
-      const label = `QRNot DPP ${plan?.name || dreq.plan} · ${DPP_BILLING_LABEL[dreq.billing] || dreq.billing} · ${dreq.customer_company}`.slice(0, 120)
+      const label = `QRNot DPP ${renewal ? 'yenileme · ' : ''}${plan?.name || dreq.plan} · ${DPP_BILLING_LABEL[dreq.billing] || dreq.billing} · ${dreq.customer_company}`.slice(0, 120)
       const order = await createOrder({
         provider: 'paytr',
         currency: 'TRY',
@@ -122,6 +127,7 @@ export async function POST(req: NextRequest) {
           ip,
           dealer: { id: dealer.id, company: dealer.company, taxOffice: dealer.tax_office, taxNo: dealer.tax_no },
           dppRequestId: dreq.id,
+          ...(renewal ? { dppRenewal: true, renewFrom: dreq.period_end } : {}),
           eur: Number(dreq.dealer_eur),
           eurRate: fx.rate,
           eurRateDate: fx.date,
@@ -131,7 +137,7 @@ export async function POST(req: NextRequest) {
         clientIp: ip,
       })
       await sql`UPDATE shop_orders SET dealer_id = ${dealer.id} WHERE id = ${order.id}`
-      await sql`UPDATE dealer_dpp_requests SET eur_rate = ${fx.rate}, amount_try = ${amount}, order_no = ${order.order_no}, payment_method = 'card', updated_at = NOW() WHERE id = ${dreq.id}`
+      if (!renewal) await sql`UPDATE dealer_dpp_requests SET eur_rate = ${fx.rate}, amount_try = ${amount}, order_no = ${order.order_no}, payment_method = 'card', updated_at = NOW() WHERE id = ${dreq.id}`
       const origin = req.nextUrl.origin
       try {
         const token = await getPaytrToken({

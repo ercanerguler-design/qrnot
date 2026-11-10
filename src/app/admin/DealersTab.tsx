@@ -66,6 +66,7 @@ interface DppRow {
   order_no: string | null
   dpp_company_id: string | null
   period_end: string | null
+  renew_count?: number
   status: string
   paid: boolean
   note: string
@@ -200,6 +201,22 @@ export function DealersTab({ password, call }: { password: string; call: Caller 
   )
 }
 
+/** Bitişe kalan gün (bugün biten 0, geçmiş eksi) */
+const daysUntil = (end: string) => Math.ceil((new Date(end).getTime() - Date.now()) / 86400000)
+
+function PeriodChip({ end, renewals }: { end: string | null; renewals: number }) {
+  if (!end) return <span className="rounded-xl bg-emerald-900/40 px-3 py-2 text-xs text-emerald-200">Panel açık · tek sefer</span>
+  const left = daysUntil(end)
+  const tone = left <= 0 ? 'bg-rose-900/50 text-rose-200' : left <= 7 ? 'bg-amber-900/50 text-amber-200' : 'bg-emerald-900/40 text-emerald-200'
+  const text = left <= 0 ? `Süresi doldu · ${day(end)}` : `${day(end)}'e kadar · ${left} gün`
+  return (
+    <span className={`rounded-xl px-3 py-2 text-xs ${tone}`}>
+      {text}
+      {renewals ? ` · ${renewals} yenileme` : ''}
+    </span>
+  )
+}
+
 function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow; password: string; call: Caller; onChange: () => Promise<void> }) {
   const [orders, setOrders] = useState<OrderRow[] | null>(null)
   const [dpp, setDpp] = useState<DppRow[]>([])
@@ -253,6 +270,20 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Panel açılamadı')
     }
+  }
+  const renewManual = async (r: DppRow) => {
+    const days = r.billing === 'year' ? 365 : 30
+    if (!window.confirm(`${r.customer_company} için yenileme ödemesi (havale) alındı mı? Bitiş tarihi ${days} gün uzatılacak (önceki bitişten).`)) return
+    await post(password, 'dpp.renew', { id: r.id }).catch((e) => setMsg(e instanceof Error ? e.message : 'Yenilenemedi'))
+    await loadDetail()
+    await onChange()
+  }
+  const setEnd = async (r: DppRow, value: string) => {
+    if (!value) return
+    if (!window.confirm(`${r.customer_company} bitiş tarihi ${new Date(value).toLocaleDateString('tr-TR')} olarak değiştirilsin mi?`)) return
+    // Gün sonu (Türkiye saati) olarak kaydedilir
+    await post(password, 'dpp.setEnd', { id: r.id, periodEnd: `${value}T23:59:00+03:00` }).catch((e) => setMsg(e instanceof Error ? e.message : 'Kaydedilemedi'))
+    await loadDetail()
   }
   const dppDelete = async (r: DppRow) => {
     const warn = r.dpp_company_id
@@ -422,9 +453,25 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
                     {r.paid ? '✓ Ödendi' : 'Ödendi işaretle'}
                   </button>
                   {r.dpp_company_id ? (
-                    <span className="rounded-xl bg-emerald-900/40 px-3 py-2 text-xs text-emerald-200">
-                      Panel açık{r.period_end ? ` · ${day(r.period_end)}'e kadar` : ''}
-                    </span>
+                    <>
+                      <PeriodChip end={r.period_end} renewals={r.renew_count || 0} />
+                      {r.period_end && (r.billing === 'month' || r.billing === 'year') && (
+                        <>
+                          <button className={`${btn} bg-emerald-700 text-white`} onClick={() => void renewManual(r)}>
+                            Havale geldi · +{r.billing === 'year' ? '365' : '30'} gün
+                          </button>
+                          <label className="flex items-center gap-1 text-xs text-neutral-400">
+                            Bitiş
+                            <input
+                              type="date"
+                              className={`${input} w-36 py-1`}
+                              defaultValue={r.period_end.slice(0, 10)}
+                              onBlur={(e) => e.target.value !== r.period_end?.slice(0, 10) && void setEnd(r, e.target.value)}
+                            />
+                          </label>
+                        </>
+                      )}
+                    </>
                   ) : (
                     <button className={`${btn} bg-cyan-600 text-white`} disabled={!r.paid} title={r.paid ? '' : 'Önce ödeme alınmalı'} onClick={() => void activate(r)}>
                       DPP panelini aç

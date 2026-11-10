@@ -150,8 +150,13 @@ export async function markOrderPaid(orderNo: string, providerRef: string | null,
 
   const fulfilled = await fulfillDigital(order)
   // Bayi DPP talebinin kartla ödemesi: talep otomatik "ödendi" olur (panel açılışı admin onayıyla)
-  const dppRequestId = (order.consents as { dppRequestId?: string } | null)?.dppRequestId
-  if (dppRequestId) {
+  const dppConsent = order.consents as { dppRequestId?: string; dppRenewal?: boolean } | null
+  const dppRequestId = dppConsent?.dppRequestId
+  if (dppRequestId && dppConsent?.dppRenewal) {
+    // Dönem yenileme ödemesi: bitiş önceki bitişten 30 / 365 gün uzar (sipariş bir kez "ödendi"ye geçtiği için bir kez çalışır)
+    const { extendDppPeriod } = await import('@/lib/dealers')
+    await extendDppPeriod(dppRequestId).catch((error) => console.error('[order dpp renew]', error))
+  } else if (dppRequestId) {
     await sql`
       UPDATE dealer_dpp_requests SET paid = TRUE, paid_at = COALESCE(paid_at, NOW()), order_no = ${order.order_no}, updated_at = NOW()
       WHERE id = ${dppRequestId}
@@ -228,6 +233,8 @@ async function fulfillDigital(order: ShopOrder): Promise<ShopOrder> {
 }
 
 async function notifyNewOrder(order: ShopOrder) {
+  // Test adresleri (.invalid / .example / .test) bildirim göndermez
+  if (/\.(invalid|example|test)$/i.test(order.email)) return
   const target = String(process.env.SHOP_NOTIFY_WHATSAPP || process.env.WHATSAPP_TO_NUMBER || '').trim()
   const lines = order.items.map((line) => `• ${line.quantity}× ${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ''}`).join('\n')
   const dealer = (order.consents as { dealer?: { company?: string } } | null)?.dealer

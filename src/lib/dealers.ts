@@ -66,6 +66,7 @@ export interface DealerDppRequest {
   dpp_company_id: string | null
   activated_at: string | null
   period_end: string | null
+  renew_count: number
   status: DppRequestStatus
   paid: boolean
   paid_at: string | null
@@ -143,6 +144,10 @@ export function ensureDealerSchema() {
       await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS activated_at TIMESTAMP WITH TIME ZONE`
       await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS period_end TIMESTAMP WITH TIME ZONE`
       await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS customer_tax_no VARCHAR(20) NOT NULL DEFAULT ''`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS renew_count INTEGER NOT NULL DEFAULT 0`
+      // Hatırlatma, hangi bitiş tarihi için gönderildiyse o tarihi tutar: yenilemeyle bitiş değişince yeni dönem için tekrar gönderilir
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS remind7_for TIMESTAMP WITH TIME ZONE`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS remind_end_for TIMESTAMP WITH TIME ZONE`
       // Aynı müşteri için tek açık talep (iptal edilenler hariç). Eski kayıtlarda çakışma varsa kural kurulamaz; uygulama kontrolü yine çalışır.
       try {
         await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dealer_dpp_email ON dealer_dpp_requests (lower(customer_email)) WHERE status <> 'cancelled' AND customer_email <> ''`
@@ -302,6 +307,8 @@ export async function createDppRequest(dealer: Dealer, body: Record<string, unkn
     LIMIT 1
   `) as unknown[]
   if (dupPanel.length) throw new DealerError('Bu e-posta zaten bir QRNot DPP paneline kayıtlı. Müşterinin mevcut paneli için bizimle iletişime geç.')
+  const dupTax = (await sql`SELECT 1 FROM dpp_companies WHERE tax_no = ${customerTaxNo} LIMIT 1`) as unknown[]
+  if (dupTax.length) throw new DealerError('Bu vergi numarasıyla açılmış bir QRNot DPP firması zaten var. Müşterinin mevcut paneli için bizimle iletişime geç.')
   const payment = body.paymentMethod === 'card' ? 'card' : 'transfer'
   let billing: DppBilling = 'once'
   if (plan.per !== 'once') {
@@ -414,11 +421,25 @@ export async function activateDppRequest(requestId: string) {
   let code = base
   for (let i = 2; ((await sql`SELECT 1 FROM dpp_companies WHERE code = ${code}`) as unknown[]).length; i++) code = `${base}${i}`
   const note = `Bayi: ${dealer?.company || '-'} · talep ${req.id.slice(0, 8)} · ${DPP_BILLING_LABEL[req.billing] || req.billing}`
-  const rows = (await sql`
-    INSERT INTO dpp_companies (code, name, country, email, phone, plan, product_limit, restricted_key, admin_note)
-    VALUES (${code}, ${name}, 'TR', ${req.customer_email.toLowerCase()}, ${req.customer_phone}, ${plan}, ${DPP_PLANS[plan].productLimit}, ${randomKey()}, ${note})
-    RETURNING id
-  `) as Array<{ id: string }>
+  if (req.customer_tax_no) {
+    const taken = (await sql`SELECT 1 FROM dpp_companies WHERE tax_no = ${req.customer_tax_no} LIMIT 1`) as unknown[]
+    if (taken.length) throw new DealerError('Bu vergi numarasıyla açılmış bir DPP firması zaten var.')
+  }
+  const days = PERIOD_DAYS[req.billing] || 0
+  let rows: Array<{ id: string; paid_until: string | null }>
+  try {
+    rows = (await sql`
+      INSERT INTO dpp_companies (code, name, country, email, phone, plan, product_limit, restricted_key, admin_note,
+                                 tax_no, billing, paid_until, reseller_name, reseller_phone, reseller_email)
+      VALUES (${code}, ${name}, 'TR', ${req.customer_email.toLowerCase()}, ${req.customer_phone}, ${plan}, ${DPP_PLANS[plan].productLimit}, ${randomKey()}, ${note},
+              ${req.customer_tax_no}, ${req.billing}, CASE WHEN ${days}::int > 0 THEN NOW() + make_interval(days => ${days}::int) ELSE NULL END,
+              ${dealer?.company || ''}, ${dealer?.phone || ''}, ${dealer?.email || ''})
+      RETURNING id, paid_until
+    `) as Array<{ id: string; paid_until: string | null }>
+  } catch (err) {
+    if (err instanceof Error && /uq_dpp_companies_tax|duplicate key/i.test(err.message)) throw new DealerError('Bu vergi numarasıyla açılmış bir DPP firması zaten var.')
+    throw err
+  }
   let owner: { email: string; password: string }
   try {
     owner = await createDppUser(rows[0].id, req.customer_email, 'owner', req.customer_contact)
@@ -432,10 +453,106 @@ export async function activateDppRequest(requestId: string) {
   const updated = ((await sql`
     UPDATE dealer_dpp_requests SET
       dpp_company_id = ${rows[0].id}, status = 'active', activated_at = NOW(),
-      period_end = CASE billing WHEN 'month' THEN NOW() + INTERVAL '1 month' WHEN 'year' THEN NOW() + INTERVAL '12 months' ELSE NULL END,
+      period_end = ${rows[0].paid_until},
       updated_at = NOW()
     WHERE id = ${requestId}
     RETURNING *
   `) as unknown as DealerDppRequest[])[0]
   return { request: updated, dealer, companyCode: code, owner }
+}
+
+/** Dönem uzunluğu (gün): aylık 30, yıllık 365; Pilot tek seferlik olduğu için dönemi yoktur */
+export const PERIOD_DAYS: Record<string, number> = { month: 30, year: 365 }
+
+/**
+ * Dönemi yeniler: yeni dönem önceki bitiş tarihinden başlar (gecikmeli ödemede aradaki günler kaybolmaz).
+ * Talep ve DPP firması aynı bitiş tarihini taşır. PayTR bildirimi (kart) ya da admin (havale) çağırır.
+ */
+export async function extendDppPeriod(requestId: string) {
+  await ensureDealerSchema()
+  const rows = (await sql`
+    UPDATE dealer_dpp_requests SET
+      period_end = COALESCE(period_end, NOW()) + make_interval(days => CASE billing WHEN 'month' THEN 30 WHEN 'year' THEN 365 ELSE 0 END),
+      renew_count = renew_count + 1,
+      updated_at = NOW()
+    WHERE id = ${requestId} AND dpp_company_id IS NOT NULL AND billing IN ('month', 'year')
+    RETURNING *
+  `) as unknown as DealerDppRequest[]
+  const req = rows[0]
+  if (!req) throw new DealerError('Yenilenecek aktif aylık ya da yıllık talep bulunamadı.')
+  await sql`UPDATE dpp_companies SET paid_until = ${req.period_end} WHERE id = ${req.dpp_company_id}`
+  return req
+}
+
+/** Admin düzeltmesi: bitiş tarihini elle belirler (talep ve DPP firması birlikte) */
+export async function setDppPeriodEnd(requestId: string, isoDate: string) {
+  await ensureDealerSchema()
+  const date = new Date(isoDate)
+  if (!Number.isFinite(date.getTime())) throw new DealerError('Geçerli bir bitiş tarihi gir.')
+  const rows = (await sql`
+    UPDATE dealer_dpp_requests SET period_end = ${date.toISOString()}, updated_at = NOW()
+    WHERE id = ${requestId} AND dpp_company_id IS NOT NULL
+    RETURNING *
+  `) as unknown as DealerDppRequest[]
+  const req = rows[0]
+  if (!req) throw new DealerError('Panel açılmamış talebin bitiş tarihi olmaz.')
+  await sql`UPDATE dpp_companies SET paid_until = ${req.period_end} WHERE id = ${req.dpp_company_id}`
+  return req
+}
+
+/**
+ * Günlük hatırlatma (cron): bitişe 7 gün kala ve bitiş günü bayiye ve müşteriye e-posta.
+ * Her bitiş tarihi için bir kez gönderilir; yenilemeyle tarih değişince yeni dönem için tekrar gönderilir.
+ */
+export async function runDppReminders(send: (input: { to: string; subject: string; text: string; replyTo?: string }) => Promise<unknown>) {
+  await ensureDealerSchema()
+  const due = (await sql`
+    SELECT r.*, d.company AS dealer_company, d.contact_name AS dealer_contact, d.email AS dealer_email, d.phone AS dealer_phone
+    FROM dealer_dpp_requests r JOIN dealers d ON d.id = r.dealer_id
+    WHERE r.dpp_company_id IS NOT NULL AND r.period_end IS NOT NULL AND r.status <> 'cancelled'
+      AND (
+        (r.period_end <= NOW() AND r.remind_end_for IS DISTINCT FROM r.period_end)
+        OR (r.period_end > NOW() AND r.period_end <= NOW() + INTERVAL '7 days' AND r.remind7_for IS DISTINCT FROM r.period_end)
+      )
+    LIMIT 200
+  `) as unknown as Array<DealerDppRequest & { dealer_company: string; dealer_contact: string; dealer_email: string; dealer_phone: string }>
+  let sent = 0
+  for (const r of due) {
+    const ended = new Date(r.period_end!).getTime() <= Date.now()
+    const date = new Date(r.period_end!).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+    const plan = DPP_DEALER_PLANS.find((p) => p.id === r.plan)?.name || r.plan
+    const period = r.billing === 'year' ? '12 aylık' : '1 aylık'
+    const dealerText = [
+      `Merhaba ${r.dealer_contact},`,
+      '',
+      ended
+        ? `Müşteriniz ${r.customer_company} için QRNot DPP ${plan} (${period}) dönemi ${date} tarihinde sona erdi. Panel ve pasaportlar açık kalır; dönemi yenilemek için bayi panelinden ödeme yapabilirsiniz.`
+        : `Müşteriniz ${r.customer_company} için QRNot DPP ${plan} (${period}) dönemi ${date} tarihinde bitiyor. Kesintisiz devam için dönemi bayi panelinden yenileyebilirsiniz.`,
+      '',
+      'Bayi paneli: www.qrnot.com/bayi',
+      '',
+      'QRNot · SCE Innovation',
+    ].join('\n')
+    const customerText = [
+      `Merhaba${r.customer_contact ? ` ${r.customer_contact}` : ''},`,
+      '',
+      ended
+        ? `${r.customer_company} için QRNot DPP abonelik döneminiz ${date} tarihinde sona erdi. Paneliniz ve pasaportlarınız açık kalır; yenilemek için bayinizle iletişime geçin.`
+        : `${r.customer_company} için QRNot DPP abonelik döneminiz ${date} tarihinde bitiyor. Kesintisiz devam için bayinizle iletişime geçin.`,
+      '',
+      `Bayiniz: ${r.dealer_company}${r.dealer_phone ? ` · ${r.dealer_phone}` : ''}${r.dealer_email ? ` · ${r.dealer_email}` : ''}`,
+      'Panel: www.qrnot.com/dpp/panel',
+      '',
+      'QRNot DPP · SCE Innovation',
+    ].join('\n')
+    const subject = ended ? 'sona erdi' : 'bitiyor'
+    if (!/\.(invalid|example|test)$/i.test(r.dealer_email)) await send({ to: r.dealer_email, subject: `DPP dönemi ${subject}: ${r.customer_company} (${date})`, text: dealerText }).catch(() => null)
+    if (r.customer_email && !/\.(invalid|example|test)$/i.test(r.customer_email)) {
+      await send({ to: r.customer_email, replyTo: r.dealer_email, subject: `QRNot DPP abonelik döneminiz ${subject} (${date})`, text: customerText }).catch(() => null)
+    }
+    if (ended) await sql`UPDATE dealer_dpp_requests SET remind_end_for = period_end, remind7_for = period_end WHERE id = ${r.id}`
+    else await sql`UPDATE dealer_dpp_requests SET remind7_for = period_end WHERE id = ${r.id}`
+    sent++
+  }
+  return { reminders: sent }
 }

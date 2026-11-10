@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
 import { sql } from '@/lib/db'
-import { activateDppRequest, adminDealerList, DealerError, deleteDppRequest, ensureDealerSchema, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
+import { activateDppRequest, adminDealerList, DealerError, deleteDppRequest, extendDppPeriod, setDppPeriodEnd, ensureDealerSchema, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
 import { DEALER_STATUSES, DPP_DEALER_PLANS, DPP_REQUEST_STATUSES, type DealerStatus } from '@/lib/dealersShared'
 import { SITE_URL } from '@/lib/site'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
@@ -107,6 +107,17 @@ export async function POST(req: NextRequest) {
       `
       if (!rows[0]) return NextResponse.json({ error: 'Talep bulunamadı' }, { status: 404 })
       return NextResponse.json({ ok: true, request: rows[0] })
+    }
+
+    if (action === 'dpp.renew') {
+      // Havaleyle gelen yenileme ödemesi: dönem önceki bitişten 30 / 365 gün uzar
+      const request = await extendDppPeriod(id)
+      return NextResponse.json({ ok: true, request })
+    }
+
+    if (action === 'dpp.setEnd') {
+      const request = await setDppPeriodEnd(id, String(body.periodEnd || ''))
+      return NextResponse.json({ ok: true, request })
     }
 
     if (action === 'dpp.delete') {

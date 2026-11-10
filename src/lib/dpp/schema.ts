@@ -51,6 +51,19 @@ export function ensureDppSchema() {
       await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS interest_key VARCHAR(64) NOT NULL DEFAULT (md5(random()::text || clock_timestamp()::text) || md5(random()::text))`
       // Aynı e-posta (büyük/küçük harf fark etmeksizin) ikinci kez kayıt olamaz
       await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dpp_users_email_ci ON dpp_users (lower(trim(email)))`
+      // Abonelik dönemi (bayi üzerinden açılan firmalar): bitince panel KAPANMAZ, yenileme uyarısı gösterilir
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS paid_until TIMESTAMP WITH TIME ZONE`
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS billing VARCHAR(8) NOT NULL DEFAULT ''`
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS tax_no VARCHAR(20) NOT NULL DEFAULT ''`
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS reseller_name VARCHAR(200) NOT NULL DEFAULT ''`
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS reseller_phone VARCHAR(40) NOT NULL DEFAULT ''`
+      await sql`ALTER TABLE dpp_companies ADD COLUMN IF NOT EXISTS reseller_email VARCHAR(255) NOT NULL DEFAULT ''`
+      // Aynı vergi numarasıyla ikinci DPP firması açılamaz
+      try {
+        await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dpp_companies_tax ON dpp_companies (tax_no) WHERE tax_no <> ''`
+      } catch (error) {
+        console.error('[dpp unique tax]', error)
+      }
       await sql`
         CREATE TABLE IF NOT EXISTS dpp_sessions (
           token_hash VARCHAR(64) PRIMARY KEY,

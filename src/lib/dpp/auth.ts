@@ -26,6 +26,13 @@ export interface DppSessionUser {
   demoEndsAt: string | null
   /** Demo için kalan gün (sunucuda hesaplanır) */
   demoDaysLeft: number | null
+  /** Ücretli dönem sonu (bayi üzerinden açılan firmalar); bitince panel açık kalır, yenileme uyarısı gösterilir */
+  paidUntil: string | null
+  /** Dönem sonuna kalan gün (geçmişse 0 ya da eksi) */
+  paidDaysLeft: number | null
+  billing: string
+  /** Yenileme için yönlendirilecek bayi (yoksa QRNot) */
+  reseller: { name: string; phone: string; email: string } | null
 }
 
 const hashToken = (token: string) => createHash('sha256').update(token).digest('hex')
@@ -89,7 +96,9 @@ export async function getDppUser(req: NextRequest): Promise<DppSessionUser | nul
   const rows = (await sql`
     SELECT u.id, u.email, u.name, u.role, u.must_change_password, c.id AS company_id, c.name AS company_name, c.code AS company_code,
            c.plan, c.demo_expires_at,
-           CEIL(EXTRACT(EPOCH FROM (c.demo_expires_at - NOW())) / 86400)::int AS demo_days_left
+           CEIL(EXTRACT(EPOCH FROM (c.demo_expires_at - NOW())) / 86400)::int AS demo_days_left,
+           c.paid_until, c.billing, c.reseller_name, c.reseller_phone, c.reseller_email,
+           CEIL(EXTRACT(EPOCH FROM (c.paid_until - NOW())) / 86400)::int AS paid_days_left
     FROM dpp_sessions s
     JOIN dpp_users u ON u.id = s.user_id
     JOIN dpp_companies c ON c.id = u.company_id
@@ -110,6 +119,10 @@ export async function getDppUser(req: NextRequest): Promise<DppSessionUser | nul
     plan: String(r.plan || ''),
     demoEndsAt: r.demo_expires_at ? new Date(String(r.demo_expires_at)).toISOString() : null,
     demoDaysLeft: r.demo_expires_at ? Math.max(0, Number(r.demo_days_left)) : null,
+    paidUntil: r.paid_until ? new Date(String(r.paid_until)).toISOString() : null,
+    paidDaysLeft: r.paid_until ? Number(r.paid_days_left) : null,
+    billing: String(r.billing || ''),
+    reseller: r.reseller_name ? { name: String(r.reseller_name), phone: String(r.reseller_phone || ''), email: String(r.reseller_email || '') } : null,
   }
 }
 

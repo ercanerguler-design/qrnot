@@ -109,6 +109,8 @@ const FOOTER = {
         ['/account', 'Hesabım / QR\'larım'],
         ['/etsy', 'Etsy aktivasyonu'],
         ['/partnerlik', 'Pazaryeri ortaklığı'],
+        ['/bayilik', 'Bayilik başvurusu'],
+        ['/bayi', 'Bayi girişi'],
       ],
       legal: [
         ['/legal/mesafeli-satis', 'Mesafeli satış sözleşmesi'],

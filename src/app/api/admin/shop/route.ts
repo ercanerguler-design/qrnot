@@ -151,7 +151,8 @@ export async function POST(req: NextRequest) {
       const provider = ['paytr', 'transfer', 'other'].includes(body.provider) ? String(body.provider) : null
       const orders = await sql`
         SELECT order_no, access_key, status, provider, provider_ref, currency, subtotal, shipping, total, lang, email, full_name, phone,
-               address, items, fulfillment, customer_note, admin_note, tracking_no, paid_at, created_at
+               address, items, fulfillment, customer_note, admin_note, tracking_no, paid_at, created_at,
+               consents->'dealer'->>'company' AS dealer_company
         FROM shop_orders
         WHERE (${status}::text IS NULL OR status = ${status})
           AND (${q} = '' OR order_no ILIKE ${like} OR email ILIKE ${like} OR full_name ILIKE ${like})

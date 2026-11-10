@@ -36,6 +36,8 @@ export interface ShopOrder {
   total: number
   lang: 'tr' | 'en'
   user_id: string | null
+  /** Bayi siparişlerinde dealers.id (src/lib/dealers.ts) */
+  dealer_id?: string | null
   email: string
   full_name: string
   phone: string
@@ -220,8 +222,10 @@ async function fulfillDigital(order: ShopOrder): Promise<ShopOrder> {
 async function notifyNewOrder(order: ShopOrder) {
   const target = String(process.env.SHOP_NOTIFY_WHATSAPP || process.env.WHATSAPP_TO_NUMBER || '').trim()
   const lines = order.items.map((line) => `• ${line.quantity}× ${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ''}`).join('\n')
+  const dealer = (order.consents as { dealer?: { company?: string } } | null)?.dealer
   const text = [
     `🛒 Yeni ödeme alındı — ${order.order_no}`,
+    dealer ? `🤝 Bayi siparişi: ${dealer.company || ''}` : '',
     `Tutar: ${formatMoney(order.total, order.currency)} (${order.provider})`,
     `Müşteri: ${order.full_name} · ${order.email} · ${order.phone}`,
     lines,
@@ -230,7 +234,7 @@ async function notifyNewOrder(order: ShopOrder) {
     .filter(Boolean)
     .join('\n')
   await notifyAdmin({
-    title: `🛒 Yeni ödeme: ${formatMoney(order.total, order.currency)}`,
+    title: `${dealer ? '🤝 Bayi ödemesi' : '🛒 Yeni ödeme'}: ${formatMoney(order.total, order.currency)}`,
     body: `${order.order_no} · ${order.full_name}
 ${order.items.map((line) => `${line.quantity}× ${line.name}`).join(', ')}`,
     url: `/admin?tab=orders`,

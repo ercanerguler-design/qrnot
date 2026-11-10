@@ -8,6 +8,7 @@ import { describeNfcError, isWebNfcSupported, writeUrlToTag } from '@/lib/webNfc
 
 interface AdminOrder {
   order_no: string
+  dealer_company?: string | null
   access_key: string
   status: string
   provider: string
@@ -407,7 +408,10 @@ export function OrdersTab({ call, initialStatus = '' }: { call: Caller; initialS
             >
               <span className="font-mono font-semibold">{order.order_no}</span>
               <span>{STATUS_LABEL[order.status] || order.status}</span>
-              <span className="truncate">{order.full_name}</span>
+              <span className="truncate">
+                {order.dealer_company && <span className="mr-1.5 rounded-md bg-amber-500/20 px-1.5 py-0.5 text-xs font-semibold text-amber-300">🤝 Bayi</span>}
+                {order.full_name}
+              </span>
               <span className="truncate text-neutral-400">{order.email}</span>
               <span className="font-semibold">{formatMoney(order.total, order.currency)}</span>
               <span className="text-neutral-400">

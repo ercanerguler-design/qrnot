@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-const PRIVATE_PREFIXES = ['/q/', '/manage', '/admin', '/order', '/print', '/recover', '/reset-password', '/reset-panel-password', '/n/', '/p/', '/h/', '/checkout']
+const PRIVATE_PREFIXES = ['/q/', '/manage', '/admin', '/order', '/print', '/recover', '/reset-password', '/reset-panel-password', '/n/', '/p/', '/h/', '/checkout', '/bayi/']
 
 export function isPrivatePath(path: string) {
   return PRIVATE_PREFIXES.some((prefix) => path === prefix.replace(/\/$/, '') || path.startsWith(prefix))

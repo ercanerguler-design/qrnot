@@ -197,41 +197,7 @@ export default function DealerPanel() {
         {orders.length === 0 ? (
           <p className="mt-3 text-ink-2">Henüz sipariş yok.</p>
         ) : (
-          <div className="w-card mt-4 overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm tabular-nums">
-              <thead>
-                <tr className="border-b border-line text-left text-xs uppercase tracking-wider text-muted">
-                  <th className="px-4 py-3 font-semibold">Sipariş</th>
-                  <th className="px-4 py-3 font-semibold">Tarih</th>
-                  <th className="px-4 py-3 font-semibold">Ürünler</th>
-                  <th className="px-4 py-3 text-right font-semibold">Tutar</th>
-                  <th className="px-4 py-3 font-semibold">Durum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((o) => {
-                  const [label, tone] = ORDER_STATUS[o.status] || [o.status, 'w-chip']
-                  return (
-                    <tr key={o.order_no} className="border-b border-line last:border-0">
-                      <td className="px-4 py-3">
-                        <Link href={`/order/${o.order_no}?key=${o.access_key}`} className="w-link font-mono font-semibold">
-                          {o.order_no}
-                        </Link>
-                        <span className="block text-xs text-muted">{o.provider === 'transfer' ? 'Havale / EFT' : o.provider === 'paytr' ? 'Kredi kartı' : o.provider}</span>
-                      </td>
-                      <td className="px-4 py-3 text-ink-2">{date(o.created_at)}</td>
-                      <td className="px-4 py-3 text-ink-2">{o.items.map((l) => `${l.quantity}× ${l.name}${l.variantLabel ? ` (${l.variantLabel})` : ''}`).join(', ')}</td>
-                      <td className="px-4 py-3 text-right font-semibold">{formatMoney(Number(o.total), 'TRY')}</td>
-                      <td className="px-4 py-3">
-                        <span className={`w-chip ${tone}`}>{label}</span>
-                        {o.tracking_no && <span className="block text-xs text-muted">Kargo: {o.tracking_no}</span>}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <OrdersTable orders={orders} onChange={load} />
         )}
       </section>
 
@@ -245,6 +211,118 @@ export default function DealerPanel() {
         · sce@scegrup.com
       </p>
     </Shell>
+  )
+}
+
+// Kartla ödemede PayTR penceresi 30 dk açık kalır; bu süre (35 dk güvenlik payıyla) dolmadan sipariş silinmez (sunucu da aynı kuralı uygular)
+const CARD_WINDOW_MS = 35 * 60 * 1000
+const UNPAID = ['pending', 'awaiting_transfer', 'failed', 'cancelled']
+
+function OrdersTable({ orders, onChange }: { orders: OrderRow[]; onChange: () => Promise<void> }) {
+  const [confirming, setConfirming] = useState<string | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [msg, setMsg] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [now] = useState(() => Date.now())
+
+  const remove = async (orderNo: string) => {
+    setBusy(orderNo)
+    setMsg(null)
+    try {
+      const res = await fetch('/api/dealer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'order.delete', orderNo }) })
+      const json = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) throw new Error(json.error || 'Sipariş silinemedi.')
+      setMsg({ tone: 'success', text: `${orderNo} silindi.` })
+      setConfirming(null)
+      await onChange()
+    } catch (err) {
+      setMsg({ tone: 'error', text: err instanceof Error ? err.message : 'Sipariş silinemedi.' })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <>
+      {msg && <p className={`w-alert mt-4 text-sm ${msg.tone === 'error' ? 'w-alert-error' : 'w-alert-success'}`}>{msg.text}</p>}
+      <div className="w-card mt-4 overflow-x-auto">
+        <table className="w-full min-w-[760px] text-sm tabular-nums">
+          <thead>
+            <tr className="border-b border-line text-left text-xs uppercase tracking-wider text-muted">
+              <th className="px-4 py-3 font-semibold">Sipariş</th>
+              <th className="px-4 py-3 font-semibold">Tarih</th>
+              <th className="px-4 py-3 font-semibold">Ürünler</th>
+              <th className="px-4 py-3 text-right font-semibold">Tutar</th>
+              <th className="px-4 py-3 font-semibold">Durum</th>
+              <th className="px-4 py-3 text-right font-semibold">İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((o) => {
+              const [label, tone] = ORDER_STATUS[o.status] || [o.status, 'w-chip']
+              const unpaid = UNPAID.includes(o.status)
+              const cardOpen = o.status === 'pending' && o.provider === 'paytr' && now - new Date(o.created_at).getTime() < CARD_WINDOW_MS
+              return (
+                <tr key={o.order_no} className="border-b border-line align-top last:border-0">
+                  <td className="px-4 py-3">
+                    <Link href={`/order/${o.order_no}?key=${o.access_key}`} className="w-link font-mono font-semibold">
+                      {o.order_no}
+                    </Link>
+                    <span className="block text-xs text-muted">{o.provider === 'transfer' ? 'Havale / EFT' : o.provider === 'paytr' ? 'Kredi kartı' : o.provider}</span>
+                  </td>
+                  <td className="px-4 py-3 text-ink-2">{date(o.created_at)}</td>
+                  <td className="px-4 py-3 text-ink-2">{o.items.map((l) => `${l.quantity}× ${l.name}${l.variantLabel ? ` (${l.variantLabel})` : ''}`).join(', ')}</td>
+                  <td className="px-4 py-3 text-right font-semibold">{formatMoney(Number(o.total), 'TRY')}</td>
+                  <td className="px-4 py-3">
+                    <span className={`w-chip ${tone}`}>{label}</span>
+                    {o.tracking_no && <span className="block text-xs text-muted">Kargo: {o.tracking_no}</span>}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {!unpaid ? (
+                      <span className="text-xs text-muted">—</span>
+                    ) : confirming === o.order_no ? (
+                      <span className="inline-flex flex-col items-end gap-2">
+                        <span className="max-w-56 text-xs text-ink-2">
+                          {o.provider === 'transfer' ? 'Havaleyi gönderdiysen silme; ödemen eşleşmez. Silinsin mi?' : 'Sipariş kalıcı olarak silinecek. Emin misin?'}
+                        </span>
+                        <span className="flex gap-2">
+                          <button type="button" className="w-btn w-btn-ghost w-btn-sm" onClick={() => setConfirming(null)} disabled={busy === o.order_no}>
+                            Vazgeç
+                          </button>
+                          <button type="button" className="w-btn w-btn-primary w-btn-sm" onClick={() => void remove(o.order_no)} disabled={busy === o.order_no}>
+                            {busy === o.order_no ? 'Siliniyor…' : 'Evet, sil'}
+                          </button>
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex flex-wrap justify-end gap-2">
+                        {cardOpen && (
+                          <a href={`/checkout/paytr?order=${o.order_no}&key=${o.access_key}`} className="w-btn w-btn-primary w-btn-sm">
+                            Ödemeye dön
+                          </a>
+                        )}
+                        {o.status === 'awaiting_transfer' && (
+                          <Link href={`/order/${o.order_no}?key=${o.access_key}`} className="w-btn w-btn-ghost w-btn-sm">
+                            IBAN bilgisi
+                          </Link>
+                        )}
+                        {cardOpen ? (
+                          <span className="w-full text-xs text-muted">Ödeme penceresi kapanınca silinebilir</span>
+                        ) : (
+                          <button type="button" className="w-btn w-btn-ghost w-btn-sm" onClick={() => setConfirming(o.order_no)}>
+                            Sil
+                          </button>
+                        )}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-muted">Ödemesi alınmamış siparişleri silebilirsin; silinen sipariş bizim tarafımızdan da kalkar. Ödenmiş siparişte değişiklik için bize yaz.</p>
+    </>
   )
 }
 

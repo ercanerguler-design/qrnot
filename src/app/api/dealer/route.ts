@@ -6,7 +6,7 @@ import { createOrder, markOrderFailed, setOrderProviderRef, type OrderAddress, t
 import { getPaytrToken } from '@/lib/commerce/paytr'
 import { availableProviders } from '@/lib/commerce/providers'
 import { sql } from '@/lib/db'
-import { createDppRequest, DealerError, getDealerForUser, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
+import { createDppRequest, DealerError, deleteDealerOrder, getDealerForUser, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
 import { DEALER_MIN_QTY, DPP_DEALER_PLANS, dppDealerEur, priceDealerCart } from '@/lib/dealersShared'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 
@@ -15,6 +15,8 @@ import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 export const dynamic = 'force-dynamic'
 
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } })
+/** Test adresleri (.invalid / .example / .test) bildirim göndermez */
+const isTestEmail = (email: string) => /\.(invalid|example|test)$/i.test(email)
 const leadTarget = () => String(process.env.LEAD_NOTIFY_WHATSAPP || process.env.SHOP_NOTIFY_WHATSAPP || process.env.WHATSAPP_TO_NUMBER || '').trim() || undefined
 
 function publicDealer(d: Dealer) {
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     if (body.action === 'dpp') {
       const request = await createDppRequest(dealer, body)
-      after(() =>
+      if (!isTestEmail(dealer.email)) after(() =>
         notifyAdmin({
           title: `🛂 Bayi DPP talebi: ${dealer.company}`,
           body: `${request.customer_company} · ${request.plan} · €${request.dealer_eur}`,
@@ -77,6 +79,20 @@ export async function POST(req: NextRequest) {
         }).catch((e) => console.error('[dealer dpp notify]', e))
       )
       return json({ ok: true, request })
+    }
+
+    if (body.action === 'order.delete') {
+      const removed = await deleteDealerOrder(dealer.id, String(body.orderNo || '').slice(0, 24))
+      if (!isTestEmail(dealer.email)) after(() =>
+        notifyAdmin({
+          title: `🗑️ Bayi siparişini sildi: ${removed.order_no}`,
+          body: `${dealer.company} · ${formatMoney(Number(removed.total), 'TRY')} · ${removed.provider === 'transfer' ? 'havale' : 'kart'}`,
+          url: '/admin?tab=dealers',
+          whatsappText: `🗑️ Bayi siparişini sildi\n${removed.order_no} · ${formatMoney(Number(removed.total), 'TRY')} (${removed.provider === 'transfer' ? 'havale bekleniyordu' : 'kart ödemesi tamamlanmamıştı'})\nBayi: ${dealer.company}`,
+          whatsappTo: leadTarget(),
+        }).catch((e) => console.error('[dealer delete notify]', e))
+      )
+      return json({ ok: true })
     }
 
     if (body.action !== 'order') return json({ error: 'Geçersiz işlem' }, 400)
@@ -127,7 +143,7 @@ export async function POST(req: NextRequest) {
     const summary = cart.lines.map((l) => `${l.quantity}× ${l.name}${l.variantLabel ? ` (${l.variantLabel})` : ''}`).join(', ')
 
     if (provider === 'transfer') {
-      after(() =>
+      if (!isTestEmail(dealer.email)) after(() =>
         notifyAdmin({
           title: `🤝 Bayi siparişi (havale bekleniyor): ${formatMoney(order.total, 'TRY')}`,
           body: `${dealer.company} · ${order.order_no}\n${summary}`,

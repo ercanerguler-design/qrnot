@@ -203,6 +203,40 @@ export async function listDealerOrders(dealerId: string) {
   `
 }
 
+/** PayTR ödeme penceresi 30 dk (paytr.ts timeout_limit); güvenlik payıyla 35 dk dolmadan kartlı sipariş silinmez */
+export const CARD_DELETE_AFTER_MS = 35 * 60 * 1000
+
+/** Bayinin silebileceği sipariş: ödenmemiş olmalı; kartla ödeme bekleyende ödeme penceresi kapanmış olmalı */
+export function dealerOrderDeletable(order: { status: string; provider: string; created_at: string }, now = Date.now()) {
+  if (order.status === 'failed' || order.status === 'cancelled') return { ok: true as const }
+  if (order.status === 'awaiting_transfer') return { ok: true as const }
+  if (order.status === 'pending') {
+    const left = CARD_DELETE_AFTER_MS - (now - new Date(order.created_at).getTime())
+    if (order.provider !== 'paytr' || left <= 0) return { ok: true as const }
+    return { ok: false as const, reason: `Kartla ödeme sayfası hâlâ açık olabilir. Ödeme yapmadıysan ${Math.ceil(left / 60000)} dakika sonra silebilirsin.` }
+  }
+  return { ok: false as const, reason: 'Ödemesi alınmış sipariş silinemez. Değişiklik ya da iade için bizimle iletişime geç.' }
+}
+
+/** Bayi kendi ödenmemiş siparişini siler; sipariş adminden de kalkar. Ödenmemiş siparişte teslim edilmiş dijital ürün yoktur. */
+export async function deleteDealerOrder(dealerId: string, orderNo: string) {
+  const rows = (await sql`
+    SELECT order_no, status, provider, total, created_at FROM shop_orders WHERE order_no = ${orderNo} AND dealer_id = ${dealerId} LIMIT 1
+  `) as Array<{ order_no: string; status: string; provider: string; total: number; created_at: string }>
+  const order = rows[0]
+  if (!order) throw new DealerError('Sipariş bulunamadı.')
+  const check = dealerOrderDeletable(order)
+  if (!check.ok) throw new DealerError(check.reason)
+  // Durum aynı anda değişmiş olabilir (ör. ödeme o an onaylandı): sadece hâlâ ödenmemişse sil
+  const deleted = (await sql`
+    DELETE FROM shop_orders
+    WHERE order_no = ${orderNo} AND dealer_id = ${dealerId} AND status IN ('pending', 'awaiting_transfer', 'failed', 'cancelled') AND paid_at IS NULL
+    RETURNING order_no
+  `) as Array<{ order_no: string }>
+  if (!deleted[0]) throw new DealerError('Sipariş silinemedi: ödeme durumu değişmiş olabilir. Sayfayı yenile.')
+  return order
+}
+
 export async function listDealerDppRequests(dealerId: string) {
   return (await sql`SELECT * FROM dealer_dpp_requests WHERE dealer_id = ${dealerId} ORDER BY created_at DESC LIMIT 200`) as unknown as DealerDppRequest[]
 }

@@ -58,6 +58,27 @@ export const DPP_REQUEST_STATUS_LABEL: Record<DppRequestStatus, string> = {
   cancelled: 'İptal',
 }
 
+/** DPP fiyatları KDV hariç; kartla TL tahsilatta eklenir */
+export const DPP_KDV = 0.2
+export const DPP_BILLINGS = ['once', 'month', 'year'] as const
+export type DppBilling = (typeof DPP_BILLINGS)[number]
+export const DPP_BILLING_LABEL: Record<DppBilling, string> = { once: 'Tek sefer', month: '1 aylık', year: '12 aylık (yıllık peşin)' }
+
+/** Paket ve döneme göre toplam (€, KDV hariç) */
+export function dppPeriodEur(planEur: number, billing: DppBilling) {
+  return billing === 'year' ? planEur * 12 : planEur
+}
+
+/** Kurumsal paketin fiyatı teklifle netleşir; kartla otomatik ödeme sadece sabit fiyatlı paketlerde */
+export function dppCardPayable(planId: string) {
+  return planId !== 'kurumsal'
+}
+
+/** € (KDV hariç) → TL kuruş (KDV dahil) */
+export function dppTryKurus(eur: number, rate: number) {
+  return Math.round(eur * rate * (1 + DPP_KDV) * 100)
+}
+
 /** Bayi birim fiyatı (kuruş), tam liraya aşağı yuvarlanır */
 export function dealerUnitPrice(listKurus: number, discount = DEALER_PRODUCT_DISCOUNT) {
   return Math.floor((listKurus * (1 - discount)) / 100) * 100

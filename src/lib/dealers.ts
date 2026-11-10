@@ -1,10 +1,16 @@
 import { sql } from '@/lib/db'
+import { createDppUser, randomKey } from '@/lib/dpp/auth'
+import { ensureDppSchema } from '@/lib/dpp/schema'
+import { DPP_PLANS, type DppPlan } from '@/lib/dpp/types'
 import { ensureGrowthSchema } from '@/lib/growthSchema'
 // Varsayılan oranlar (%30 ürün, %35 DPP) tablo tanımında sabit; dealersShared.ts ile aynı tutulmalı.
 import {
   BUSINESS_TYPES,
+  DPP_BILLING_LABEL,
   DPP_DEALER_PLANS,
   dppDealerEur,
+  dppPeriodEur,
+  type DppBilling,
   type DealerStatus,
   type DppDealerPlanId,
   type DppRequestStatus,
@@ -48,10 +54,18 @@ export interface DealerDppRequest {
   customer_contact: string
   customer_email: string
   customer_phone: string
+  customer_tax_no: string
   plan: DppDealerPlanId
   list_eur: number
   dealer_eur: number
   payment_method: 'card' | 'transfer'
+  billing: DppBilling
+  eur_rate: string | null
+  amount_try: number | null
+  order_no: string | null
+  dpp_company_id: string | null
+  activated_at: string | null
+  period_end: string | null
   status: DppRequestStatus
   paid: boolean
   paid_at: string | null
@@ -120,6 +134,22 @@ export function ensureDealerSchema() {
         )
       `
       await sql`CREATE INDEX IF NOT EXISTS idx_dealer_dpp_dealer ON dealer_dpp_requests(dealer_id)`
+      // Dönem, kartla ödeme (TCMB kuru + KDV ile TL) ve açılan DPP firması
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS billing VARCHAR(8) NOT NULL DEFAULT 'once'`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS eur_rate NUMERIC(10,4)`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS amount_try INTEGER`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS order_no VARCHAR(24)`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS dpp_company_id UUID`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS activated_at TIMESTAMP WITH TIME ZONE`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS period_end TIMESTAMP WITH TIME ZONE`
+      await sql`ALTER TABLE dealer_dpp_requests ADD COLUMN IF NOT EXISTS customer_tax_no VARCHAR(20) NOT NULL DEFAULT ''`
+      // Aynı müşteri için tek açık talep (iptal edilenler hariç). Eski kayıtlarda çakışma varsa kural kurulamaz; uygulama kontrolü yine çalışır.
+      try {
+        await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dealer_dpp_email ON dealer_dpp_requests (lower(customer_email)) WHERE status <> 'cancelled' AND customer_email <> ''`
+        await sql`CREATE UNIQUE INDEX IF NOT EXISTS uq_dealer_dpp_tax ON dealer_dpp_requests (customer_tax_no) WHERE status <> 'cancelled' AND customer_tax_no <> ''`
+      } catch (error) {
+        console.error('[dealer dpp unique index]', error)
+      }
     })().catch((error) => {
       schemaPromise = null
       throw error
@@ -199,7 +229,7 @@ export async function getDealerForUser(user: { id: string; email: string }) {
 export async function listDealerOrders(dealerId: string) {
   return sql`
     SELECT order_no, access_key, status, provider, total, items, created_at, paid_at, tracking_no
-    FROM shop_orders WHERE dealer_id = ${dealerId} ORDER BY created_at DESC LIMIT 200
+    FROM shop_orders WHERE dealer_id = ${dealerId} AND NOT (COALESCE(consents, '{}'::jsonb) ? 'dppRequestId') ORDER BY created_at DESC LIMIT 200
   `
 }
 
@@ -248,15 +278,51 @@ export async function createDppRequest(dealer: Dealer, body: Record<string, unkn
   if (customerCompany.length < 2) throw new DealerError('Müşteri firmanın adını yaz.')
   const customerEmail = str(body.customerEmail, 255).toLowerCase()
   if (customerEmail && !EMAIL_RE.test(customerEmail)) throw new DealerError('Müşterinin e-postası geçersiz.')
+  if (!customerEmail) throw new DealerError('Müşterinin e-postasını yaz: DPP paneli bu adrese açılır.')
+  const customerTaxNo = str(body.customerTaxNo, 20).replace(/\D/g, '')
+  if (!/^\d{10,11}$/.test(customerTaxNo)) throw new DealerError('Müşterinin vergi numarasını yaz (10 hane; şahıs firmasında 11 haneli TC kimlik no).')
+  // Aynı müşteri (vergi no ya da e-posta) için ikinci talep açılmaz: iptal edilmemiş her talep ve açılmış her DPP paneli sayılır
+  const dupReq = (await sql`
+    SELECT customer_email, customer_tax_no, dealer_id FROM dealer_dpp_requests
+    WHERE status <> 'cancelled' AND (lower(customer_email) = ${customerEmail} OR customer_tax_no = ${customerTaxNo})
+    LIMIT 1
+  `) as Array<{ customer_email: string; customer_tax_no: string; dealer_id: string }>
+  if (dupReq[0]) {
+    const by = dupReq[0].customer_tax_no === customerTaxNo ? 'vergi numarasıyla' : 'e-postayla'
+    throw new DealerError(
+      dupReq[0].dealer_id === dealer.id
+        ? `Bu müşteri için aynı ${by} açılmış bir talebin zaten var. Aşağıdaki listeden takip edebilirsin; dönem yenileme için bize yaz.`
+        : `Bu müşteri için aynı ${by} başka bir talep kayıtlı. Ayrıntı için bizimle iletişime geç.`
+    )
+  }
+  await ensureDppSchema()
+  const dupPanel = (await sql`
+    SELECT 1 FROM dpp_users WHERE lower(trim(email)) = ${customerEmail}
+    UNION ALL SELECT 1 FROM dpp_companies WHERE lower(trim(email)) = ${customerEmail}
+    LIMIT 1
+  `) as unknown[]
+  if (dupPanel.length) throw new DealerError('Bu e-posta zaten bir QRNot DPP paneline kayıtlı. Müşterinin mevcut paneli için bizimle iletişime geç.')
   const payment = body.paymentMethod === 'card' ? 'card' : 'transfer'
-  const dealerEur = dppDealerEur(plan.eur, Number(dealer.dpp_discount_pct) / 100)
-  const rows = (await sql`
-    INSERT INTO dealer_dpp_requests (dealer_id, customer_company, customer_contact, customer_email, customer_phone, plan, list_eur, dealer_eur, payment_method, note)
-    VALUES (${dealer.id}, ${customerCompany}, ${str(body.customerContact, 120)}, ${customerEmail}, ${str(body.customerPhone, 40)}, ${plan.id},
-            ${plan.eur}, ${dealerEur}, ${payment}, ${str(body.note, 1000)})
-    RETURNING *
-  `) as unknown as DealerDppRequest[]
-  return rows[0]
+  let billing: DppBilling = 'once'
+  if (plan.per !== 'once') {
+    if (body.billing !== 'month' && body.billing !== 'year') throw new DealerError('Ödeme dönemini seç: aylık ya da yıllık.')
+    billing = body.billing
+  }
+  const listEur = Math.round(dppPeriodEur(plan.eur, billing) * 100) / 100
+  const dealerEur = Math.round(dppPeriodEur(dppDealerEur(plan.eur, Number(dealer.dpp_discount_pct) / 100), billing) * 100) / 100
+  try {
+    const rows = (await sql`
+      INSERT INTO dealer_dpp_requests (dealer_id, customer_company, customer_contact, customer_email, customer_tax_no, customer_phone, plan, list_eur, dealer_eur, payment_method, billing, note)
+      VALUES (${dealer.id}, ${customerCompany}, ${str(body.customerContact, 120)}, ${customerEmail}, ${customerTaxNo}, ${str(body.customerPhone, 40)}, ${plan.id},
+              ${listEur}, ${dealerEur}, ${payment}, ${billing}, ${str(body.note, 1000)})
+      RETURNING *
+    `) as unknown as DealerDppRequest[]
+    return rows[0]
+  } catch (err) {
+    // Aynı anda gelen iki talep: veritabanındaki tekillik kuralı ikincisini durdurur
+    if (err instanceof Error && /duplicate key|unique/i.test(err.message)) throw new DealerError('Bu müşteri için aynı vergi numarası ya da e-postayla bir talep zaten kayıtlı.')
+    throw err
+  }
 }
 
 /** Admin listesi: her bayinin sipariş adedi, ödenen ve bekleyen tutarı, son sipariş ve DPP talepleri */
@@ -280,7 +346,7 @@ export async function adminDealerList(status: string | null) {
         SUM(total) FILTER (WHERE status IN ('paid', 'fulfilled', 'shipped', 'delivered')) AS paid_total,
         SUM(total) FILTER (WHERE status IN ('pending', 'awaiting_transfer')) AS unpaid_total,
         MAX(created_at) AS last_order_at
-      FROM shop_orders WHERE dealer_id IS NOT NULL GROUP BY dealer_id
+      FROM shop_orders WHERE dealer_id IS NOT NULL AND NOT (COALESCE(consents, '{}'::jsonb) ? 'dppRequestId') GROUP BY dealer_id
     ) o ON o.dealer_id = d.id
     LEFT JOIN (
       SELECT dealer_id, COUNT(*) FILTER (WHERE status <> 'cancelled') AS requests,
@@ -292,4 +358,84 @@ export async function adminDealerList(status: string | null) {
     ORDER BY (d.status = 'pending') DESC, COALESCE(o.paid_total, 0) DESC, d.created_at DESC
     LIMIT 500
   `
+}
+
+/**
+ * DPP talebini siler. Bayi: sadece ödenmemiş ve paneli açılmamış talep; kartla ödeme penceresi açıksa beklenir.
+ * Admin: her talep. Ödenmemiş DPP ödeme siparişleri de silinir; ödenmiş sipariş muhasebe kaydı olarak kalır.
+ * Açılmış DPP firmasına dokunulmaz (DPP sekmesinden yönetilir).
+ */
+export async function deleteDppRequest(id: string, by: { dealerId: string } | { admin: true }) {
+  await ensureDealerSchema()
+  const req = ((await sql`SELECT * FROM dealer_dpp_requests WHERE id = ${id}`) as unknown as DealerDppRequest[])[0]
+  if (!req || ('dealerId' in by && req.dealer_id !== by.dealerId)) throw new DealerError('Talep bulunamadı.')
+  const orders = (await sql`
+    SELECT order_no, status, provider, created_at FROM shop_orders WHERE consents->>'dppRequestId' = ${id}
+  `) as Array<{ order_no: string; status: string; provider: string; created_at: string }>
+  if ('dealerId' in by) {
+    if (req.paid || req.dpp_company_id) throw new DealerError('Ödemesi alınmış ya da paneli açılmış talep silinemez. Değişiklik için bizimle iletişime geç.')
+    for (const o of orders) {
+      const check = dealerOrderDeletable(o)
+      if (!check.ok) throw new DealerError(check.reason)
+    }
+  }
+  await sql`
+    DELETE FROM shop_orders
+    WHERE consents->>'dppRequestId' = ${id} AND status IN ('pending', 'awaiting_transfer', 'failed', 'cancelled') AND paid_at IS NULL
+  `
+  await sql`DELETE FROM dealer_dpp_requests WHERE id = ${id}`
+  return req
+}
+
+/** Bayi paketi → DPP panel paketi */
+const PLAN_MAP: Record<string, DppPlan> = { pilot: 'pilot', baslangic: 'starter', buyume: 'growth', isletme: 'business', kurumsal: 'enterprise' }
+
+/**
+ * Ödenmiş DPP talebi için müşterinin DPP firmasını ve sahip kullanıcısını açar (admin onayıyla).
+ * Geçici şifre bir kez döner; ilk girişte değiştirilmesi zorunludur.
+ */
+export async function activateDppRequest(requestId: string) {
+  await ensureDealerSchema()
+  await ensureDppSchema()
+  const req = ((await sql`SELECT * FROM dealer_dpp_requests WHERE id = ${requestId}`) as unknown as DealerDppRequest[])[0]
+  if (!req) throw new DealerError('Talep bulunamadı.')
+  if (req.dpp_company_id) throw new DealerError('Bu talep için DPP paneli zaten açılmış.')
+  if (!req.paid) throw new DealerError('Ödeme alınmadan panel açılamaz. Havale geldiyse önce "Ödendi" işaretle.')
+  if (!req.customer_email) throw new DealerError('Talepte müşteri e-postası yok.')
+  const dealer = ((await sql`SELECT * FROM dealers WHERE id = ${req.dealer_id}`) as unknown as Dealer[])[0]
+  const plan = PLAN_MAP[req.plan] || 'pilot'
+  const name = req.customer_company.slice(0, 200)
+  const base =
+    name
+      .toLocaleUpperCase('tr-TR')
+      .replace(/Ç/g, 'C').replace(/Ğ/g, 'G').replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ş/g, 'S').replace(/Ü/g, 'U')
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 12) || 'FIRMA'
+  let code = base
+  for (let i = 2; ((await sql`SELECT 1 FROM dpp_companies WHERE code = ${code}`) as unknown[]).length; i++) code = `${base}${i}`
+  const note = `Bayi: ${dealer?.company || '-'} · talep ${req.id.slice(0, 8)} · ${DPP_BILLING_LABEL[req.billing] || req.billing}`
+  const rows = (await sql`
+    INSERT INTO dpp_companies (code, name, country, email, phone, plan, product_limit, restricted_key, admin_note)
+    VALUES (${code}, ${name}, 'TR', ${req.customer_email.toLowerCase()}, ${req.customer_phone}, ${plan}, ${DPP_PLANS[plan].productLimit}, ${randomKey()}, ${note})
+    RETURNING id
+  `) as Array<{ id: string }>
+  let owner: { email: string; password: string }
+  try {
+    owner = await createDppUser(rows[0].id, req.customer_email, 'owner', req.customer_contact)
+  } catch (err) {
+    await sql`DELETE FROM dpp_companies WHERE id = ${rows[0].id}`
+    const key = err && typeof err === 'object' && 'key' in err ? String((err as { key: unknown }).key) : err instanceof Error ? err.message : ''
+    if (key.includes('e_email_exists')) throw new DealerError('Bu müşteri e-postası zaten bir DPP paneline kayıtlı.')
+    if (key.includes('e_email_other_panel')) throw new DealerError('Bu müşteri e-postası başka bir QRNot kurumsal paneline kayıtlı; farklı bir e-posta gerekiyor.')
+    throw err
+  }
+  const updated = ((await sql`
+    UPDATE dealer_dpp_requests SET
+      dpp_company_id = ${rows[0].id}, status = 'active', activated_at = NOW(),
+      period_end = CASE billing WHEN 'month' THEN NOW() + INTERVAL '1 month' WHEN 'year' THEN NOW() + INTERVAL '12 months' ELSE NULL END,
+      updated_at = NOW()
+    WHERE id = ${requestId}
+    RETURNING *
+  `) as unknown as DealerDppRequest[])[0]
+  return { request: updated, dealer, companyCode: code, owner }
 }

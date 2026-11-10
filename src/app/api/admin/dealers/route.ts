@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminPassword } from '@/lib/adminAuth'
 import { sql } from '@/lib/db'
-import { adminDealerList, ensureDealerSchema, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
-import { DEALER_STATUSES, DPP_REQUEST_STATUSES, type DealerStatus } from '@/lib/dealersShared'
+import { activateDppRequest, adminDealerList, DealerError, deleteDppRequest, ensureDealerSchema, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
+import { DEALER_STATUSES, DPP_DEALER_PLANS, DPP_REQUEST_STATUSES, type DealerStatus } from '@/lib/dealersShared'
+import { SITE_URL } from '@/lib/site'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 import { adminEmails, sendMail } from '@/lib/mail'
 
@@ -108,8 +109,61 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, request: rows[0] })
     }
 
+    if (action === 'dpp.delete') {
+      await deleteDppRequest(id, { admin: true })
+      return NextResponse.json({ ok: true })
+    }
+
+    if (action === 'dpp.activate') {
+      // Ödenmiş talep için müşterinin DPP panelini açar; giriş bilgisi müşteriye, bilgilendirme bayiye gider
+      const { request, dealer, companyCode, owner } = await activateDppRequest(id)
+      const plan = DPP_DEALER_PLANS.find((p) => p.id === request.plan)?.name || request.plan
+      const panelUrl = `${SITE_URL}/dpp/panel`
+      const until = request.period_end ? new Date(request.period_end).toLocaleDateString('tr-TR') : null
+      const customerMail = await sendMail({
+        to: owner.email,
+        replyTo: adminEmails()[0],
+        subject: 'QRNot DPP paneliniz açıldı',
+        text: [
+          `Merhaba${request.customer_contact ? ` ${request.customer_contact}` : ''},`,
+          '',
+          `${request.customer_company} için QRNot Dijital Ürün Pasaportu (DPP) paneliniz açıldı${dealer ? ` (iş ortağımız ${dealer.company} aracılığıyla)` : ''}.`,
+          '',
+          `Paket: ${plan}${until ? ` · ${until} tarihine kadar` : ''}`,
+          `Panel: ${panelUrl}`,
+          `E-posta: ${owner.email}`,
+          `Geçici şifre: ${owner.password}`,
+          '',
+          'İlk girişte yeni şifrenizi belirlemeniz istenecek. Bu e-postayı kimseyle paylaşmayın.',
+          '',
+          'Sorularınız için bu e-postayı yanıtlayabilir ya da WhatsApp’tan yazabilirsiniz: +90 543 392 92 30',
+          '',
+          'QRNot DPP · SCE Innovation',
+        ].join('\n'),
+      }).catch(() => ({ status: 'failed' as const }))
+      if (dealer) {
+        await sendMail({
+          to: dealer.email,
+          replyTo: adminEmails()[0],
+          subject: `Müşterinizin DPP paneli açıldı: ${request.customer_company}`,
+          text: [
+            `Merhaba ${dealer.contact_name},`,
+            '',
+            `${request.customer_company} için QRNot DPP paneli açıldı (${plan}${until ? `, ${until} tarihine kadar` : ''}).`,
+            `Giriş bilgileri müşterinizin e-postasına (${owner.email}) gönderildi. Panel adresi: ${panelUrl}`,
+            '',
+            'Talepleriniz: www.qrnot.com/bayi',
+            '',
+            'QRNot · SCE Innovation',
+          ].join('\n'),
+        }).catch(() => null)
+      }
+      return NextResponse.json({ ok: true, request, companyCode, panelUrl, email: owner.email, password: owner.password, mail: customerMail.status })
+    }
+
     return NextResponse.json({ error: 'Geçersiz işlem' }, { status: 400 })
   } catch (err) {
+    if (err instanceof DealerError) return NextResponse.json({ error: err.message }, { status: 400 })
     console.error('[admin dealers]', err)
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
   }

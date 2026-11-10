@@ -149,6 +149,14 @@ export async function markOrderPaid(orderNo: string, providerRef: string | null,
   if (!order) return { order: await getOrder(orderNo), transitioned: false }
 
   const fulfilled = await fulfillDigital(order)
+  // Bayi DPP talebinin kartla ödemesi: talep otomatik "ödendi" olur (panel açılışı admin onayıyla)
+  const dppRequestId = (order.consents as { dppRequestId?: string } | null)?.dppRequestId
+  if (dppRequestId) {
+    await sql`
+      UPDATE dealer_dpp_requests SET paid = TRUE, paid_at = COALESCE(paid_at, NOW()), order_no = ${order.order_no}, updated_at = NOW()
+      WHERE id = ${dppRequestId}
+    `.catch((error) => console.error('[order dpp paid]', error))
+  }
   await notifyNewOrder(fulfilled).catch((error) => console.error('[order notify]', error))
   // Ölçüme TL / USD olarak yazılır (sipariş tutarları kuruş / cent); test ödemeleri satış sayılmaz
   const isTest = order.provider === 'mock' || String(order.provider_ref || '').endsWith(':test')

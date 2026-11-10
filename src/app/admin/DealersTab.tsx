@@ -55,10 +55,17 @@ interface DppRow {
   customer_contact: string
   customer_email: string
   customer_phone: string
+  customer_tax_no: string
   plan: string
   list_eur: string
   dealer_eur: string
   payment_method: string
+  billing: string
+  eur_rate: string | null
+  amount_try: number | null
+  order_no: string | null
+  dpp_company_id: string | null
+  period_end: string | null
   status: string
   paid: boolean
   note: string
@@ -201,6 +208,7 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
   const [note, setNote] = useState(dealer.admin_note)
   const [msg, setMsg] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [secret, setSecret] = useState<{ company: string; panelUrl: string; email: string; password: string; mail: string } | null>(null)
 
   const loadDetail = useCallback(async () => {
     const data = await post<{ orders: OrderRow[]; dpp: DppRow[] }>(password, 'detail', { id: dealer.id }).catch(() => null)
@@ -233,6 +241,29 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
       await loadDetail()
       await onChange()
     }
+  }
+  const activate = async (r: DppRow) => {
+    if (!window.confirm(`${r.customer_company} için DPP paneli açılacak ve giriş bilgisi ${r.customer_email} adresine gönderilecek. Devam edilsin mi?`)) return
+    setMsg(null)
+    try {
+      const res = await post<{ panelUrl: string; email: string; password: string; mail: string }>(password, 'dpp.activate', { id: r.id })
+      setSecret({ company: r.customer_company, ...res })
+      await loadDetail()
+      await onChange()
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Panel açılamadı')
+    }
+  }
+  const dppDelete = async (r: DppRow) => {
+    const warn = r.dpp_company_id
+      ? ' Paneli açılmış: talep silinir ama DPP firması kalır (DPP sekmesinden kapatılır).'
+      : r.paid
+        ? ' Ödemesi alınmış: ödeme kaydı siparişlerde kalır.'
+        : ''
+    if (!window.confirm(`${r.customer_company} DPP talebi silinsin mi?${warn}`)) return
+    await post(password, 'dpp.delete', { id: r.id }).catch((e) => setMsg(e instanceof Error ? e.message : 'Silinemedi'))
+    await loadDetail()
+    await onChange()
   }
   const dppUpdate = async (id: string, payload: Record<string, unknown>) => {
     await post(password, 'dpp.update', { id, ...payload }).catch((e) => setMsg(e instanceof Error ? e.message : 'Kaydedilemedi'))
@@ -345,6 +376,15 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
 
       <div>
         <p className="mb-2 font-semibold">DPP talepleri</p>
+        {secret && (
+          <div className="mb-3 rounded-xl border border-emerald-700 bg-emerald-950/40 p-3">
+            <p className="font-semibold text-emerald-200">✓ {secret.company} için DPP paneli açıldı</p>
+            <p className="mt-1 text-xs text-emerald-100/80">
+              {secret.mail === 'sent' ? 'Giriş bilgisi müşteriye e-postayla gönderildi.' : 'E-posta gönderilemedi; bilgiyi müşteriye kendin ilet.'} Şifre bir daha gösterilmez.
+            </p>
+            <pre className="mt-2 whitespace-pre-wrap font-mono text-emerald-100">{`Panel: ${secret.panelUrl}\nE-posta: ${secret.email}\nGeçici şifre: ${secret.password}`}</pre>
+          </div>
+        )}
         {dpp.length === 0 ? (
           <p className="text-neutral-500">Talep yok.</p>
         ) : (
@@ -354,15 +394,21 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
                 <span>
                   <span className="font-semibold">{r.customer_company}</span>
                   <span className="block text-xs text-neutral-400">
-                    {[r.customer_contact, r.customer_phone, r.customer_email].filter(Boolean).join(' · ')}
+                    {[r.customer_tax_no ? `VKN ${r.customer_tax_no}` : '', r.customer_contact, r.customer_phone, r.customer_email].filter(Boolean).join(' · ')}
                   </span>
                   {r.note && <span className="block text-xs text-neutral-500">“{r.note}”</span>}
                 </span>
                 <span className="tabular-nums">
-                  {DPP_DEALER_PLANS.find((p) => p.id === r.plan)?.name || r.plan} · <b>{EUR(r.dealer_eur)}</b>
+                  {DPP_DEALER_PLANS.find((p) => p.id === r.plan)?.name || r.plan} · {r.billing === 'year' ? '12 ay' : r.billing === 'month' ? '1 ay' : 'tek sefer'} · <b>{EUR(r.dealer_eur)}</b>
                   <span className="block text-xs text-neutral-500">
                     liste {EUR(r.list_eur)} · {r.payment_method === 'card' ? 'kart' : 'havale'} · {day(r.created_at)}
                   </span>
+                  {r.amount_try ? (
+                    <span className="block text-xs text-neutral-400">
+                      {TL(r.amount_try)} KDV dahil · kur {Number(r.eur_rate).toLocaleString('tr-TR', { maximumFractionDigits: 4 })}
+                      {r.order_no ? ` · ${r.order_no}` : ''}
+                    </span>
+                  ) : null}
                 </span>
                 <select className={`${input} w-auto`} value={r.status} onChange={(e) => void dppUpdate(r.id, { status: e.target.value })}>
                   {DPP_REQUEST_STATUSES.map((s) => (
@@ -371,9 +417,23 @@ function DealerDetail({ dealer, password, call, onChange }: { dealer: DealerRow;
                     </option>
                   ))}
                 </select>
-                <button className={`${btn} ${r.paid ? 'bg-emerald-700 text-white' : 'bg-amber-600 text-white'}`} onClick={() => void dppUpdate(r.id, { paid: !r.paid })}>
-                  {r.paid ? '✓ Ödendi' : 'Ödendi işaretle'}
-                </button>
+                <span className="flex flex-wrap justify-end gap-2">
+                  <button className={`${btn} ${r.paid ? 'bg-emerald-700 text-white' : 'bg-amber-600 text-white'}`} disabled={Boolean(r.dpp_company_id)} onClick={() => void dppUpdate(r.id, { paid: !r.paid })}>
+                    {r.paid ? '✓ Ödendi' : 'Ödendi işaretle'}
+                  </button>
+                  {r.dpp_company_id ? (
+                    <span className="rounded-xl bg-emerald-900/40 px-3 py-2 text-xs text-emerald-200">
+                      Panel açık{r.period_end ? ` · ${day(r.period_end)}'e kadar` : ''}
+                    </span>
+                  ) : (
+                    <button className={`${btn} bg-cyan-600 text-white`} disabled={!r.paid} title={r.paid ? '' : 'Önce ödeme alınmalı'} onClick={() => void activate(r)}>
+                      DPP panelini aç
+                    </button>
+                  )}
+                  <button className={`${btn} bg-neutral-800 text-rose-300`} onClick={() => void dppDelete(r)}>
+                    Sil
+                  </button>
+                </span>
               </div>
             ))}
           </div>

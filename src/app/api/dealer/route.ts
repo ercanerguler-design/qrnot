@@ -6,8 +6,9 @@ import { createOrder, markOrderFailed, setOrderProviderRef, type OrderAddress, t
 import { getPaytrToken } from '@/lib/commerce/paytr'
 import { availableProviders } from '@/lib/commerce/providers'
 import { sql } from '@/lib/db'
-import { createDppRequest, DealerError, deleteDealerOrder, getDealerForUser, listDealerDppRequests, listDealerOrders, type Dealer } from '@/lib/dealers'
-import { DEALER_MIN_QTY, DPP_DEALER_PLANS, dppDealerEur, priceDealerCart } from '@/lib/dealersShared'
+import { createDppRequest, DealerError, deleteDealerOrder, deleteDppRequest, getDealerForUser, listDealerDppRequests, listDealerOrders, type Dealer, type DealerDppRequest } from '@/lib/dealers'
+import { DEALER_MIN_QTY, DPP_BILLING_LABEL, DPP_DEALER_PLANS, DPP_KDV, dppCardPayable, dppDealerEur, dppTryKurus, priceDealerCart } from '@/lib/dealersShared'
+import { FxError, getEurTryRate } from '@/lib/fx'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 
 // Bayi paneli (/bayi): GET durum + siparişler; POST action=order (ürün siparişi) | action=dpp (DPP paket talebi)
@@ -43,7 +44,10 @@ export async function GET(req: NextRequest) {
     if (!dealer) return json({ dealer: null, email: user.email })
     const approved = dealer.status === 'approved'
     const [orders, dpp] = approved ? await Promise.all([listDealerOrders(dealer.id), listDealerDppRequests(dealer.id)]) : [[], []]
+    const fx = approved ? await getEurTryRate().catch(() => null) : null
     return json({
+      eurRate: fx,
+      kdv: DPP_KDV,
       email: user.email,
       dealer: publicDealer(dealer),
       providers: availableProviders('TRY'),
@@ -79,6 +83,92 @@ export async function POST(req: NextRequest) {
         }).catch((e) => console.error('[dealer dpp notify]', e))
       )
       return json({ ok: true, request })
+    }
+
+    if (body.action === 'dpp.pay') {
+      // DPP talebi kartla: € (KDV hariç) × TCMB euro satış kuru × (1 + KDV) = TL; PayTR ile tahsil, bildirimle talep "ödendi" olur
+      const reqId = String(body.id || '')
+      if (!/^[0-9a-f-]{36}$/i.test(reqId)) return json({ error: 'Geçersiz talep' }, 400)
+      const dreq = ((await sql`SELECT * FROM dealer_dpp_requests WHERE id = ${reqId} AND dealer_id = ${dealer.id}`) as unknown as DealerDppRequest[])[0]
+      if (!dreq) return json({ error: 'Talep bulunamadı.' }, 404)
+      if (dreq.paid) return json({ error: 'Bu talebin ödemesi zaten alınmış.' }, 400)
+      if (dreq.status === 'cancelled') return json({ error: 'İptal edilen talep ödenemez.' }, 400)
+      if (!dppCardPayable(dreq.plan)) return json({ error: 'Kurumsal pakette fiyat teklifle netleşir; ödeme bilgisi size iletilecek.' }, 400)
+      if (!availableProviders('TRY').includes('paytr')) return json({ error: 'Kartla ödeme şu an kullanılamıyor. Havale seçebilirsin.' }, 400)
+      const fx = await getEurTryRate()
+      const amount = dppTryKurus(Number(dreq.dealer_eur), fx.rate)
+      const plan = DPP_DEALER_PLANS.find((p) => p.id === dreq.plan)
+      const label = `QRNot DPP ${plan?.name || dreq.plan} · ${DPP_BILLING_LABEL[dreq.billing] || dreq.billing} · ${dreq.customer_company}`.slice(0, 120)
+      const order = await createOrder({
+        provider: 'paytr',
+        currency: 'TRY',
+        subtotal: amount,
+        shipping: 0,
+        total: amount,
+        lang: 'tr',
+        userId: user.id,
+        email: user.email,
+        fullName: `${dealer.contact_name} (${dealer.company})`.slice(0, 160),
+        phone: dealer.phone,
+        address: null,
+        items: [
+          // DPP abonelik ödemesi; ürün kataloğunda yoktur, teslimat gerekmez
+          { productId: 'dpp' as never, variantId: null, variantLabel: null, name: label, quantity: 1, unitPrice: amount, lineTotal: amount, physical: false, requiresAccount: false },
+        ],
+        consents: {
+          terms: true,
+          dealerTerms: true,
+          acceptedAt: new Date().toISOString(),
+          ip,
+          dealer: { id: dealer.id, company: dealer.company, taxOffice: dealer.tax_office, taxNo: dealer.tax_no },
+          dppRequestId: dreq.id,
+          eur: Number(dreq.dealer_eur),
+          eurRate: fx.rate,
+          eurRateDate: fx.date,
+          kdv: DPP_KDV,
+        },
+        customerNote: '',
+        clientIp: ip,
+      })
+      await sql`UPDATE shop_orders SET dealer_id = ${dealer.id} WHERE id = ${order.id}`
+      await sql`UPDATE dealer_dpp_requests SET eur_rate = ${fx.rate}, amount_try = ${amount}, order_no = ${order.order_no}, payment_method = 'card', updated_at = NOW() WHERE id = ${dreq.id}`
+      const origin = req.nextUrl.origin
+      try {
+        const token = await getPaytrToken({
+          orderNo: order.order_no,
+          total: amount,
+          currency: 'TRY',
+          email: user.email,
+          userIp: ip,
+          userName: dealer.contact_name,
+          userAddress: dealer.address || dealer.city || 'Dijital hizmet',
+          userPhone: dealer.phone,
+          okUrl: `${origin}/bayi?dpp=paid`,
+          failUrl: `${origin}/bayi?payment=error`,
+          lang: 'tr',
+          basket: [[label, amount, 1]],
+        })
+        await setOrderProviderRef(order.order_no, token)
+        return json({ orderNo: order.order_no, amount, rate: fx.rate, redirectUrl: `${origin}/checkout/paytr?order=${order.order_no}&key=${order.access_key}` })
+      } catch (error) {
+        await markOrderFailed(order.order_no, `paytr init: ${error instanceof Error ? error.message : 'error'}`)
+        console.error('[dealer dpp paytr]', error)
+        return json({ error: 'Ödeme sayfası açılamadı. Lütfen tekrar dene ya da havale seç.' }, 502)
+      }
+    }
+
+    if (body.action === 'dpp.delete') {
+      const reqId = String(body.id || '')
+      if (!/^[0-9a-f-]{36}$/i.test(reqId)) return json({ error: 'Geçersiz talep' }, 400)
+      const removed = await deleteDppRequest(reqId, { dealerId: dealer.id })
+      if (!isTestEmail(dealer.email)) after(() =>
+        notifyAdmin({
+          title: `🗑️ Bayi DPP talebini sildi: ${removed.customer_company}`,
+          body: `${dealer.company} · ${removed.plan} · €${removed.dealer_eur}`,
+          url: '/admin?tab=dealers',
+        }).catch((e) => console.error('[dealer dpp delete notify]', e))
+      )
+      return json({ ok: true })
     }
 
     if (body.action === 'order.delete') {
@@ -181,7 +271,7 @@ export async function POST(req: NextRequest) {
       return json({ error: 'Ödeme sayfası açılamadı. Lütfen tekrar dene ya da havale seç.' }, 502)
     }
   } catch (err) {
-    if (err instanceof DealerError) return json({ error: err.message }, 400)
+    if (err instanceof DealerError || err instanceof FxError) return json({ error: err.message }, 400)
     console.error('[dealer POST]', err)
     return json({ error: 'Sunucu hatası' }, 500)
   }

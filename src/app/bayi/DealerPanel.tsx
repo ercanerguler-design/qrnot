@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import ProductArt from '@/components/warm/ProductArt'
 import { formatMoney } from '@/lib/commerce/catalog'
 import { DEALER_MIN_QTY, DEALER_STATUS_LABEL, DPP_REQUEST_STATUS_LABEL, dealerProducts, priceDealerCart, type DealerStatus, type DppRequestStatus } from '@/lib/dealersShared'
-import { whatsappHref } from '@/lib/site'
+import { COMPANY, whatsappHref } from '@/lib/site'
 
 interface DealerInfo {
   status: DealerStatus
@@ -45,6 +45,10 @@ interface DppRow {
   plan: string
   dealer_eur: string
   payment_method: string
+  billing: string
+  amount_try: number | null
+  dpp_company_id: string | null
+  period_end: string | null
   status: DppRequestStatus
   paid: boolean
   created_at: string
@@ -57,6 +61,8 @@ interface State {
   dppPlans?: DppPlan[]
   orders?: OrderRow[]
   dppRequests?: DppRow[]
+  eurRate?: { rate: number; date: string } | null
+  kdv?: number
 }
 
 const ORDER_STATUS: Record<string, [string, string]> = {
@@ -71,6 +77,7 @@ const ORDER_STATUS: Record<string, [string, string]> = {
   refunded: ['İade edildi', 'w-chip'],
 }
 const PAID = ['paid', 'fulfilled', 'shipped', 'delivered']
+const IBAN = COMPANY.iban
 const eur = (n: number | string) => `€${Number(n).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const date = (s: string) => new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
 
@@ -175,6 +182,9 @@ export default function DealerPanel() {
       </div>
 
       {params.get('payment') === 'error' && <p className="w-alert w-alert-error mt-6">Ödeme tamamlanamadı. Tekrar dene ya da havale seç.</p>}
+      {params.get('dpp') === 'paid' && (
+        <p className="w-alert w-alert-success mt-6">Ödemen için teşekkürler. Onaylandığında DPP talebin “Ödendi” görünür; müşterinin paneli açılınca sana e-posta gelir.</p>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
@@ -201,7 +211,7 @@ export default function DealerPanel() {
         )}
       </section>
 
-      <DppSection plans={data.dppPlans || []} requests={data.dppRequests || []} discount={d.dppDiscountPct} onCreated={load} />
+      <DppSection plans={data.dppPlans || []} requests={data.dppRequests || []} discount={d.dppDiscountPct} eurRate={data.eurRate || null} kdv={data.kdv ?? 0.2} onCreated={load} />
 
       <p className="mt-10 text-center text-sm text-muted">
         Sorun mu var?{' '}
@@ -530,43 +540,116 @@ function OrderForm({ dealer, providers }: { dealer: DealerInfo; providers: strin
   )
 }
 
-function DppSection({ plans, requests, discount, onCreated }: { plans: DppPlan[]; requests: DppRow[]; discount: number; onCreated: () => void }) {
-  const [form, setForm] = useState({ customerCompany: '', customerContact: '', customerEmail: '', customerPhone: '', plan: 'pilot', paymentMethod: 'transfer', note: '' })
+function DppSection({
+  plans,
+  requests,
+  discount,
+  eurRate,
+  kdv,
+  onCreated,
+}: {
+  plans: DppPlan[]
+  requests: DppRow[]
+  discount: number
+  eurRate: { rate: number; date: string } | null
+  kdv: number
+  onCreated: () => Promise<void>
+}) {
+  const [form, setForm] = useState({ customerCompany: '', customerTaxNo: '', customerContact: '', customerEmail: '', customerPhone: '', plan: 'pilot', billing: 'year', paymentMethod: 'card', note: '' })
   const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [paying, setPaying] = useState<string | null>(null)
+  const [payError, setPayError] = useState<string | null>(null)
+  const [confirmDel, setConfirmDel] = useState<string | null>(null)
+
+  const removeRequest = async (id: string) => {
+    setPayError(null)
+    setPaying(id)
+    try {
+      const res = await fetch('/api/dealer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dpp.delete', id }) })
+      const json = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) throw new Error(json.error || 'Talep silinemedi.')
+      setConfirmDel(null)
+      await onCreated()
+    } catch (err) {
+      setPayError(err instanceof Error ? err.message : 'Talep silinemedi.')
+    } finally {
+      setPaying(null)
+    }
+  }
   const f = (key: keyof typeof form) => ({
     id: `dpp-${key}`,
     value: form[key],
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm((cur) => ({ ...cur, [key]: e.target.value })),
   })
+  const plan = plans.find((p) => p.id === form.plan)
+  const billing = plan?.per === 'once' ? 'once' : form.billing
+  const periodEur = plan ? (billing === 'year' ? plan.dealerEur * 12 : plan.dealerEur) : 0
+  const tryKurus = (eurValue: number) => (eurRate ? Math.round(eurValue * eurRate.rate * (1 + kdv) * 100) : null)
+  const previewTry = tryKurus(periodEur)
+  const cardAllowed = form.plan !== 'kurumsal'
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setState('sending')
     try {
-      const res = await fetch('/api/dealer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dpp', ...form }) })
-      const json = (await res.json().catch(() => ({}))) as { error?: string }
-      if (!res.ok) throw new Error(json.error || 'Talep gönderilemedi.')
+      const res = await fetch('/api/dealer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'dpp', ...form, billing, paymentMethod: cardAllowed ? form.paymentMethod : 'transfer' }),
+      })
+      const json = (await res.json().catch(() => ({}))) as { error?: string; request?: { id: string } }
+      if (!res.ok || !json.request) throw new Error(json.error || 'Talep gönderilemedi.')
+      // Kart seçildiyse doğrudan ödeme sayfasına geç
+      if (cardAllowed && form.paymentMethod === 'card') {
+        await pay(json.request.id)
+        return
+      }
       setState('done')
-      setForm((cur) => ({ ...cur, customerCompany: '', customerContact: '', customerEmail: '', customerPhone: '', note: '' }))
-      onCreated()
+      setForm((cur) => ({ ...cur, customerCompany: '', customerTaxNo: '', customerContact: '', customerEmail: '', customerPhone: '', note: '' }))
+      await onCreated()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Talep gönderilemedi.')
       setState('idle')
     }
   }
+
+  const pay = async (id: string) => {
+    setPayError(null)
+    setPaying(id)
+    try {
+      const res = await fetch('/api/dealer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dpp.pay', id }) })
+      const json = (await res.json().catch(() => ({}))) as { error?: string; redirectUrl?: string }
+      if (!res.ok || !json.redirectUrl) throw new Error(json.error || 'Ödeme sayfası açılamadı.')
+      window.location.assign(json.redirectUrl)
+    } catch (err) {
+      setPayError(err instanceof Error ? err.message : 'Ödeme sayfası açılamadı.')
+      setPaying(null)
+      setState('idle')
+      await onCreated()
+    }
+  }
+
   const per = (p: DppPlan) => (p.per === 'once' ? 'tek sefer' : p.per === 'month' ? '/ ay' : '/ ay’dan')
+  const billingLabel = (b: string) => (b === 'year' ? '12 aylık' : b === 'month' ? '1 aylık' : 'tek sefer')
 
   return (
     <section className="mt-12">
       <h2 className="font-display text-2xl font-semibold">QRNot DPP talepleri</h2>
-      <p className="mt-1 text-ink-2">İhracatçı müşterin için paket talebi oluştur. Liste fiyatından %{discount} indirimle sana faturalanır (euro, KDV hariç). Alt sınır yok.</p>
+      <p className="mt-1 text-ink-2">
+        İhracatçı müşterin için paket talebi oluştur. Liste fiyatından %{discount} indirimli; euro fiyatlar KDV hariç. Kartla ödemede tutar TCMB euro satış kuruyla TL’ye çevrilir ve %{Math.round(kdv * 100)} KDV eklenir.
+      </p>
       <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_1fr]">
         <form onSubmit={submit} className="w-card p-5 sm:p-6">
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block sm:col-span-2">
+            <label className="block">
               <span className="w-label">Müşteri firma</span>
               <input className="w-input" required maxLength={200} {...f('customerCompany')} />
+            </label>
+            <label className="block">
+              <span className="w-label">Müşteri vergi no</span>
+              <input className="w-input" required inputMode="numeric" maxLength={11} placeholder="10 hane" {...f('customerTaxNo')} />
             </label>
             <label className="block">
               <span className="w-label">Yetkili</span>
@@ -577,8 +660,8 @@ function DppSection({ plans, requests, discount, onCreated }: { plans: DppPlan[]
               <input className="w-input" type="tel" maxLength={40} {...f('customerPhone')} />
             </label>
             <label className="block sm:col-span-2">
-              <span className="w-label">E-posta (panel bu adrese açılır)</span>
-              <input className="w-input" type="email" maxLength={255} {...f('customerEmail')} />
+              <span className="w-label">Müşteri e-postası (DPP paneli bu adrese açılır)</span>
+              <input className="w-input" type="email" required maxLength={255} {...f('customerEmail')} />
             </label>
             <label className="block">
               <span className="w-label">Paket</span>
@@ -590,11 +673,20 @@ function DppSection({ plans, requests, discount, onCreated }: { plans: DppPlan[]
                 ))}
               </select>
             </label>
-            <label className="block">
+            {plan?.per !== 'once' && (
+              <label className="block">
+                <span className="w-label">Dönem</span>
+                <select className="w-input" {...f('billing')}>
+                  <option value="year">12 aylık (yıllık peşin)</option>
+                  <option value="month">1 aylık</option>
+                </select>
+              </label>
+            )}
+            <label className={`block ${plan?.per === 'once' ? '' : 'sm:col-span-2'}`}>
               <span className="w-label">Ödeme</span>
-              <select className="w-input" {...f('paymentMethod')}>
+              <select className="w-input" {...f('paymentMethod')} disabled={!cardAllowed}>
+                {cardAllowed && <option value="card">Kredi kartı (hemen öde)</option>}
                 <option value="transfer">Havale / EFT</option>
-                <option value="card">Kredi kartı (ödeme linki gönderilir)</option>
               </select>
             </label>
             <label className="block sm:col-span-2">
@@ -602,34 +694,97 @@ function DppSection({ plans, requests, discount, onCreated }: { plans: DppPlan[]
               <textarea className="w-input min-h-16" maxLength={1000} placeholder="Ürün grubu, model sayısı, AB’de sattığı ülkeler…" {...f('note')} />
             </label>
           </div>
+          <div className="mt-4 rounded-2xl bg-cream-2 p-4 text-sm tabular-nums">
+            <div className="flex justify-between">
+              <span className="text-ink-2">Bayi fiyatı ({billingLabel(billing)}, KDV hariç)</span>
+              <b>{plan?.per === 'from' ? `${eur(periodEur)}’dan` : eur(periodEur)}</b>
+            </div>
+            {cardAllowed ? (
+              previewTry !== null && (
+                <div className="mt-1 flex justify-between">
+                  <span className="text-ink-2">Kartla ödenecek (KDV dahil)</span>
+                  <b className="text-coral-2">{formatMoney(previewTry, 'TRY')}</b>
+                </div>
+              )
+            ) : (
+              <p className="mt-1 text-ink-2">Kurumsal pakette fiyat teklifle netleşir; ödeme bilgisi sana iletilir.</p>
+            )}
+            {eurRate && cardAllowed && (
+              <p className="mt-1 text-xs text-muted">
+                TCMB euro satış kuru {eurRate.rate.toLocaleString('tr-TR', { maximumFractionDigits: 4 })} ₺ ({eurRate.date}). Kesin tutar ödeme anındaki kurla hesaplanır.
+              </p>
+            )}
+          </div>
           {error && <p className="w-alert w-alert-error mt-4 text-sm">{error}</p>}
-          {state === 'done' && <p className="w-alert w-alert-success mt-4 text-sm">Talebin alındı. Fatura ve ödeme bilgisi için seninle iletişime geçeceğiz.</p>}
+          {state === 'done' && <p className="w-alert w-alert-success mt-4 text-sm">Talebin alındı. Havale bilgisi aşağıda; ödemen hesabımıza geçince müşterinin paneli açılır.</p>}
           <button type="submit" className="w-btn w-btn-primary mt-4" disabled={state === 'sending'}>
-            {state === 'sending' ? 'Gönderiliyor…' : 'DPP talebi gönder'}
+            {state === 'sending' ? 'Hazırlanıyor…' : cardAllowed && form.paymentMethod === 'card' ? 'Talebi oluştur ve kartla öde' : 'DPP talebi gönder'}
           </button>
         </form>
 
         <div className="w-card-soft p-5 sm:p-6">
           <h3 className="font-semibold">Taleplerin</h3>
+          {payError && <p className="w-alert w-alert-error mt-3 text-sm">{payError}</p>}
           {requests.length === 0 ? (
             <p className="mt-3 text-sm text-ink-2">Henüz DPP talebi yok.</p>
           ) : (
             <ul className="mt-3 divide-y divide-line text-sm">
-              {requests.map((r) => (
-                <li key={r.id} className="flex items-start justify-between gap-3 py-3">
-                  <span>
-                    <span className="block font-semibold">{r.customer_company}</span>
-                    <span className="block text-xs text-muted">
-                      {plans.find((p) => p.id === r.plan)?.name || r.plan} · {date(r.created_at)}
-                    </span>
-                  </span>
-                  <span className="text-right">
-                    <span className="block font-semibold tabular-nums">{eur(r.dealer_eur)}</span>
-                    <span className={`w-chip mt-1 ${r.paid ? 'w-chip-sage' : 'w-chip-gold'}`}>{r.paid ? 'Ödendi' : 'Ödeme bekleniyor'}</span>
-                    <span className="block text-xs text-muted">{DPP_REQUEST_STATUS_LABEL[r.status] || r.status}</span>
-                  </span>
-                </li>
-              ))}
+              {requests.map((r) => {
+                const est = tryKurus(Number(r.dealer_eur))
+                return (
+                  <li key={r.id} className="py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className="block font-semibold">{r.customer_company}</span>
+                        <span className="block text-xs text-muted">
+                          {plans.find((p) => p.id === r.plan)?.name || r.plan} · {billingLabel(r.billing)} · {date(r.created_at)}
+                        </span>
+                      </span>
+                      <span className="text-right">
+                        <span className="block font-semibold tabular-nums">{eur(r.dealer_eur)}</span>
+                        {r.amount_try ? <span className="block text-xs text-muted tabular-nums">{formatMoney(r.amount_try, 'TRY')} KDV dahil</span> : null}
+                        <span className={`w-chip mt-1 ${r.paid ? 'w-chip-sage' : 'w-chip-gold'}`}>{r.paid ? 'Ödendi' : 'Ödeme bekleniyor'}</span>
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs text-ink-2">
+                        {r.dpp_company_id
+                          ? `✓ Panel açıldı${r.period_end ? ` · ${date(r.period_end)} tarihine kadar` : ''}`
+                          : r.paid
+                            ? 'Panel kurulumu hazırlanıyor'
+                            : DPP_REQUEST_STATUS_LABEL[r.status] || r.status}
+                      </span>
+                      <span className="flex flex-wrap justify-end gap-2">
+                        {!r.paid && r.status !== 'cancelled' && r.plan !== 'kurumsal' && confirmDel !== r.id && (
+                          <button type="button" className="w-btn w-btn-primary w-btn-sm" disabled={paying === r.id} onClick={() => void pay(r.id)}>
+                            {paying === r.id ? 'Bekle…' : `Kartla öde${est ? ` · ${formatMoney(est, 'TRY')}` : ''}`}
+                          </button>
+                        )}
+                        {!r.paid && !r.dpp_company_id &&
+                          (confirmDel === r.id ? (
+                            <>
+                              <button type="button" className="w-btn w-btn-ghost w-btn-sm" onClick={() => setConfirmDel(null)}>
+                                Vazgeç
+                              </button>
+                              <button type="button" className="w-btn w-btn-primary w-btn-sm" disabled={paying === r.id} onClick={() => void removeRequest(r.id)}>
+                                {paying === r.id ? 'Siliniyor…' : 'Evet, sil'}
+                              </button>
+                            </>
+                          ) : (
+                            <button type="button" className="w-btn w-btn-ghost w-btn-sm" onClick={() => setConfirmDel(r.id)}>
+                              Sil
+                            </button>
+                          ))}
+                      </span>
+                    </div>
+                    {!r.paid && r.status !== 'cancelled' && r.payment_method === 'transfer' && (
+                      <p className="mt-2 rounded-xl bg-paper p-3 text-xs text-ink-2">
+                        Havale / EFT: <b className="font-mono">{IBAN}</b> · SCE INNOVATION LTD. ŞTİ. · Açıklama: <b className="font-mono">DPP {r.id.slice(0, 8).toUpperCase()}</b>. {r.plan !== 'kurumsal' && est ? <>Tutar: <b>{formatMoney(est, 'TRY')}</b> (bugünkü kurla, KDV dahil). </> : null}Kesin tutar faturayla iletilir.
+                      </p>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>

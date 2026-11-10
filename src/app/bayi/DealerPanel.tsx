@@ -759,6 +759,9 @@ function DppSection({
             <ul className="mt-3 divide-y divide-line text-sm">
               {requests.map((r) => {
                 const est = tryKurus(Number(r.dealer_eur))
+                // Yenileme o günkü site fiyatıyla (bayi indirimi uygulanmış) hesaplanır
+                const cur = plans.find((p) => p.id === r.plan)
+                const renewEst = cur ? tryKurus(r.billing === 'year' ? cur.dealerEur * 12 : cur.dealerEur) : est
                 return (
                   <li key={r.id} className="py-3">
                     <div className="flex items-start justify-between gap-3">
@@ -789,7 +792,7 @@ function DppSection({
                             disabled={paying === r.id}
                             onClick={() => void pay(r.id, 'dpp.renew')}
                           >
-                            {paying === r.id ? 'Bekle…' : `Dönemi yenile${est ? ` · ${formatMoney(est, 'TRY')}` : ''}`}
+                            {paying === r.id ? 'Bekle…' : `Dönemi yenile${renewEst ? ` · ${formatMoney(renewEst, 'TRY')}` : ''}`}
                           </button>
                         )}
                         {!r.paid && !r.dpp_company_id &&

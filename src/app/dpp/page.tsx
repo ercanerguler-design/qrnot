@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { WarmPage } from '@/components/warm/SiteChrome'
+import { DPP_DEALER_PLANS } from '@/lib/dealersShared'
 import { DEMO_PASSPORT_ID } from '@/lib/dpp/demo'
 import { getRequestLang } from '@/lib/i18n.server'
 import { withLang, type Lang } from '@/lib/i18n'
@@ -13,14 +14,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   }, { image: "/dpp/opengraph-image" })
 }
 
-// Paket fiyatları (€, KDV hariç). Teklif formu (/teklif?konu=dpp&plan=…) ve fiyat listesi Excel'iyle aynı.
-const DPP_PRICES = [
-  { plan: 'pilot', eur: 390, per: 'once' },
-  { plan: 'baslangic', eur: 59, per: 'month' },
-  { plan: 'buyume', eur: 149, per: 'month' },
-  { plan: 'isletme', eur: 349, per: 'month' },
-  { plan: 'kurumsal', eur: 790, per: 'from' },
-] as const
+// Paket fiyatları (€, KDV hariç) tek kaynaktan gelir: src/lib/dealersShared.ts (DPP_DEALER_PLANS).
+// Fiyatı orada değiştirmek bu sayfayı, bayi fiyatlarını ve bayi yenilemelerini birlikte günceller.
+const DPP_PRICES = DPP_DEALER_PLANS.map((p) => ({ plan: p.id, eur: p.eur, per: p.per }))
 
 const C = {
   tr: {

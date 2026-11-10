@@ -40,7 +40,10 @@ export const BUSINESS_TYPES = [
   'Diğer',
 ] as const
 
-/** Sitedeki DPP liste fiyatları (€, KDV hariç) — src/app/dpp/page.tsx ile aynı tutulmalı */
+/**
+ * DPP liste fiyatları (€, KDV hariç) — sitenin TEK fiyat kaynağı: /dpp sayfası, /bayilik tablosu,
+ * bayi talepleri ve dönem yenilemeleri buradan hesaplanır. Fiyatı değiştirmek için sadece burayı güncelle.
+ */
 export const DPP_DEALER_PLANS = [
   { id: 'pilot', name: 'Pilot', scope: '10 ürün modeli', eur: 390, per: 'once' as const },
   { id: 'baslangic', name: 'Başlangıç', scope: '50 ürün modeli', eur: 59, per: 'month' as const },

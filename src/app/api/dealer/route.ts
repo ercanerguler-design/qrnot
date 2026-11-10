@@ -7,7 +7,7 @@ import { getPaytrToken } from '@/lib/commerce/paytr'
 import { availableProviders } from '@/lib/commerce/providers'
 import { sql } from '@/lib/db'
 import { createDppRequest, DealerError, deleteDealerOrder, deleteDppRequest, getDealerForUser, listDealerDppRequests, listDealerOrders, type Dealer, type DealerDppRequest } from '@/lib/dealers'
-import { DEALER_MIN_QTY, DPP_BILLING_LABEL, DPP_DEALER_PLANS, DPP_KDV, dppCardPayable, dppDealerEur, dppTryKurus, priceDealerCart } from '@/lib/dealersShared'
+import { DEALER_MIN_QTY, DPP_BILLING_LABEL, DPP_DEALER_PLANS, DPP_KDV, dppCardPayable, dppDealerEur, dppPeriodEur, dppTryKurus, priceDealerCart } from '@/lib/dealersShared'
 import { FxError, getEurTryRate } from '@/lib/fx'
 import { clientIp, consumeRateLimit } from '@/lib/growthSchema'
 
@@ -101,8 +101,10 @@ export async function POST(req: NextRequest) {
       if (!dppCardPayable(dreq.plan)) return json({ error: 'Kurumsal pakette fiyat teklifle netleşir; ödeme bilgisi size iletilecek.' }, 400)
       if (!availableProviders('TRY').includes('paytr')) return json({ error: 'Kartla ödeme şu an kullanılamıyor. Havale seçebilirsin.' }, 400)
       const fx = await getEurTryRate()
-      const amount = dppTryKurus(Number(dreq.dealer_eur), fx.rate)
       const plan = DPP_DEALER_PLANS.find((p) => p.id === dreq.plan)
+      // İlk ödeme: talep oluşturulurken sabitlenen fiyat. Yenileme: o günkü site fiyatı × bayinin o günkü indirimi × dönem.
+      const eur = renewal && plan ? Math.round(dppPeriodEur(dppDealerEur(plan.eur, Number(dealer.dpp_discount_pct) / 100), dreq.billing) * 100) / 100 : Number(dreq.dealer_eur)
+      const amount = dppTryKurus(eur, fx.rate)
       const label = `QRNot DPP ${renewal ? 'yenileme · ' : ''}${plan?.name || dreq.plan} · ${DPP_BILLING_LABEL[dreq.billing] || dreq.billing} · ${dreq.customer_company}`.slice(0, 120)
       const order = await createOrder({
         provider: 'paytr',
@@ -128,7 +130,7 @@ export async function POST(req: NextRequest) {
           dealer: { id: dealer.id, company: dealer.company, taxOffice: dealer.tax_office, taxNo: dealer.tax_no },
           dppRequestId: dreq.id,
           ...(renewal ? { dppRenewal: true, renewFrom: dreq.period_end } : {}),
-          eur: Number(dreq.dealer_eur),
+          eur,
           eurRate: fx.rate,
           eurRateDate: fx.date,
           kdv: DPP_KDV,
